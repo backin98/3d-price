@@ -12,3 +12,4 @@ data/qwen-url-jobs/
 data/price-history.sqlite
 data/qwen-employee/
 *.sqlite
+data/image-phash.json

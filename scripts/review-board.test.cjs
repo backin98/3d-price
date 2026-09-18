@@ -106,6 +106,7 @@ const apiContext = {
   auth: { ownerFromHeaders: () => ({ role: 'owner' }), authReady: () => true }
 };
 const adminSrc = fs.readFileSync('netlify/functions/admin.mjs', 'utf8').replace(/^import .*;$/gm, '').replace('export default async', 'globalThis.handler = async');
+apiContext.money = require('../lib/parse-money.cjs'); // the function imports this module
 vm.runInNewContext(adminSrc, apiContext);
 const post = (body) => new Request('https://example.com/api/admin', { method: 'POST', headers: { origin: 'https://example.com', 'content-type': 'application/json' }, body: JSON.stringify(body) });
 

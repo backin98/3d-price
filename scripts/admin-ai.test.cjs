@@ -1,7 +1,7 @@
 const fs=require('node:fs');const vm=require('node:vm');const assert=require('node:assert/strict');
 let saved;const desk={modelUrl:'http://localhost:1234',workerUrl:'',shops:[{id:'keep'}],banners:[{id:'banner'}],promoted:[]};
 const context={URL,Response,crypto:require('node:crypto'),store:{readJSON:async(key,fallback)=>key==='desk.json'?desk:fallback,writeJSON:async(key,value)=>{saved=value},deleteKey:async()=>{}},auth:{ownerFromHeaders:()=>({role:'owner'}),authReady:()=>true}};
-let source=fs.readFileSync('netlify/functions/admin.mjs','utf8').replace(/^import .*;$/gm,'').replace('export default async','globalThis.handler = async');vm.runInNewContext(source,context);
+let source=fs.readFileSync('netlify/functions/admin.mjs','utf8').replace(/^import .*;$/gm,'').replace('export default async','globalThis.handler = async');context.money=require('../lib/parse-money.cjs');vm.runInNewContext(source,context);
 const request=body=>new Request('https://example.com/api/admin',{method:'POST',headers:{origin:'https://example.com','content-type':'application/json'},body:JSON.stringify(body)});
 (async()=>{
  let result=await context.handler(request({action:'saveModelConnection',url:'http://127.0.0.1:1235/v1/',workerUrl:'http://127.0.0.1:8788/'}));assert.equal(result.status,200);assert.equal(saved.modelUrl,'http://127.0.0.1:1235/v1');assert.equal(saved.workerUrl,'http://127.0.0.1:8788');assert.equal(saved.shops,desk.shops);assert.ok(saved.modelCheckId);

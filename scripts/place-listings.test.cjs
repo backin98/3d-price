@@ -20,9 +20,16 @@ const { unionCatalog } = require('../lib/catalog-union.cjs');
     filaments: []
   }));
 
-  let fetched = 0;
+  // Thumbnails are downloaded for the reverse-image step; that is not the model. Only a
+  // non-image fetch counts as an LLM call, and with the toggle off there must be none.
+  let modelCalls = 0;
+  let thumbnails = 0;
   const origFetch = global.fetch;
-  global.fetch = async () => { fetched += 1; throw new Error('model must not be called'); };
+  global.fetch = async (url) => {
+    if (/\.jpg|\.png|\.webp/i.test(String(url))) { thumbnails += 1; return { ok: false, status: 404, body: null }; }
+    modelCalls += 1;
+    throw new Error('model must not be called: ' + url);
+  };
 
   try {
     const merged = await placeListings({
@@ -38,7 +45,7 @@ const { unionCatalog } = require('../lib/catalog-union.cjs');
       catalogFile,
       apply: false
     });
-    assert.equal(fetched, 0);
+    assert.equal(modelCalls, 0);
     assert.equal(merged.run.model, '');
     assert.equal(merged.run.merged, 1);
     assert.equal(merged.run.created, 0);
@@ -57,7 +64,7 @@ const { unionCatalog } = require('../lib/catalog-union.cjs');
       catalogFile,
       apply: false
     });
-    assert.equal(fetched, 0);
+    assert.equal(modelCalls, 0);
     assert.equal(created.run.created, 1);
     assert.equal(created.run.merged, 0);
 
@@ -73,7 +80,7 @@ const { unionCatalog } = require('../lib/catalog-union.cjs');
       catalogFile,
       apply: false
     });
-    assert.equal(fetched, 0);
+    assert.equal(modelCalls, 0);
     assert.equal(held.run.held, 1);
     assert.ok(fs.existsSync(path.join(dir, 'qwen-employee', 'catalog.candidate.json')));
     const u = unionCatalog(

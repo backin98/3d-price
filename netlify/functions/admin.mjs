@@ -1,9 +1,11 @@
 // /api/admin — unified online admin API backed by Netlify Blobs (Functions v2).
 import store from "../../lib/netlify-store.cjs";
 import auth from "../../lib/netlify-auth.cjs";
+import money from "../../lib/parse-money.cjs";
 
 const { readJSON, writeJSON, deleteKey } = store;
 const { ownerFromHeaders, authReady } = auth;
+const { withVat, withoutVat } = money;
 
 function sameOriginUrl(req) {
   const origin = req.headers.get("origin");
@@ -129,7 +131,27 @@ function applySelectedListings(live, candidate, items) {
         continue;
       }
     }
+    // The URL is the identity. Without this guard the fallback id below mints a
+    // fresh row for a URL the live catalog already carries (qwen- vs sel- duplicates).
+    const already = findByUrl(next, url)?.product;
+    if (already) {
+      if (!already.offers) already.offers = [];
+      if (!already.offers.some((o) => o.url === url)) already.offers.push(offer);
+      applied += 1;
+      continue;
+    }
     const srcId = found?.product?.id;
+    // Same printer, new shop, fresh id: the title is the identity everywhere else in
+    // this app (Magellan merges on identical titles), so join the row that already
+    // carries that title instead of minting a second one.
+    const incomingName = card.name || (found?.product && found.product.name) || "";
+    const twin = incomingName ? dest.find((p) => foldName(p.name) === foldName(incomingName)) : null;
+    if (twin) {
+      if (!twin.offers) twin.offers = [];
+      if (!twin.offers.some((o) => o.url === url)) twin.offers.push(offer);
+      applied += 1;
+      continue;
+    }
     const inLive = !!(srcId && dest.some((p) => p.id === srcId));
     const id = srcId && !inLive ? srcId : listingId(url);
     let target = dest.find((p) => p.id === id);
@@ -161,6 +183,154 @@ function applySelectedListings(live, candidate, items) {
   next.filamentCount = next.filaments.length;
   next._applied = applied;
   return next;
+}
+
+const foldName = (s) => String(s || "").toLocaleLowerCase("tr")
+  .replace(/ı/g, "i").replace(/ş/g, "s").replace(/ç/g, "c")
+  .replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ö/g, "o")
+  .replace(/[^a-z0-9]+/g, " ").trim();
+
+// Rows that ended up as the same product under two ids (qwen- from a run, sel- from
+// a publish). Keeps the Magellan-owned row, unions its offers, records the ids it ate.
+function collapseDuplicates(catalog) {
+  const groups = [];
+  const dropped = new Set();
+  const shelf = (list) => {
+    const byKey = new Map();
+    for (const p of list || []) {
+      const key = foldName(p.name);
+      if (!key) continue;
+      const first = byKey.get(key);
+      if (!first) {
+        byKey.set(key, p);
+        continue;
+      }
+      const preferQwen = (x, y) => (!String(x.id).startsWith("qwen-") && String(y.id).startsWith("qwen-") ? y : x);
+      const kept = preferQwen(first, p);
+      const gone = kept === first ? p : first;
+      kept.offers = [...new Map([...(kept.offers || []), ...(gone.offers || [])].filter((o) => o && o.url).map((o) => [o.url, o])).values()];
+      kept.mergedIds = [...new Set([...(kept.mergedIds || []), String(gone.id), ...(gone.mergedIds || [])])];
+      byKey.set(key, kept);
+      dropped.add(gone);
+      groups.push({ name: kept.name, kept: kept.id, dropped: gone.id, offers: kept.offers.length });
+    }
+    return (list || []).filter((p) => !dropped.has(p));
+  };
+  const products = shelf(catalog?.products);
+  const filaments = shelf(catalog?.filaments);
+  return {
+    catalog: { ...catalog, products, filaments, productCount: products.length, filamentCount: filaments.length, savedAt: new Date().toISOString() },
+    removed: dropped.size,
+    groups
+  };
+}
+
+const hostOfUrl = (url) => {
+  try { return new URL(String(url)).hostname.replace(/^www\./, "").toLowerCase(); } catch (_) { return ""; }
+};
+
+// Every stored price is KDV-inclusive (the storefront labels offers "KDV dahil"), so a
+// shop whose listing prices are net has to have its offers re-priced. `vatAdded` records
+// whether we already added the 20%, which is what makes the toggle reversible instead of
+// compounding: 29155 -> withVat -> 34986 -> withoutVat -> 29155.
+function repriceShopVat(catalog, candidate, shop, vat) {
+  const keys = shopKeys(shop);
+  const excluded = vat === "excluded";
+  const counts = { checked: 0, offers: 0, was: 0, skipped: 0 };
+  const walk = (doc, count) => {
+    if (!doc) return doc;
+    const shelf = (list) => (list || []).map((p) => ({
+      ...p,
+      offers: (p.offers || []).map((o) => {
+        if (!offerFromShop(o, keys)) return o;
+        if (count) counts.checked += 1;
+        // A page that prints "+KDV" must keep its VAT whatever the shop default says.
+        if (o.vatForced === true) { if (count) counts.skipped += 1; return o; }
+        const raw = o.vatAdded === true ? withoutVat(o.price) : o.price;
+        const price = excluded ? withVat(raw, "excluded") : raw;
+        const next = { ...o, price, vatIncluded: true, vatAdded: excluded };
+        if (Number.isFinite(o.was) && o.was > 0) {
+          const rawWas = o.vatAdded === true ? withoutVat(o.was) : o.was;
+          next.was = excluded ? withVat(rawWas, "excluded") : rawWas;
+          if (count) counts.was += 1;
+        }
+        if (count && price !== o.price) counts.offers += 1;
+        return next;
+      })
+    }));
+    const products = shelf(doc.products);
+    const filaments = shelf(doc.filaments);
+    return { ...doc, products, filaments, productCount: products.length, filamentCount: filaments.length, savedAt: new Date().toISOString() };
+  };
+  return { counts, catalog: walk(catalog, true), candidate: walk(candidate, false) };
+}
+
+// An offer identifies its shop by URL host and by `store`, both of which hold the
+// host ("robolinkmarket.com"), while a shop id is often a short slug ("robolink").
+// Match on all of them; shop id alone would silently delete nothing.
+function shopKeys(shop) {
+  const keys = new Set();
+  for (const k of [shop?.id, shop?.name, hostOfUrl(shop?.url)]) {
+    const v = String(k || "").trim().toLowerCase();
+    if (v) keys.add(v);
+  }
+  return keys;
+}
+
+const offerFromShop = (offer, keys) =>
+  keys.has(String(offer?.store || "").trim().toLowerCase()) || keys.has(hostOfUrl(offer?.url));
+
+// Remove every trace of one shop: its offers (rows left with nothing are dropped), the
+// category URLs it owns, shared category names only it used, and optionally its runs.
+function purgeShop(catalog, candidate, desk, jobs, shop, opts = {}) {
+  const withRuns = opts.runs !== false;
+  const keys = shopKeys(shop);
+  const shopHost = hostOfUrl(shop.url);
+  const counts = { offers: 0, rows: 0, categories: 0, jobs: 0 };
+  const strip = (doc, countRows) => {
+    if (!doc) return doc;
+    const rows = (list) => (list || []).map((p) => {
+      const offers = p.offers || [];
+      const kept = offers.filter((o) => !offerFromShop(o, keys));
+      counts.offers += offers.length - kept.length;
+      return { ...p, offers: kept };
+    }).filter((p) => {
+      if ((p.offers || []).length) return true;
+      if (countRows) counts.rows += 1;
+      return false;
+    });
+    const products = rows(doc.products);
+    const filaments = rows(doc.filaments);
+    return { ...doc, products, filaments, productCount: products.length, filamentCount: filaments.length, savedAt: new Date().toISOString() };
+  };
+
+  const mine = new Set((shop.categories || []).map((c) => foldName(c.name)).filter(Boolean));
+  const usedElsewhere = new Set();
+  for (const s of desk.shops || []) {
+    if (s.id === shop.id) continue;
+    for (const c of s.categories || []) {
+      const n = foldName(c.name);
+      if (n) usedElsewhere.add(n);
+    }
+  }
+  counts.categories = (shop.categories || []).length;
+
+  // Only purge runs we can identify: every job carries the category URL it crawled.
+  const keptJobs = withRuns && shopHost ? (jobs || []).filter((j) => hostOfUrl(j.url) !== shopHost) : jobs || [];
+  counts.jobs = (jobs || []).length - keptJobs.length;
+
+  return {
+    counts,
+    catalog: strip(catalog, true),
+    candidate: candidate ? strip(candidate, false) : candidate,
+    jobs: keptJobs,
+    desk: {
+      ...desk,
+      shops: (desk.shops || []).map((s) => (s.id === shop.id ? { ...s, categories: [], categoryIds: [] } : s)),
+      // A shared name another shop still uses stays.
+      categories: (desk.categories || []).filter((c) => !mine.has(foldName(c.name || c)) || usedElsewhere.has(foldName(c.name || c)))
+    }
+  };
 }
 
 function dropUrlsFromCatalog(catalog, urls) {
@@ -291,6 +461,58 @@ export default async (req) => {
         return json(200, { ok: true, publishedAt: new Date().toISOString(), counts: { products: next.products.length, filaments: next.filaments.length } });
       }
 
+      case "collapseDuplicates": {
+        const res = collapseDuplicates(catalog);
+        if (!res.removed) return json(200, { ok: true, removed: 0, groups: [] });
+        await writeJSON("catalog.json", res.catalog);
+        catalog = res.catalog;
+        return json(200, { ok: true, removed: res.removed, groups: res.groups });
+      }
+
+      case "saveShopVat": {
+        const shop = (desk.shops || []).find((s) => String(s.id) === String(body.shop || ""));
+        if (!shop) throw new Error("Unknown shop");
+        const vat = body.vat === "excluded" ? "excluded" : "included";
+        const res = repriceShopVat(catalog, candidate, shop, vat);
+        desk.shops = (desk.shops || []).map((s) => (s.id === shop.id ? { ...s, vat } : s));
+        await writeJSON("desk.json", desk);
+        await writeJSON("catalog.json", res.catalog);
+        if (res.candidate) await writeJSON("candidate.json", res.candidate);
+        catalog = res.catalog;
+        candidate = res.candidate;
+        return json(200, { ok: true, shop: shop.id, vat, ...res.counts, counts: { products: res.catalog.products.length, filaments: res.catalog.filaments.length } });
+      }
+
+      case "purgeShop": {
+        const shop = (desk.shops || []).find((s) => String(s.id) === String(body.shop || ""));
+        if (!shop) throw new Error("Unknown shop");
+        const res = purgeShop(catalog, candidate, desk, jobs, shop, { runs: body.runs !== false });
+        await writeJSON("catalog.json", res.catalog);
+        await writeJSON("desk.json", res.desk);
+        if (res.candidate) await writeJSON("candidate.json", res.candidate);
+        if (res.counts.jobs) await saveJobList(res.jobs);
+        catalog = res.catalog;
+        candidate = res.candidate;
+        jobs = res.jobs;
+        desk.shops = res.desk.shops;
+        desk.categories = res.desk.categories;
+        return json(200, { ok: true, shop: shop.id, ...res.counts, counts: { products: res.catalog.products.length, filaments: res.catalog.filaments.length } });
+      }
+
+      case "deleteJobs": {
+        const id = String(body.id || "");
+        const shopId = String(body.shop || "");
+        const target = shopId ? (desk.shops || []).find((s) => String(s.id) === shopId) : null;
+        const host = target ? hostOfUrl(target.url) : "";
+        const before = jobs.length;
+        if (id) jobs = jobs.filter((j) => j.id !== id);
+        else if (target && host) jobs = jobs.filter((j) => hostOfUrl(j.url) !== host);
+        else if (target) jobs = jobs; // no URL on the shop: cannot tell its runs apart
+        else jobs = [];
+        await saveJobList(jobs);
+        return json(200, { ok: true, removed: before - jobs.length, left: jobs.length });
+      }
+
       case "discardCandidate": {
         candidate = null;
         await deleteKey("candidate.json");
@@ -333,7 +555,9 @@ export default async (req) => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           maxPages: Number(body.maxPages) || 40,
-          maxProducts: Number(body.maxProducts) || 400
+          maxProducts: Number(body.maxProducts) || 400,
+          autoLlmMatch: body.autoLlmMatch === undefined ? desk.autoLlmMatch === true : body.autoLlmMatch === true,
+          visualMatch: body.visualMatch === undefined ? true : body.visualMatch !== false
         };
         jobs.push(job);
         await saveJobList(jobs);

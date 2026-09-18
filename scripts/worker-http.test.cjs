@@ -1,11 +1,14 @@
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const path = require('node:path');
+const os = require('node:os');
 
 (async () => {
   const port = 18788;
   const child = spawn(process.execPath, [path.join('worker', 'online-worker.cjs')], {
-    env: { ...process.env, INGEST_TOKEN: 'test-token-long-enough', WORKER_PORT: String(port), WORKER_HOST: '127.0.0.1' },
+    // This spawns the real worker, which writes its catalog cache. Point it at a temp
+    // file: without this the job below overwrites data/online-catalog.json.
+    env: { ...process.env, INGEST_TOKEN: 'test-token-long-enough', WORKER_PORT: String(port), WORKER_HOST: '127.0.0.1', ONLINE_CATALOG_FILE: path.join(os.tmpdir(), 'worker-http-catalog.json') },
     cwd: path.join(__dirname, '..'),
     stdio: ['ignore', 'pipe', 'pipe']
   });

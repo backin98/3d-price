@@ -246,7 +246,9 @@ async function runClaimedJob(job, desk) {
     const baseline = await api("catalog", { signal: AbortSignal.any([abort.signal, AbortSignal.timeout(30000)]) });
     abort.signal.throwIfAborted();
     if (!Array.isArray(baseline.catalog?.products) || !Array.isArray(baseline.catalog?.filaments)) throw new Error("Online catalog unavailable; refusing to match against stale local data");
-    const catalogFile = path.join(__dirname, "..", "data", "online-catalog.json");
+    // ONLINE_CATALOG_FILE lets tests (and anyone running a probe run) point the cache
+    // somewhere disposable instead of the working copy.
+    const catalogFile = process.env.ONLINE_CATALOG_FILE || path.join(__dirname, "..", "data", "online-catalog.json");
     fs.mkdirSync(path.dirname(catalogFile), { recursive: true });
     fs.writeFileSync(catalogFile, JSON.stringify(baseline.catalog));
     emit({ type: "log", stage: "compare", text: "Loaded current online catalog: " + baseline.catalog.products.length + " products and " + baseline.catalog.filaments.length + " filaments" });
@@ -261,7 +263,8 @@ async function runClaimedJob(job, desk) {
       maxProducts: Number(job.maxProducts || 400),
       catalog: catalogFile,
       applyToCatalog: false,
-      autoLlmMatch: desk && desk.autoLlmMatch === true,
+      autoLlmMatch: (job.autoLlmMatch === undefined ? desk && desk.autoLlmMatch === true : job.autoLlmMatch === true),
+      visualMatch: job.visualMatch !== false,
       signal: abort.signal
     }, emit);
 

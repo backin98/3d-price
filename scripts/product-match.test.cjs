@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const { score, similar, decidePair, taxonomy, identity, normalizePrinterTitle } = require('../lib/product-match.cjs');
+const { score, similar, decidePair, taxonomy, identity, normalizePrinterTitle, conflicts } = require('../lib/product-match.cjs');
 
 assert.equal(similar('corolla', 'crolla'), true);
 assert.ok(score('Toyota Corolla Hatchback Car', 'Toyota Crolla Hatchback Vehicle') >= 0.9);
@@ -81,4 +81,45 @@ assert.equal(decidePair(
   { name: 'Bambu Lab A1 Mini Combo', brand: 'Bambu Lab', kind: 'printer' },
   { id: 'p', name: 'Bambu Lab A1 Combo', brand: 'Bambu Lab', kind: 'printer' }
 ).action, 'create');
+// Same printer, two shops, two ways of naming the bundle: Metatech writes "Combo",
+// Robolink states the bundled AMS. Both carry AMS 2 Pro, so this is one product.
+assert.equal(decidePair(
+  { name: 'Bambu Lab P1S AMS 2 Pro Combo 3D Printer with Buffer', brand: 'Bambu Lab', kind: 'printer' },
+  { id: 'q', name: 'Bambu Lab P1S AMS 2 Pro 3D Yazıcı', brand: 'bambu lab', kind: 'printer' }
+).action, 'merge');
+// …while naming the bundle never blurs a real difference.
+const hard = [
+  ['Bambu Lab P1S 3D Yazıcı', 'Bambu Lab P1S Combo 3D Yazıcı'],           // bare vs bundle
+  ['Bambu Lab P1S Combo 3D Yazıcı', 'Bambu Lab P1S AMS 2 Pro 3D Yazıcı'], // AMS 1 vs AMS 2 Pro
+  ['Bambu Lab A1 mini', 'Bambu Lab A1 mini Combo'],                       // bare vs bundle
+  ['Bambu Lab A1 mini Combo', 'Bambu Lab A1 Combo'],                      // mini vs not
+  ['Bambu Lab H2D Laser 40W Combo', 'Bambu Lab H2D Laser 10W Combo']      // laser watts
+];
+for (const [a, b] of hard) {
+  assert.equal(decidePair({ name: a, brand: 'Bambu Lab', kind: 'printer' }, { id: 'h', name: b, brand: 'bambu lab', kind: 'printer' }).action, 'create', 'must stay separate: ' + a + ' / ' + b);
+}
+assert.equal(identity({ name: 'Bambu Lab P1S AMS 2 Pro 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer' }).combo, true, 'a stated AMS is bundle evidence');
+assert.equal(identity({ name: 'Bambu Lab P1S 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer' }).combo, false, 'a bare printer is not a bundle');
+// A named laser wattage is a configuration: one side naming it and the other not is a
+// difference, so a 10W laser bundle never lands on the plain printer's row.
+assert.equal(decidePair(
+  { name: 'Bambu Lab H2D Laser Full Combo 10W 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer' },
+  { id: 'r', name: 'Bambu Lab H2D Combo 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer' }
+).action, 'create');
+assert.deepEqual(conflicts(
+  identity({ name: 'Bambu Lab H2S Laser Full Combo 10W', brand: 'Bambu Lab', kind: 'printer' }),
+  identity({ name: 'Bambu Lab H2S Combo 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer' })
+), ['laser']);
+// …but a bare "lazer" marketing mention without watts must not split a pair.
+assert.equal(conflicts(
+  identity({ name: 'Bambu Lab H2S Combo Lazer Kazıma Destekli', brand: 'Bambu Lab', kind: 'printer' }),
+  identity({ name: 'Bambu Lab H2S Combo 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer' })
+).includes('laser'), false);
+// "AMS ile" is Combo; "AMS'siz" is the bare printer. Both spellings must fold.
+assert.equal(identity({ name: 'Bambu Lab P1S Combo 3D Yazıcı Ams ile 16 Renge Kadar', brand: 'Bambu Lab', kind: 'printer' }).combo, true);
+assert.equal(identity({ name: "Bambu Lab P1S 3D Yazıcı Ams'siz", brand: 'Bambu Lab', kind: 'printer' }).combo, false);
+assert.equal(decidePair(
+  { name: "Bambu Lab P1s 3D Yazıcı Ams'siz 256 x 256mm", brand: 'Bambu Lab', kind: 'printer' },
+  { id: 's', name: 'Bambu Lab P1S Combo 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer' }
+).action, 'create', 'a bare printer never merges into a Combo');
 console.log('PASS: Magellan merges typos/synonyms, splits combo and color, classifies polymer/variant.');

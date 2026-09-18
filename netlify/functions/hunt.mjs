@@ -2,7 +2,7 @@ import store from "../../lib/netlify-store.cjs";
 import catalogUnion from "../../lib/catalog-union.cjs";
 
 const { readJSON } = store;
-const { collapseByMagellan, pricesToTry, ensureIncludedVat } = catalogUnion;
+const { collapseByMagellan, pricesToTry } = catalogUnion;
 
 function filterList(list, q) {
   if (!q) return list || [];
@@ -22,7 +22,7 @@ export default async (req) => {
     products: [],
     filaments: []
   });
-  const catalog = ensureIncludedVat(pricesToTry(collapseByMagellan(raw)));
+  const catalog = pricesToTry(collapseByMagellan(raw)); // stored prices are already KDV-inclusive
   const products = filterList(catalog.products, q);
   const filaments = filterList(catalog.filaments, q);
   return Response.json(

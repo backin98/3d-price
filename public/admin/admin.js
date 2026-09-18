@@ -238,9 +238,10 @@
             const ae = document.activeElement;
             const typing = ae && (ae.tagName === "SELECT" || (ae.tagName === "INPUT" && ae.type !== "checkbox"));
             if (typing && $("#tab-runs")?.contains(ae)) return;
-            const url = $("#shop-url")?.value, kind = $("#shop-kind")?.value, max = $("#shop-max")?.value, cat = $("#run-cat")?.value, shop = $("#run-shop")?.value;
+            const url = $("#shop-url")?.value, kind = $("#shop-kind")?.value, max = $("#shop-max")?.value, cat = $("#run-cat")?.value, shop = $("#run-shop")?.value, llm = $("#run-llm")?.checked;
             $("#tab-runs").innerHTML = runsHtml(data);
             if ($("#shop-url")) { $("#shop-url").value = url; $("#shop-kind").value = kind; $("#shop-max").value = max; }
+            if ($("#run-llm") && llm !== undefined) $("#run-llm").checked = llm;
             if ($("#run-shop") && shop) $("#run-shop").value = shop;
             fillRunCategories(shop || $("#run-shop")?.value, cat);
           }
@@ -481,6 +482,7 @@
     const selectedShop = inferred;
     const selectedName = job && job.url ? categoryNameForUrl(d, job.url) : "";
     const names = categoryNames(d);
+    const llmOn = (job && job.autoLlmMatch !== undefined ? job.autoLlmMatch === true : (d.desk && d.desk.autoLlmMatch) === true);
     return `
       <div class="panel">
         <h2>Start a shop run</h2>
@@ -491,14 +493,16 @@
           <div class="field" style="flex:2"><label for="shop-url">Category URL</label><input id="shop-url" type="text" required placeholder="https://www.shop.com/kategori/filament" value="${esc((job && job.url) || "")}"></div>
           <div class="field"><label for="shop-kind">Kind</label><select id="shop-kind"><option value="both" ${(job && job.kind) === "both" ? "selected" : ""}>Both</option><option value="printer" ${(job && job.kind) === "printer" ? "selected" : ""}>Printers</option><option value="filament" ${(job && job.kind) === "filament" ? "selected" : ""}>Filament</option></select></div>
           <div class="field"><label for="shop-max">Max products</label><input id="shop-max" type="number" min="1" max="400" value="${(job && job.maxProducts) || 200}"></div>
+          <label class="muted" style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="run-llm" ${llmOn ? "checked" : ""}> LLM help on very close matches</label>
           <button class="primary" type="submit" ${job ? "disabled" : ""}>Queue run</button>
-          ${job ? `<button class="ghost danger" type="button" id="abort-active">Abort ${job.id}</button>` : ""}
+          ${job ? `<button class="ghost danger" type="button" id="abort-active">Abort ${job.id}</button><button class="ghost danger" type="button" id="delete-run">Delete run</button>` : ""}
         </form>
+        <p class="muted">LLM help off (default): Magellan decides and close calls wait for you. On: one short Gemma ask, text only, only when Magellan is in the gray band. Hard conflicts (AMS, Combo, mini, laser) are never merged either way.<br>Visual match: on — thumbnails are fingerprinted locally when titles are a close call, and a matching photo is flagged for you to confirm. Vision never merges on its own.</p>
         ${job ? `<p><span class="badge ${job.status}">${esc(job.status)}</span> ${esc(job.progress || "")}</p>` : "<p class='muted'>No active run.</p>"}
         <h3>Live review board</h3>
         <p class="muted">Cards appear as products are gathered. Select what to publish, flag anything unsure, and choose which catalog product each listing joins — that is who it will be price-compared against.</p>
         ${reviewBoardHtml(reviewJob(d))}
-        <h3>Run activity</h3>
+        <h3>Run activity <button class="btn-sm danger" type="button" id="delete-all-runs" style="margin-left:8px">Delete all runs</button></h3>
         <div class="tape">${events.length ? events.map((ev) => `<div><time>${esc(String(ev.at || "").slice(11, 19))}</time>${esc(ev.text || ev.error || JSON.stringify(ev))}</div>`).join("") : '<div class="empty">Waiting for worker events…</div>'}</div>
       </div>
     `;
@@ -776,7 +780,11 @@
             : dec.action === "updated" ? "Worker match: update → " + (dec.candidateName || "existing")
             : dec.action === "create" ? "Worker match: new " + (dec.shelf || c.kind || "product")
             : "gathered — waiting for match";
-          const pathNote = dec.matchPath === "gemma-gray" ? " · Gemma-gray" : (dec.matchPath === "magellan" || dec.rule === "magellan") ? " · Magellan" : "";
+          const visualNote = typeof dec.visual === "number" ? " · visual " + dec.visual.toFixed(2) : "";
+          const pathNote = dec.matchPath === "gemma-gray" ? " · Gemma-gray"
+            : dec.nearDupe ? (dec.photoMatch ? " · near duplicate — same thumbnail, confirm" : " · near duplicate — review") + visualNote
+            : dec.matchPath === "magellan+visual" ? " · Magellan + visual" + visualNote
+            : (dec.matchPath === "magellan" || dec.rule === "magellan") ? " · Magellan" : "";
           const mismatchActions = mismatch ? `<div class="mismatch-actions">
               <button type="button" class="btn-sm" data-mismatch-create="${esc(id)}" data-detected="${esc(detected || "other")}">Create new category: ${esc((detected || "other").charAt(0).toUpperCase() + (detected || "other").slice(1))}</button>
               <button type="button" class="btn-sm danger" data-mismatch-discard="${esc(id)}">Discard</button>
@@ -818,8 +826,10 @@
     const max = $("#shop-max") ? $("#shop-max").value : "";
     const cat = $("#run-cat") ? $("#run-cat").value : "";
     const shop = $("#run-shop") ? $("#run-shop").value : "";
+    const llm = $("#run-llm") ? $("#run-llm").checked : undefined;
     $("#tab-runs").innerHTML = runsHtml(d);
     if ($("#shop-url")) { $("#shop-url").value = url; $("#shop-kind").value = kind; $("#shop-max").value = max; }
+    if ($("#run-llm") && llm !== undefined) $("#run-llm").checked = llm;
     if ($("#run-shop") && shop) $("#run-shop").value = shop;
     fillRunCategories(shop || $("#run-shop")?.value, cat);
   }
@@ -848,6 +858,7 @@
           <h2 style="margin:0">Saved catalog</h2>
           <span class="muted">Last saved: ${esc(savedAt)}</span>
           <button class="btn-sm ghost" type="button" id="select-all-catalog">Select all</button>
+          <button class="btn-sm ghost" type="button" id="collapse-duplicates">Collapse duplicates</button>
           <button class="btn-sm danger" type="button" id="delete-selected-catalog" ${state.catalogSelected.size ? "" : "disabled"}>Delete selected (${state.catalogSelected.size})</button>
           <button class="btn-sm danger" type="button" id="delete-all-catalog">Delete all</button>
         </div>
@@ -901,6 +912,10 @@
                 <option value="excluded" ${s.vat === "excluded" ? "selected" : ""}>Prices exclude KDV (we add %20)</option>
               </select>
             </label>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0">
+              <button class="btn-sm primary" type="button" data-update-shop-prices="${esc(s.id)}" title="Re-price every offer this shop already has in the catalog, using the KDV setting above. Safe to press more than once.">Save &amp; update prices</button>
+              <small class="muted">${s.vat === "excluded" ? "will add KDV %20 to this shop’s stored prices" : "stored prices already include KDV"}</small>
+            </div>
             <label class="muted" style="font-size:12px">Select category
               <select data-shop-cat-name="${esc(s.id)}" aria-label="Category names for ${esc(s.name || s.id)}">${nameOptionsHtml(names, "")}</select>
             </label>
@@ -910,6 +925,10 @@
               <div class="field" style="flex:2"><label>Category URL</label><input name="url" type="url" required placeholder="https://this-shop.com/filament"></div>
               <button class="btn-sm" type="submit">Add category</button>
             </form>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+              <button class="btn-sm danger" type="button" data-purge-shop="${esc(s.id)}" data-purge-runs="0">Delete this shop’s products + categories</button>
+              <button class="btn-sm danger" type="button" data-purge-shop="${esc(s.id)}" data-purge-runs="1">…and its runs</button>
+            </div>
           </article>`;
         }).join("") || '<p class="muted">No shops yet. Add a name and URL below.</p>'}
         </div>
@@ -1044,6 +1063,15 @@
       if (e.target.closest("#select-all-catalog")) {
         allProducts().forEach((p) => state.catalogSelected.add(p.id));
         $("#tab-catalog").innerHTML = catalogHtml(state.data);
+        return;
+      }
+      if (e.target.closest("#collapse-duplicates")) {
+        if (!confirm("Merge catalog rows that share a title into one product (offers are combined)? Compare this against the live site after.")) return;
+        try {
+          const res = await action({ action: "collapseDuplicates" });
+          state.catalogSelected.clear();
+          toast(res.removed ? "Collapsed " + res.removed + " duplicate row" + (res.removed === 1 ? "" : "s") + "." : "No duplicate titles found.");
+        } catch (err) { toast(err.message); }
         return;
       }
       if (e.target.closest("#delete-selected-catalog")) {
@@ -1229,6 +1257,47 @@
         if (!confirm("Publish the waiting candidate as the live catalog?")) return;
         try { await action({ action: "publishCandidate" }); toast("Catalog published."); } catch (err) { toast(err.message); }
       }
+      if (e.target.closest("#delete-run")) {
+        const job = activeJob(state.data || { jobs: [] });
+        if (!job) return;
+        if (!confirm("Delete run " + job.id + " and its activity log? The catalog is not touched.")) return;
+        try { const res = await action({ action: "deleteJobs", id: job.id }); toast("Deleted " + res.removed + " run."); } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("#delete-all-runs")) {
+        if (!confirm("Delete every run and its activity log? The catalog is not touched.")) return;
+        try { const res = await action({ action: "deleteJobs" }); toast("Deleted " + res.removed + " runs."); } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("[data-update-shop-prices]")) {
+        const btn = e.target.closest("[data-update-shop-prices]");
+        const shop = ((state.data && state.data.desk && state.data.desk.shops) || []).find((s) => s.id === btn.dataset.updateShopPrices);
+        if (!shop) return;
+        const label = shop.name || shop.id;
+        const vat = shop.vat === "excluded" ? "excluded" : "included";
+        btn.disabled = true;
+        try {
+          const res = await action({ action: "saveShopVat", shop: shop.id, vat });
+          const verb = vat === "excluded" ? "added KDV %20 to" : "removed KDV %20 from";
+          toast(res.offers
+            ? "Updated " + label + ": " + verb + " " + res.offers + " of " + res.checked + " offers" + (res.skipped ? ", " + res.skipped + " left on their page’s own +KDV" : "") + ". Reload the storefront to see it."
+            : "No change needed: all " + res.checked + " offers for " + label + " already match this KDV setting.");
+        } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("[data-purge-shop]")) {
+        const btn = e.target.closest("[data-purge-shop]");
+        const shop = ((state.data && state.data.desk && state.data.desk.shops) || []).find((s) => s.id === btn.dataset.purgeShop);
+        if (!shop) return;
+        const withRuns = btn.dataset.purgeRuns === "1";
+        const label = shop.name || shop.id;
+        if (!confirm("Delete every product, offer and category that came from " + label + (withRuns ? ", and all of its runs" : "") + "?\n\nOffers from other shops on the same products are kept. Products left with no offers are removed from the catalog.")) return;
+        try {
+          const res = await action({ action: "purgeShop", shop: shop.id, runs: withRuns });
+          toast("Removed " + res.offers + " offers, " + res.rows + " products, " + res.categories + " categories" + (res.jobs ? " and " + res.jobs + " runs" : "") + " from " + label + ".");
+        } catch (err) { toast(err.message); }
+        return;
+      }
       if (e.target.closest("#discard-candidate")) {
         try { await action({ action: "discardCandidate" }); toast("Candidate discarded."); } catch (err) { toast(err.message); }
       }
@@ -1341,7 +1410,7 @@
           return;
         }
         try {
-          const created = await action({ action: "createJob", type: "shop", url, kind, maxProducts });
+          const created = await action({ action: "createJob", type: "shop", url, kind, maxProducts, autoLlmMatch: $("#run-llm") ? $("#run-llm").checked : undefined });
           try {
             await notifyWorker(created.job);
             toast("Run sent to the worker.");
@@ -1456,8 +1525,12 @@
         const desk = state.data && state.data.desk;
         const shop = (desk.shops || []).find((s) => s.id === id);
         if (!shop) return;
-        shop.vat = e.target.value === "excluded" ? "excluded" : "included";
-        action({ action: "saveDesk", desk }).then(() => toast("Saved KDV setting.")).catch((err) => toast(err.message));
+        const vat = e.target.value === "excluded" ? "excluded" : "included";
+        const label = shop.name || shop.id;
+        const verb = vat === "excluded" ? "added KDV %20 to" : "removed KDV %20 from";
+        action({ action: "saveShopVat", shop: id, vat })
+          .then((res) => toast("Saved KDV for " + label + ". " + verb + " " + res.offers + " offer" + (res.offers === 1 ? "" : "s") + (res.skipped ? " (" + res.skipped + " kept their page’s own +KDV)" : "") + ". Reload the storefront to see it."))
+          .catch((err) => { e.target.value = vat === "excluded" ? "included" : "excluded"; toast(err.message); });
         return;
       }
       if (e.target.dataset.reviewPlace == null) return;

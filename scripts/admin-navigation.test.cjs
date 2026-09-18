@@ -35,6 +35,9 @@ assert.equal(context.test.categoryNames(mixed).join('|'),'3D Yazıcılar|Filamen
 assert.equal(context.test.categoryUrlForShop(mixed.desk.shops[1],'Filament'),'https://www.robolinkmarket.com/filament');
 assert.equal(context.test.categoryUrlForShop(mixed.desk.shops[1],'3D Yazıcılar'),'');
 assert.match(robolinkCard,/value="Filament"/);
+assert.match(robolinkCard,/data-update-shop-prices="robolinkmarket.com"/);
+assert.match(robolinkCard,/Save &amp; update prices/);
+assert.match(robolinkCard,/data-purge-shop="robolinkmarket.com"/);
 assert.match(robolinkCard,/value="3D Yazıcılar"/);
 const idleRuns=context.test.runsHtml(mixed);
 assert.match(idleRuns,/value="Filament"/);
