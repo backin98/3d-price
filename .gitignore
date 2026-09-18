@@ -1,0 +1,14 @@
+.vercel
+.netlify
+.env
+.env.*
+node_modules/
+work/*.log
+work/*.pid
+work/deploy/
+work/ai-heartbeat.json
+work/desk-connection.json
+data/qwen-url-jobs/
+data/price-history.sqlite
+data/qwen-employee/
+*.sqlite

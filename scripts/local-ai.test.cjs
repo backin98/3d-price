@@ -1,0 +1,46 @@
+const assert=require('node:assert/strict');
+const ai=require('./local-qwen.cjs');
+const response=(data,status=200)=>({ok:status===200,status,json:async()=>data});
+(async()=>{
+ let native=[{id:'old-qwen',type:'llm',state:'not-loaded'},{id:'gemma-loaded',type:'llm',state:'loaded'},{id:'embedding',type:'embeddings',state:'loaded'}];
+ global.fetch=async url=>String(url).endsWith('/v1/models')?response({data:native}):response({data:native});
+ ai.setEndpoint('http://localhost:1235/v1');
+ assert.equal(await ai.getModel(),'gemma-loaded');
+ let info=await ai.ping();assert.equal(info.loadedVerified,true);assert.deepEqual(info.usable,['gemma-loaded']);
+ native=native.map(x=>({...x,state:'not-loaded'}));ai.setEndpoint('http://localhost:1235');
+ await assert.rejects(ai.getModel(),/No loaded chat model/);
+ global.fetch=async url=>String(url).endsWith('/v1/models')?response({data:[{id:'qwen3.8-9b-distill'},{id:'text-embedding-x'}]}):String(url).endsWith('/api/ps')?response({models:[{name:'qwen3.8-9b-distill'}]}):response({},404);
+ assert.equal(await ai.getModel(),'qwen3.8-9b-distill');
+ global.fetch=async url=>String(url).endsWith('/v1/models')?response({data:[{id:'generic-chat'}]}):response({},404);
+ info=await ai.ping();assert.equal(info.picked,'generic-chat');assert.equal(info.loadedVerified,false);
+ global.fetch=async()=>response({},401);await assert.rejects(ai.ping(),/HTTP 401/);
+ assert.equal(ai.normalizeCompletions('http://localhost:1235/v1/models'),'http://localhost:1235/v1/chat/completions');
+ assert.equal(ai.normalizeCompletions('http://127.0.0.1:1235/api/v1/models'),'http://127.0.0.1:1235/api/v1/chat');
+ global.fetch=async url=>{
+  if(String(url).endsWith('/api/v1/models'))return response({models:[{type:'llm',key:'google/gemma-4-e4b',loaded_instances:[{id:'google/gemma-4-e4b'}]},{type:'embedding',key:'nomic'}]});
+  return response({},404);
+ };
+ ai.setEndpoint('http://127.0.0.1:1235');
+ info=await ai.ping();
+ assert.equal(info.flavor,'native-v1');
+ assert.equal(info.picked,'google/gemma-4-e4b');
+ assert.equal(info.loadedVerified,true);
+ assert.equal(info.url,'http://127.0.0.1:1235/api/v1/chat');
+ assert.throws(()=>ai.setEndpoint('file:///tmp'),/http/);
+ assert.throws(()=>ai.setEndpoint('http://user:secret@localhost'),/credentials/);
+ const prevAi=process.env.LOCAL_AI_URL; delete process.env.LOCAL_AI_URL;
+ assert.deepEqual(ai.discoverOrigins('http://127.0.0.1:1235'),['http://127.0.0.1:1235','http://127.0.0.1:1234','http://127.0.0.1:11434']);
+ global.fetch=async url=>{
+  const s=String(url);
+  if(s.startsWith('http://127.0.0.1:1234'))return response({},404);
+  if(s.startsWith('http://127.0.0.1:11434'))return response({},404);
+  if(s==='http://127.0.0.1:1235/api/v1/models')return response({models:[{type:'llm',key:'google/gemma-4-e4b',loaded_instances:[{id:'google/gemma-4-e4b'}]}]});
+  return response({},404);
+ };
+ const found=await ai.discover('http://127.0.0.1:1234');
+ assert.equal(found.origin,'http://127.0.0.1:1235');
+ assert.equal(found.picked,'google/gemma-4-e4b');
+ assert.equal(found.loadedVerified,true);
+ if(prevAi) process.env.LOCAL_AI_URL=prevAi;
+ console.log('PASS: loaded-model selection, no loaded models, embeddings excluded, Ollama, generic fallback, errors and URL validation.');
+})().catch(e=>{console.error(e);process.exitCode=1});

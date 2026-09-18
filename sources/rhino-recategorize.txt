@@ -1,0 +1,10 @@
+# Products Rhino lists under FDM Yazıcılar that belong elsewhere on our site.
+# Format: url-slug | aisle-id
+# aisle-id must match live.aisles in content/site-content.js
+
+qidi-box-renk-modulu | renk-modulu
+qidi-box-cok-renkli-baski-modulu | renk-modulu
+bambu-lab-ams-2-pro | renk-modulu
+creality-k1-serisi-cfs-upgrade-kiti | renk-modulu-aksesuari
+qidi-q2-box-hub | renk-modulu-aksesuari
+creality-spacepi-x4-filament-kurutucu | filament-kurutucu

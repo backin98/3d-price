@@ -1,0 +1,8 @@
+{
+  "name": "3d-price",
+  "private": true,
+  "description": "Local worker + Netlify storefront. Playwright is for infinite-scroll category pages on this PC, not Netlify.",
+  "dependencies": {
+    "playwright": "^1.63.0"
+  }
+}

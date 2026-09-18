@@ -1,0 +1,8 @@
+# 3D Price — shops we hunt, one at a time.
+# Format: id | name | category | url
+# Lines starting with # are ignored.
+
+rhino | Rhino 3D Printer | fdm-yazicilar | https://www.rhino3dprinter.com/fdm-yazicilar
+rhino-fil | Rhino 3D Printer | filament-cesitleri | https://www.rhino3dprinter.com/filament-cesitleri
+metatech | Metatech | 3d-yazicilar | https://store.metatechtr.com/3d-yazicilar
+metatech-fil | Metatech | filamentler | https://store.metatechtr.com/filamentler

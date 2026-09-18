@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>3D Price — Online Desk</title>
+<meta name="robots" content="noindex,nofollow">
+<meta http-equiv="Permissions-Policy" content="loopback-network=*, local-network=*">
+<link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/admin/admin.css?v=review18">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div id="login" class="login" hidden>
+  <form id="login-form" class="login-card">
+    <div class="eyebrow">OWNER WORKSPACE</div>
+    <h1>3D Price Desk</h1>
+    <p class="muted">Sign in to run Qwen shop jobs, manage the saved catalog, banners and pins, and publish online.</p>
+    <label>Owner password
+      <input id="password" type="password" autocomplete="current-password" required>
+    </label>
+    <button class="primary" type="submit">Sign in</button>
+    <div id="login-error" class="error"></div>
+  </form>
+</div>
+
+<div id="app" class="app" hidden>
+  <header class="topbar">
+    <div class="brand">3D PRICE <span>DESK</span></div>
+    <div class="workspace-label">OWNER WORKSPACE</div>
+    <nav id="tabs" class="tabs" aria-label="Admin pages">
+      <a href="#overview" data-tab="overview">Overview</a>
+      <span class="nav-group">MANAGE</span>
+      <a href="#catalog" data-tab="catalog">Catalog</a>
+      <a href="#shops" data-tab="shops">Shops</a>
+      <a href="#runs" data-tab="runs">Shop runs</a>
+      <a href="#merch" data-tab="merch">Storefront</a>
+      <span class="nav-group">SYSTEM</span>
+      <a href="#ai" data-tab="ai">AI connection</a>
+      <a href="#jobs" data-tab="jobs">Job history</a>
+    </nav>
+    <div class="top-actions">
+      <a class="ghost" href="/" target="_blank" rel="noopener">Open site</a>
+      <button id="logout" class="ghost" type="button">Sign out</button>
+    </div>
+  </header>
+
+  <main id="main" class="main" tabindex="-1">
+<header class="page-heading"><div><div class="eyebrow">3D PRICE / ADMIN</div><h1 id="page-title">Overview</h1><p id="page-description" class="muted"></p></div><div id="worker-status"></div></header>
+    <section id="tab-overview" class="tab-panel"></section>
+    <section id="tab-runs" class="tab-panel" hidden></section>
+    <section id="tab-catalog" class="tab-panel" hidden></section>
+    <section id="tab-shops" class="tab-panel" hidden></section>
+    <section id="tab-merch" class="tab-panel" hidden></section>
+    <section id="tab-ai" class="tab-panel" hidden></section>
+    <section id="tab-jobs" class="tab-panel" hidden></section>
+  </main>
+</div>
+
+<div id="toast" class="toast" role="status" hidden></div>
+<script src="/admin/admin.js?v=review18"></script>
+</body>
+</html>

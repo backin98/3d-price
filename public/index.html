@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#121820" />
+    <meta name="description" content="" />
+    <title>3D Price</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+Arabic:wght@400;600;700&family=Sora:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main" data-i18n="header.skipToContent">Skip to hunt</a>
+
+    <header class="site-header">
+      <div class="tab-bar">
+        <button class="brand js-go-home" type="button" data-i18n-title="brand.tagline">
+          <span class="brand-mark" aria-hidden="true">3D</span>
+          <span class="brand-name" data-i18n="brand.name">3D Price</span>
+        </button>
+        <div class="tab-strip">
+          <div class="tabs" id="tabs" role="tablist"></div>
+          <button class="tab-new" id="new-tab" type="button" data-i18n-aria="header.newTabAria" title="New hunt">
+            <span aria-hidden="true">+</span>
+          </button>
+        </div>
+        <div class="lang-switch" id="lang-switch" role="group" data-i18n-aria="header.languageAria"></div>
+        <button class="icon-btn header-home js-go-home" id="nav-home" type="button" data-i18n-aria="header.homeAria">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 3.2 3 11h2v9h6v-6h2v6h6v-9h2L12 3.2Z"/></svg>
+        </button>
+        <nav class="icon-nav" aria-label="Tools">
+          <button class="icon-btn" id="nav-cart" type="button" data-i18n-aria="header.cartAria">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M6 6h15l-1.5 9h-12L5 3H2v2h2l.8 4M7 20a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Zm10 0a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3Z"/></svg>
+            <span class="badge" id="cart-badge" hidden>0</span>
+          </button>
+          <button class="icon-btn" id="nav-profile" type="button" data-i18n-aria="header.profileAria">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4Zm0 2c-4 0-8 2-8 5v1h16v-1c0-3-4-5-8-5Z"/></svg>
+          </button>
+        </nav>
+      </div>
+
+      <form class="header-search" id="header-search" role="search">
+        <label class="sr-only" for="header-query" data-i18n="header.searchPlaceholder">Search a product</label>
+        <input id="header-query" name="q" type="search" autocomplete="off" enterkeyhint="search" />
+        <button class="icon-btn" type="submit" data-i18n-aria="header.searchSubmitAria">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <button class="icon-btn" id="header-location" type="button" data-i18n-aria="header.locationAria">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5Z"/></svg>
+        </button>
+      </form>
+    </header>
+
+    <div class="ad-band ad-band--top" data-ad="top"></div>
+
+    <section class="banner" id="banner" aria-roledescription="carousel">
+      <div class="banner-slides" id="banner-slides"></div>
+      <div class="banner-dots" id="banner-dots"></div>
+    </section>
+
+    <div class="stage">
+      <aside class="ad-rail ad-rail--start" data-ad="start" aria-label="Advertisement"></aside>
+
+      <main id="main">
+        <section class="hunter" aria-labelledby="hunter-lead">
+          <p class="hunter-kicker" data-i18n="brand.tagline">Product. Place. Price.</p>
+          <h1 class="hunter-lead" id="hunter-lead" data-i18n="hunter.lead">What will we find you next?</h1>
+
+          <form class="hunter-oval" id="hunter-form">
+            <button class="oval-clear" id="hunter-clear" type="button" hidden data-i18n-aria="hunter.clearAria">
+              <span aria-hidden="true">×</span>
+            </button>
+            <label class="sr-only" for="hunter-query" data-i18n="hunter.placeholder">Name a product…</label>
+            <input id="hunter-query" name="q" type="search" autocomplete="off" enterkeyhint="search" />
+            <button class="best-stamp" type="submit">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/></svg>
+              <span data-i18n="hunter.stamp">for the Best Price!</span>
+            </button>
+            <button class="oval-go" type="submit" data-i18n="hunter.find">Find it</button>
+          </form>
+
+          <p class="hunter-loc" id="hunter-loc"></p>
+          <div class="hunter-dots" id="hunter-dots" role="tablist"></div>
+        </section>
+
+        <section class="aisles" id="aisles" aria-live="polite"></section>
+      </main>
+
+      <aside class="ad-rail ad-rail--end" data-ad="end" aria-label="Advertisement"></aside>
+    </div>
+
+    <div class="ad-band ad-band--bottom" data-ad="bottom"></div>
+
+    <footer class="site-footer">
+      <p data-i18n="footer.note"></p>
+      <p class="foot-copy" data-i18n="footer.copyright"></p>
+    </footer>
+
+    <div class="drawer" id="drawer-location" hidden>
+      <div class="drawer-backdrop" data-close="location"></div>
+      <div class="drawer-panel drawer-panel--center" role="dialog" aria-modal="true" aria-labelledby="loc-title">
+        <header class="drawer-head">
+          <h2 id="loc-title" data-i18n="locationTitle">Where should we hunt?</h2>
+          <button class="icon-btn" type="button" data-close="location" data-i18n-aria="locationClose">×</button>
+        </header>
+        <ul class="loc-list" id="loc-list"></ul>
+      </div>
+    </div>
+
+    <div class="drawer" id="drawer-cart" hidden>
+      <div class="drawer-backdrop" data-close="cart"></div>
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="cart-title">
+        <header class="drawer-head">
+          <h2 id="cart-title" data-i18n="cart.title">Saved deals</h2>
+          <button class="icon-btn" type="button" data-close="cart" data-i18n-aria="cart.close">×</button>
+        </header>
+        <div class="drawer-body" id="cart-body"></div>
+      </div>
+    </div>
+
+    <div class="drawer" id="drawer-profile" hidden>
+      <div class="drawer-backdrop" data-close="profile"></div>
+      <div class="drawer-panel" role="dialog" aria-modal="true" aria-labelledby="profile-title">
+        <header class="drawer-head">
+          <h2 id="profile-title" data-i18n="profile.title">Your hunt</h2>
+          <button class="icon-btn" type="button" data-close="profile" data-i18n-aria="profile.close">×</button>
+        </header>
+        <div class="drawer-body" id="profile-body"></div>
+      </div>
+    </div>
+
+    <div class="drawer" id="drawer-sheet" hidden>
+      <div class="drawer-backdrop" data-close="sheet"></div>
+      <div class="drawer-panel drawer-panel--wide" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+        <header class="drawer-head">
+          <h2 id="sheet-title" data-i18n="sheet.title">Offers</h2>
+          <button class="icon-btn" type="button" data-close="sheet" data-i18n-aria="sheet.close">×</button>
+        </header>
+        <div class="drawer-body" id="sheet-body"></div>
+      </div>
+    </div>
+
+    <noscript>
+      <p class="noscript">This website needs JavaScript. All wording lives in <code>content/site-content.js</code>.</p>
+    </noscript>
+
+    <script src="content/site-content.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

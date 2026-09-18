@@ -1,0 +1,18 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),os=require('node:os'),path=require('node:path');
+(async()=>{
+ const timers=[];let progress=0,completed=0,stopped=false;
+ const aiStub={setEndpoint(){},ping:async()=>({picked:'',usable:[],loadedVerified:false,origin:'http://127.0.0.1:1234'}),discover:async()=>({picked:'',usable:[],loadedVerified:false,origin:'http://127.0.0.1:1234'})};
+ const context={require:id=>id==='../lib/qwen-website-job.cjs'?{runWebsiteJob:async({signal})=>{await timers[0]();signal.throwIfAborted()}}:id==='../scripts/local-qwen.cjs'?aiStub:require(id),__dirname:path.resolve('worker'),process:{env:{INGEST_TOKEN:'test-token-long-enough',ONLINE_URL:'https://example.com'},on(){}},console:{log:()=>{},warn:()=>{},error:()=>{}},AbortController,AbortSignal,setInterval:fn=>{timers.push(fn);return fn},clearInterval(){},setTimeout,fetch:async(url,options)=>{if(String(url).includes('action=catalog'))return {ok:true,json:async()=>({catalog:{products:[],filaments:[]}})};if(String(url).endsWith('progress')||String(url).includes('action=progress')){progress++;return {ok:true,json:async()=>({aborted:progress>1})}}if(String(url).endsWith('complete')||String(url).includes('action=complete'))completed++;return {ok:true,json:async()=>({})}}};
+ let source=fs.readFileSync('worker/online-worker.cjs','utf8').replace(/main\(\)\.catch\([\s\S]*$/,'globalThis.run = runClaimedJob;');vm.runInNewContext(source,context);
+ // Wait for the timer's asynchronous flush to deliver abort while no events exist.
+ context.require=id=>id==='../lib/qwen-website-job.cjs'?{runWebsiteJob:async({signal})=>new Promise((resolve,reject)=>{signal.addEventListener('abort',()=>{stopped=true;reject(signal.reason)},{once:true});timers[0]();})}:id==='../scripts/local-qwen.cjs'?aiStub:require(id);
+ vm.runInNewContext(source,{...context});
+ const c={...context};vm.runInNewContext(source,c);await c.run({id:'test',url:'https://example.com',kind:'both'},{});assert.ok(stopped);assert.equal(completed,0);assert.equal(progress,2);
+ let calls=0;const controller=new AbortController();const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ai-abort-'));
+ global.fetch=async(url,options)=>{if(String(url).endsWith('/v1/models'))return {ok:true,json:async()=>({data:[{id:'chat'}]})};if(!String(url).endsWith('/chat/completions'))return {ok:false};calls++;return new Promise((resolve,reject)=>{options.signal.addEventListener('abort',()=>reject(options.signal.reason),{once:true});controller.abort(new Error('user abort'));});};
+ const ai=require('./local-qwen.cjs');ai.setEndpoint('http://localhost:1235');await assert.rejects(ai.ask('test',{}, {},dir,controller.signal),/user abort/);assert.equal(calls,1);assert.equal(fs.readdirSync(dir).filter(x=>x.includes('attempt')).length,0);
+ let writes=0;const apiContext={URL,Response,store:{readJSON:async()=>[{id:'test',status:'aborted'}],writeJSON:async()=>{writes++}},auth:{workerAuth:()=>true}};
+ source=fs.readFileSync('netlify/functions/worker.mjs','utf8').replace(/^import .*;$/gm,'').replace('export default async','globalThis.handler = async');vm.runInNewContext(source,apiContext);
+ for(const action of ['progress','complete']){const response=await apiContext.handler(new Request('https://example.com/api/worker?action='+action,{method:'POST',body:JSON.stringify({jobId:'test',candidate:{products:[]},events:[{text:'late'}]})}));assert.equal((await response.json()).aborted,true);}assert.equal(writes,0);
+ console.log('PASS: quiet worker detects abort, active AI request cancels without retry, no completion upload, late progress/completion cannot revive aborted job.');
+})().catch(e=>{console.error(e);process.exitCode=1});

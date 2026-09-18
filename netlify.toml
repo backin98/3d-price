@@ -1,0 +1,28 @@
+[build]
+  command = "node scripts/import-robolink-images.cjs"
+  publish = "public"
+
+[build.environment]
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD = "1"
+
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"
+  included_files = [
+    "sources/websites.txt",
+    "sources/rhino-recategorize.txt",
+    "public/assets/robolink/manifest.json",
+    "lib/**",
+    "api/filament-classify.js"
+  ]
+
+# Keep the existing /api/* URLs working; the frontend calls /api/hunt.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/:splat"
+  status = 200
+
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    Permissions-Policy = "loopback-network=*, local-network=*"
