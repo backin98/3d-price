@@ -573,8 +573,12 @@
     if (cand) {
       const jobHost = hostOf(job.url);
       const liveUrls = new Set();
+      const liveIds = new Set();
       const live = currentCatalog();
-      [...(live.products || []), ...(live.filaments || [])].forEach((p) => (p.offers || []).forEach((o) => { if (o.url) liveUrls.add(o.url); }));
+      [...(live.products || []), ...(live.filaments || [])].forEach((p) => {
+        if (p.id) liveIds.add(p.id);
+        (p.offers || []).forEach((o) => { if (o.url) liveUrls.add(o.url); });
+      });
       [...(cand.products || []), ...(cand.filaments || [])].forEach((p) => {
         (p.offers || []).forEach((o) => {
           if (!o.url) return;
@@ -586,7 +590,8 @@
               image: o.image || p.image, polymer: p.polymer, variant: p.variant, color: p.color,
               weight: p.weight, diameter: p.diameter, packaging: p.packaging
             },
-            decision: { action: liveUrls.has(o.url) ? "merge" : "create", candidateId: p.id, candidateName: p.name, shelf: p.kind }
+            // Merge or new comes from the row it landed on, not from the offer URL being new.
+            decision: { action: liveIds.has(p.id) ? "merge" : "create", candidateId: p.id, candidateName: p.name, shelf: p.kind }
           });
         });
       });
@@ -789,6 +794,7 @@
             : dec.action === "merge" ? "Worker match: merge → " + (dec.candidateName || dec.candidateId)
             : dec.action === "updated" ? "Worker match: update → " + (dec.candidateName || "existing")
             : dec.action === "create" ? "Worker match: new " + (dec.shelf || c.kind || "product")
+            : dec.action === "held" || dec.action === "hold" ? "Worker match: held — " + String(dec.reason || (dec.candidateName && "compared with " + dec.candidateName) || "needs a look").slice(0, 120)
             : "gathered — waiting for match";
           const visualNote = typeof dec.visual === "number" ? " · visual " + dec.visual.toFixed(2) : "";
           const pathNote = dec.matchPath === "gemma-gray" ? " · Gemma-gray"

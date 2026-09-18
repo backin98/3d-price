@@ -186,7 +186,11 @@ export default async (req) => {
           await writeJSON("candidate.json", body.candidate);
           const live = await readJSON("catalog.json", { products: [], filaments: [] });
           const liveUrls = new Set();
-          [...(live.products || []), ...(live.filaments || [])].forEach((p) => (p.offers || []).forEach((o) => { if (o.url) liveUrls.add(o.url); }));
+          const liveIds = new Set();
+          [...(live.products || []), ...(live.filaments || [])].forEach((p) => {
+            if (p.id) liveIds.add(p.id);
+            (p.offers || []).forEach((o) => { if (o.url) liveUrls.add(o.url); });
+          });
           job.cards = job.cards && typeof job.cards === "object" ? job.cards : {};
           const extras = [];
           for (const p of [...(body.candidate.products || []), ...(body.candidate.filaments || [])]) {
@@ -199,7 +203,10 @@ export default async (req) => {
                   image: o.image || p.image, polymer: p.polymer, variant: p.variant, color: p.color,
                   weight: p.weight, diameter: p.diameter, packaging: p.packaging
                 },
-                decision: { action: liveUrls.has(o.url) ? "merge" : "create", candidateId: p.id, candidateName: p.name, shelf: p.kind }
+                // Merge or new is decided by the ROW the offer landed on, not by whether this
+                // shop's offer URL is new: a first-time offer on an existing printer is a
+                // merge, and calling it "new" made the review board contradict the placement.
+                decision: { action: liveIds.has(p.id) ? "merge" : "create", candidateId: p.id, candidateName: p.name, shelf: p.kind }
               });
             }
           }

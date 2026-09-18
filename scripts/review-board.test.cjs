@@ -88,6 +88,23 @@ assert.match(mismatchHtml, /category mismatch/);
 assert.match(mismatchHtml, /detected: filament/);
 assert.match(mismatchHtml, /declared: printer/);
 assert.match(mismatchHtml, /Create new category: Filament/);
+
+// A first-time offer on an existing printer is a merge, not a new printer: the board must
+// agree with the placement. Cards here come from the candidate (no job events at all).
+const derived = context.test.collectCards({ url: 'https://shop.example.com/x', cards: {} }, data);
+const byUrl = new Map(derived.map((e) => [e.card.url, e.decision]));
+assert.equal(byUrl.get('https://shop.example.com/a1').action, 'merge', 'new offer on an existing row is a merge');
+assert.equal(byUrl.get('https://shop.example.com/a1').candidateName, 'Bambu Lab A1 Combo');
+assert.equal(byUrl.get('https://shop.example.com/k2').action, 'create', 'a row that is not live yet is new');
+
+// A card the worker held after comparing must say so, not "waiting for match".
+const heldHtml = context.test.reviewBoardHtml({
+  url: 'https://shop.example.com/fdm',
+  cards: { 'https://shop.example.com/held': { url: 'https://shop.example.com/held', name: 'Ambiguous P1S', kind: 'printer', decision: { action: 'held', reason: 'near duplicate — thumbnails disagree', candidateName: 'Bambu Lab P1S Combo 3D Yazıcı' } } },
+  events: []
+});
+assert.match(heldHtml, /Worker match: held — near duplicate/);
+assert.doesNotMatch(heldHtml, /Ambiguous P1S[\s\S]{0,400}waiting for match/, 'a compared card never reads as unmatched');
 assert.match(mismatchHtml, /Discard/);
 assert.doesNotMatch(mismatchHtml, /Dropshipping/);
 
