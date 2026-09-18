@@ -410,6 +410,55 @@ function startHttp() {
         send(req, res, 200, { ok: true, model: detectedModel, connection, listen: listenUrl() });
         return;
       }
+      if (url.pathname === "/rematch" && req.method === "POST") {
+        // Aggressive LLM help. The deterministic pass has already run: this asks the local
+        // model about the cards it could not sort (or the ones the admin selected), using
+        // the current catalog as the candidate pool. Nothing is published here.
+        const cards = Array.isArray(body.cards) ? body.cards : [];
+        if (!cards.length) {
+          send(req, res, 400, { error: "No cards to ask about" });
+          return;
+        }
+        if (busy) {
+          send(req, res, 409, { error: "The worker is busy with a run — try again when it finishes" });
+          return;
+        }
+        const catalogFile = process.env.ONLINE_CATALOG_FILE || path.join(__dirname, "..", "data", "online-catalog.json");
+        let catalog;
+        try {
+          catalog = JSON.parse(fs.readFileSync(catalogFile, "utf8"));
+        } catch (err) {
+          send(req, res, 400, { error: "No local catalog to match against yet (" + err.message + ")" });
+          return;
+        }
+        const { gemmaPick } = require("../lib/qwen-place.cjs");
+        const dir = path.join(path.dirname(catalogFile), "qwen-employee");
+        const limit = Math.max(1, Math.min(Number(body.limit) || 200, 500));
+        const started = Date.now();
+        const results = [];
+        busy = true;
+        try {
+          for (const card of cards.slice(0, limit)) {
+            const listing = {
+              name: String(card.name || "").slice(0, 200),
+              brand: String(card.brand || ""),
+              kind: card.kind === "filament" ? "filament" : "printer",
+              price: Number(card.price) || 0,
+              url: String(card.url || ""),
+              image: String(card.image || "")
+            };
+            if (!listing.name || !listing.url) continue;
+            const pool = (listing.kind === "filament" ? catalog.filaments : catalog.products) || [];
+            const pick = await gemmaPick(listing, pool, { dir });
+            results.push({ url: card.url, ...pick });
+            console.log("[rematch] " + listing.name.slice(0, 46) + " -> " + pick.action + (pick.matchId ? " " + pick.matchId : "") + (pick.reason ? " — " + pick.reason : ""));
+          }
+        } finally {
+          busy = false;
+        }
+        send(req, res, 200, { ok: true, asked: results.length, ms: Date.now() - started, model: detectedModel, results });
+        return;
+      }
       if (url.pathname === "/run" && req.method === "POST") {
         send(req, res, 202, { ok: true, accepted: true, busy, site: siteUrl });
         kickRun().catch((err) => console.warn("Run failed:", err.message));

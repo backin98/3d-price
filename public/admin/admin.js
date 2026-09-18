@@ -751,6 +751,11 @@
     const cards = collectCards(job, state.data);
     if (!cards.length) return '<p class="muted">No product cards yet. Queue a run with the local worker online — harvested product URLs show up here immediately.</p>';
     const selected = state.reviewSelected.size;
+    // Cards the deterministic pass could not place: no merge, no new row, no update.
+    const unmatched = cards.filter((e) => {
+      const a = e.decision && e.decision.action;
+      return !!(e.card && e.card.url) && a !== "merge" && a !== "updated" && a !== "create";
+    }).length;
     return `
       <div class="review-toolbar">
         <button class="btn-sm" type="button" id="select-all">Select all</button>
@@ -760,6 +765,11 @@
         <button class="btn-sm danger" type="button" id="delete-flagged" ${state.reviewFlags.size ? "" : "disabled"}>Delete flagged (${state.reviewFlags.size})</button>
         <button class="btn-sm ok" type="button" id="publish-selected" ${selected ? "" : "disabled"}>Publish selected (${selected})</button>
         <span class="muted">${cards.length} gathered</span>
+      </div>
+      <div class="review-toolbar">
+        <span class="muted">Aggressive LLM help — Gemma on what the matcher could not sort, against the current catalog:</span>
+        <button class="btn-sm" type="button" id="gemma-unmatched" ${unmatched ? "" : "disabled"}>Ask Gemma: all unmatched (${unmatched})</button>
+        <button class="btn-sm" type="button" id="gemma-selected" ${selected ? "" : "disabled"}>Ask Gemma: selected (${selected})</button>
       </div>
       <div class="review-board" id="review-board">
         ${cards.map((e) => {
@@ -1219,6 +1229,53 @@
           });
           toast("Deleted " + urls.length + " products from the run.");
         } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("#gemma-unmatched") || e.target.closest("#gemma-selected")) {
+        // Second opinion after the fact: never runs during a run, never publishes by itself.
+        // It only fills in "where this card goes"; you still press Publish selected.
+        const onlySelected = !!e.target.closest("#gemma-selected");
+        const job = reviewJob(state.data || { jobs: [] });
+        const targets = collectCards(job, state.data).filter((ev) => {
+          const url = ev.card && ev.card.url;
+          if (!url) return false;
+          if (onlySelected) return state.reviewSelected.has(url);
+          const a = ev.decision && ev.decision.action;
+          return a !== "merge" && a !== "updated" && a !== "create";
+        });
+        if (!targets.length) {
+          toast(onlySelected ? "Select some cards first." : "Nothing unmatched — the matcher already placed every card.");
+          return;
+        }
+        const btn = e.target.closest("button");
+        const label = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = "Asking Gemma…";
+        try {
+          const live = await pingWorker();
+          if (!live.ok) throw new Error(live.error || "Local worker offline — start it with node worker/online-worker.cjs on this PC.");
+          const res = await workerFetch("/rematch", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              cards: targets.map((ev) => ({ ...ev.card, kind: ev.card.kind || (ev.decision && ev.decision.shelf) || "printer" }))
+            })
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || "Gemma pass failed");
+          let merged = 0, created = 0, held = 0;
+          for (const r of data.results || []) {
+            if (r.action === "merge" && r.matchId) { state.reviewPlace.set(r.url, { action: "merge", candidateId: r.matchId }); merged += 1; }
+            else if (r.action === "create") { state.reviewPlace.set(r.url, { action: "create", candidateId: "" }); created += 1; }
+            else held += 1;
+          }
+          toast("Gemma answered " + data.asked + " of " + targets.length + ": " + merged + " merge, " + created + " new, " + held + " still unsure. Check the board, then publish.");
+        } catch (err) {
+          toast(err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = label;
+        }
         return;
       }
       if (e.target.closest("#publish-selected")) {
