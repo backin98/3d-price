@@ -865,10 +865,34 @@
     }
   }
 
+  // Stock ages: the sweep re-reads the product pages we already link to and pulls vendors
+  // that ran out out of the comparison. Oldest checks first, so pressing again continues.
+  function stockPanelHtml(d) {
+    const offers = allProducts().flatMap((p) => (p.offers || []).map((o) => ({ ...o, product: p })));
+    const withUrl = offers.filter((o) => /^https?:\/\//i.test(o.url || ""));
+    const now = Date.now();
+    const stale = withUrl.filter((o) => {
+      const at = Date.parse(o.stockCheckedAt || "");
+      return !Number.isFinite(at) || (now - at) / 36e5 >= 6;
+    }).length;
+    const dead = withUrl.filter((o) => o.stockStatus === "out_of_stock").length;
+    const unknown = withUrl.filter((o) => !o.stockStatus || o.stockStatus === "unknown").length;
+    return `<div class="panel">
+        <h2>Stock</h2>
+        <p class="muted">Re-reads the product pages we link to and leaves out vendors that are out of stock. ${withUrl.length} offers: ${dead} out of stock, ${unknown} unverified, ${stale} older than 6h.</p>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <button class="btn-sm primary" type="button" id="check-stock">Check stock now (${stale} stale)</button>
+          <button class="btn-sm ghost" type="button" id="check-stock-all">Check every offer (${withUrl.length})</button>
+          <small class="muted" id="stock-result"></small>
+        </div>
+      </div>`;
+  }
+
   function catalogHtml(d) {
     const products = filteredProducts();
     const savedAt = d.catalog && d.catalog.savedAt ? new Date(d.catalog.savedAt).toLocaleString() : "never";
     return `
+      ${stockPanelHtml(d)}
       <div class="panel">
         <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center">
           <h2 style="margin:0">Saved catalog</h2>
@@ -1235,6 +1259,30 @@
           });
           toast("Deleted " + urls.length + " products from the run.");
         } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("#check-stock") || e.target.closest("#check-stock-all")) {
+        const btn = e.target.closest("button");
+        const all = !!e.target.closest("#check-stock-all");
+        const label = btn.textContent;
+        const out = $("#stock-result");
+        btn.disabled = true;
+        btn.textContent = "Checking pages…";
+        try {
+          // staleHours 0 means "every offer", which is what the second button is for.
+          const query = "/api/stock-refresh?limit=" + (all ? 60 : 25) + "&staleHours=" + (all ? 0 : 6);
+          const data = await api(query);
+          const s = data.summary || {};
+          const changes = (data.changes || []).slice(0, 6).map((c) => c.store + " " + c.before + " → " + c.after).join(" · ");
+          if (out) out.textContent = "checked " + s.checked + " of " + s.stale + " · " + s.outOfStock + " newly out of stock" + (s.skipped ? " · " + s.skipped + " left, press again" : "") + (changes ? " — " + changes : " — nothing changed");
+          toast("Stock: " + s.checked + " checked, " + s.outOfStock + " now out of stock" + (s.skipped ? ", " + s.skipped + " still to do" : ""));
+          await loadData();
+        } catch (err) {
+          toast(err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = label;
+        }
         return;
       }
       if (e.target.closest("#gemma-unmatched") || e.target.closest("#gemma-selected")) {

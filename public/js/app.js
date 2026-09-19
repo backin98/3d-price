@@ -100,10 +100,18 @@
     return Math.round(((was - price) / was) * 100);
   }
 
+  // Vendors out of stock do not get to be "the best price": a dead offer is not an offer.
+  function liveOffers(product) {
+    const offers = (product && product.offers) || [];
+    // An offer carrying no stock information stays in: unknown is not out of stock.
+    return offers.filter((o) => (o.stockStatus || "") !== "out_of_stock");
+  }
+
   function bestOffer(product) {
-    const offers = (product.offers || []).slice();
-    const live = offers.filter((o) => !o.preorder);
-    const pool = live.length ? live : offers;
+    const offers = liveOffers(product).slice();
+    if (!offers.length) return (product.offers || [])[0] || { store: "", price: 0 };
+    const notPreorder = offers.filter((o) => !o.preorder);
+    const pool = notPreorder.length ? notPreorder : offers;
     return pool.sort((a, b) => a.price - b.price)[0];
   }
 
@@ -676,6 +684,31 @@
     )}</div></div>`;
   }
 
+  // A vendor's thumbnail 404s constantly (CDNs, hotlink defence). The same product sits on
+  // the other compared sites, so walk their images instead of showing a hole.
+  function imgAttrs(product) {
+    const list = productImages(product).map((i) => i.url);
+    if (!list.length) return "";
+    return `data-imgs="${escapeHtml(JSON.stringify(list))}" data-i="0" onerror="window.__imgFail&&window.__imgFail(this)"`;
+  }
+
+  function imgFail(el) {
+    let list = [];
+    try { list = JSON.parse(el.getAttribute("data-imgs") || "[]"); } catch (_) { list = []; }
+    const current = String(el.getAttribute("src") || "");
+    // Try the jpg twin of this URL first: some CDNs only refuse webp to outsiders.
+    const twin = current.replace(/\.webp(\?|#|$)/i, ".jpg$1");
+    if (twin !== current && !el.dataset.twin) { el.dataset.twin = "1"; el.setAttribute("src", twin); return; }
+    for (let i = Number(el.dataset.i || 0) + 1; i < list.length; i++) {
+      if (!list[i] || list[i] === current) continue;
+      el.dataset.i = String(i);
+      delete el.dataset.twin;
+      el.setAttribute("src", list[i]);
+      return;
+    }
+    el.replaceWith(Object.assign(document.createElement("span"), { className: "gallery-empty", textContent: "—" }));
+  }
+
   function productImages(product) {
     if (!product) return [];
     const offers = product.offers || [];
@@ -702,10 +735,7 @@
       ? { previous: "Önceki görsel", next: "Sonraki görsel", empty: "Görsel yok" }
       : { previous: "Previous image", next: "Next image", empty: "No image available" };
     if (!first) return `<span class="gallery-empty">${label.empty}</span>`;
-    const fb = String(first.url).replace(/\.webp(\?|#|$)/i, ".jpg$1").replace(/([?&](?:format|_format|fm)=)webp\b/i, "$1jpg");
-    const onerr = fb !== first.url
-      ? `onerror="if(!this.dataset.fb){this.dataset.fb=1;this.src='${escapeHtml(fb)}';}else{this.replaceWith(Object.assign(document.createElement('span'),{className:'gallery-empty',textContent:'${label.empty}'}))}"`
-      : "";
+    const onerr = imgAttrs(product);
     return `<div class="product-gallery" data-gallery="${escapeHtml(product.id)}" data-image-index="0">
       <img src="${escapeHtml(first.url)}" alt="${escapeHtml(displayName(product) + (first.store ? " — " + first.store : ""))}" loading="lazy" referrerpolicy="no-referrer" ${onerr}>
       ${images.length > 1 ? `
@@ -939,7 +969,7 @@
     });
     const dots = Array.from(colors.values());
     const shown = dots.slice(0, 12);
-    return `<span class="fil-group-photo">${representative ? `<img src="${escapeHtml(representative.url)}" alt="" loading="lazy">` : `<span class="gallery-empty">${state.lang === "tr" ? "Görsel yok" : "No image available"}</span>`}</span>
+    return `<span class="fil-group-photo">${representative ? `<img src="${escapeHtml(representative.url)}" alt="" loading="lazy" data-imgs="${escapeHtml(JSON.stringify(Array.from(new Set([representative.url, ...items.flatMap((p) => productImages(p).map((i) => i.url))]))))}" data-i="0" onerror="window.__imgFail&&window.__imgFail(this)">` : `<span class="gallery-empty">${state.lang === "tr" ? "Görsel yok" : "No image available"}</span>`}</span>
       <span class="fil-group-colors">
         <span class="fil-group-swatches">${shown.map(({p, label}) => `<span class="fil-color-dot" role="img" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}" style="${spoolStyle(p, p.polymer)}"></span>`).join("")}${dots.length > shown.length ? `<span>+${dots.length-shown.length}</span>` : ""}</span>
         <span>${escapeHtml(state.lang === "en" && dots.length === 1 ? "1 color" : fill(C.filament.colorCount, {n: dots.length}))}</span>
@@ -1142,10 +1172,10 @@
 
   function isSellable(p) {
     if (!p) return false;
-    if ((p.stockStatus || p.stock) === "out_of_stock") return false;
     const offers = p.offers || [];
-    if (offers.length && offers.every((o) => o.stockStatus === "out_of_stock")) return false;
-    return true;
+    // Every vendor out of stock (or the row itself flagged) drops the product from the site.
+    if (offers.length) return liveOffers(p).length > 0;
+    return (p.stockStatus || p.stock) !== "out_of_stock";
   }
 
   function dealCard(product) {
@@ -1225,7 +1255,7 @@
       .map((p) => {
         const best = bestOffer(p);
         return `<div class="saved-row">
-          ${productImages(p)[0] ? `<img src="${escapeHtml(productImages(p)[0].url)}" alt="" width="54" height="54" style="width:3.4rem;height:3.4rem;object-fit:cover;border-radius:8px">` : ""}
+          ${productImages(p)[0] ? `<img src="${escapeHtml(productImages(p)[0].url)}" alt="" width="54" height="54" style="width:3.4rem;height:3.4rem;object-fit:cover;border-radius:8px" ${imgAttrs(p)}>` : ""}
           <div>
             <strong>${escapeHtml(displayName(p))}</strong>
             <div class="deal-meta">${escapeHtml(best.store)} · ${money(best.price, p.currency)}</div>
@@ -1269,9 +1299,9 @@
     }
     title.textContent = displayName(p);
     const best = bestOffer(p);
-    const rows = p.offers
-      .slice()
-      .sort((a, b) => a.price - b.price)
+    // Only live vendors are compared; the ones that ran out are left out, not shown dead.
+    const compared = liveOffers(p).slice().sort((a, b) => a.price - b.price);
+    const rows = compared
       .map((o, i) => {
         const tag = i === 0 ? `<span class="off-pill">${escapeHtml(C.bestOffer)}</span>` : "";
         const pre = o.preorder
@@ -1326,6 +1356,9 @@
       $("#drawer-" + id).hidden = true;
     });
   }
+
+  window.__imgFail = imgFail;
+  window.__3dp = { bestOffer, liveOffers, isSellable, productImages, imgFail };
 
   function escapeHtml(str) {
     return String(str)
