@@ -317,6 +317,34 @@
     return toks.every((t) => hay.includes(t) || hayWords.some((w) => w.startsWith(t)));
   }
 
+  // Backups: a named snapshot of the whole database, and a restore that replaces it entirely.
+  function backupsPanel() {
+    const backups = (state.data && state.data.backups) || [];
+    const when = (iso) => String(iso || "").slice(0, 16).replace("T", " ");
+    return `<details class="danger-zone" ${detailAttrs("backups")}><summary>Backups — save the database, or go back to a saved one${
+      backups.length ? ` (${backups.length})` : ""
+    }</summary>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <input id="backup-name" type="text" maxlength="60" placeholder="Name this backup (e.g. before the big cleanup)" style="min-width:280px">
+        <button class="btn-sm primary" type="button" id="backup-create">Back up now</button>
+        <button class="btn-sm danger" type="button" id="backup-fresh">Start fresh (empty catalog)</button>
+      </div>
+      <p class="muted">A backup holds the catalog, the draft and the shops. <strong>Restoring replaces all of it</strong> — whatever changed since is gone (a snapshot of the current state is taken automatically first, so a restore is itself undoable). Run history is not part of a backup: it is left alone.</p>
+      <ul class="row-list">${
+        backups
+          .map(
+            (b) => `<li><span><strong>${esc(b.name)}</strong>
+              <br><small class="muted">${esc(when(b.createdAt))} · ${Number(b.rows) || 0} products · ${Number(b.offers) || 0} offers · ${Number(b.shops) || 0} shops${
+              b.hasDraft ? " · draft" : ""
+            }${b.note ? " · " + esc(b.note) : ""}</small></span>
+              <span style="display:flex;gap:6px"><button class="btn-sm" type="button" data-backup-restore="${esc(b.key)}">Restore</button>
+              <button class="btn-sm danger" type="button" data-backup-delete="${esc(b.key)}">Delete</button></span></li>`
+          )
+          .join("") || '<li class="muted">No backups yet. Name one above and press Back up now.</li>'
+      }</ul>
+    </details>`;
+  }
+
   function filteredProducts() {
     const q = state.catalogQuery.trim().toLowerCase();
     const shop = state.catalogShop;
@@ -1014,6 +1042,7 @@
           <label class="muted" style="font-size:12px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="dupes-only" ${state.dupesOnly ? "checked" : ""}> Duplicates only${state.dupes ? ` (${state.dupes.clusters.length} groups)` : " — press Find duplicate groups first"}</label>
         </div>
         <p class="muted">Edits here are saved to the online catalog and take effect immediately on the storefront.</p>
+        ${backupsPanel()}
         <details class="danger-zone" ${detailAttrs("danger")}><summary>Danger zone</summary>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <button class="btn-sm danger" type="button" id="delete-all-catalog">Delete every catalog product</button>
@@ -1420,6 +1449,53 @@
         } catch (err) {
           toast(err.message);
         }
+        return;
+      }
+      if (e.target.closest("#backup-create")) {
+        const input = $("#backup-name");
+        const name = (input && input.value.trim()) || ("backup " + new Date().toISOString().slice(0, 16).replace("T", " "));
+        const btn = e.target.closest("#backup-create");
+        btn.disabled = true;
+        action({ action: "createBackup", name })
+          .then((r) => {
+            if (input) input.value = "";
+            toast('Backed up as "' + r.backup.name + '" — ' + r.backup.rows + ' products, ' + r.backup.offers + ' offers.');
+          })
+          .catch((err) => toast(err.message))
+          .finally(() => { btn.disabled = false; });
+        return;
+      }
+      const restoreKey = e.target.closest("[data-backup-restore]") && e.target.closest("[data-backup-restore]").dataset.backupRestore;
+      if (restoreKey) {
+        const entry = ((state.data && state.data.backups) || []).find((b) => b.key === restoreKey) || {};
+        if (
+          !confirm(
+            'Restore "' + (entry.name || restoreKey) + '"?\n\nThis REPLACES the current catalog, draft, shops and runs with that backup. Everything since it was saved is lost.'
+          )
+        )
+          return;
+        action({ action: "restoreBackup", key: restoreKey })
+          .then((r) => {
+            state.catalogSelected = new Set();
+            toast('Restored "' + r.restored.name + '" — ' + r.restored.rows + ' products, ' + r.restored.offers + ' offers. The site now serves that state.');
+          })
+          .catch((err) => toast(err.message));
+        return;
+      }
+      const deleteKey = e.target.closest("[data-backup-delete]") && e.target.closest("[data-backup-delete]").dataset.backupDelete;
+      if (deleteKey) {
+        if (!confirm("Delete this backup? The live data is untouched.")) return;
+        action({ action: "deleteBackup", key: deleteKey })
+          .then(() => toast("Backup deleted."))
+          .catch((err) => toast(err.message));
+        return;
+      }
+      if (e.target.closest("#backup-fresh")) {
+        const n = allProducts().length;
+        if (!confirm("Empty the live catalog? " + (n ? "All " + n + " products are removed" : "It is already empty") + " — make a backup first if you want it back.")) return;
+        action({ action: "deleteAllCatalog" })
+          .then(() => toast("Catalog emptied. Restore a backup to bring it back."))
+          .catch((err) => toast(err.message));
         return;
       }
       if (e.target.closest("#delete-all-catalog")) {

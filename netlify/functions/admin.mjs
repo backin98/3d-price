@@ -64,6 +64,62 @@ async function saveJobList(jobs) {
   await writeJSON("jobs.json", jobs);
 }
 
+// ---------- backups ----------
+// A named snapshot of everything the admin owns. The index is a single key so listing costs one
+// read and never depends on blob-listing behaviour. Restoring writes the snapshot back over the
+// live keys, so it overrides whatever happened since — that is the point of it.
+const BACKUP_INDEX = "backups/index.json";
+// The database: the catalog, the draft, and the shops. Run history (jobs.json, many megabytes of
+// logs) is deliberately not part of a backup — it is history, not data, and a restore leaves it
+// alone rather than resurrecting runs that refer to rows that no longer exist.
+const BACKUP_PARTS = ["catalog.json", "candidate.json", "desk.json"];
+
+const backupKey = (slug, stamp) => `backups/${slug}-${stamp}.json`;
+const slugifyName = (name) =>
+  String(name || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[ıİ]/g, "i")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+
+function countsOf(snapshot) {
+  // Accepts a backup record ({ parts: {...} }) or a bare parts object.
+  const parts = (snapshot && snapshot.parts) || snapshot || {};
+  const rows = [...((parts.catalog && parts.catalog.products) || []), ...((parts.catalog && parts.catalog.filaments) || [])];
+  return {
+    rows: rows.length,
+    offers: rows.reduce((n, p) => n + ((p.offers || []).length || 0), 0),
+    shops: ((parts.desk || {}).shops || []).length,
+    hasDraft: !!parts.candidate
+  };
+}
+
+const readBackupIndex = async () => {
+  const index = await readJSON(BACKUP_INDEX, []);
+  return Array.isArray(index) ? index.filter((e) => e && e.key) : [];
+};
+
+const writeBackupIndex = (index) =>
+  writeJSON(BACKUP_INDEX, index.slice().sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt))));
+
+async function snapshotNow(name, note) {
+  const all = await loadAll();
+  delete all.jobs;
+  const createdAt = new Date().toISOString();
+  const slug = slugifyName(name) || "backup";
+  const key = backupKey(slug, createdAt.replace(/[^0-9]/g, "").slice(0, 14));
+  const snapshot = { name: String(name || "").trim() || slug, note: note || "", createdAt, parts: all };
+  await writeJSON(key, snapshot);
+  const entry = { key, name: snapshot.name, note: snapshot.note, createdAt, ...countsOf(snapshot) };
+  const index = await readBackupIndex();
+  index.unshift(entry);
+  await writeBackupIndex(index);
+  return entry;
+}
+
 function listingId(url) {
   let h = 0;
   for (let i = 0; i < url.length; i++) h = (Math.imul(31, h) + url.charCodeAt(i)) | 0;
@@ -467,6 +523,7 @@ export default async (req) => {
       catalog: withAxes(catalog),
       candidate: data.candidate,
       jobs: data.jobs || [],
+      backups: await readBackupIndex(),
       heartbeat: await readJSON("heartbeat.json", null),
       counts: {
         products: (catalog.products || []).length,
@@ -616,6 +673,44 @@ export default async (req) => {
         else jobs = [];
         await saveJobList(jobs);
         return json(200, { ok: true, removed: before - jobs.length, left: jobs.length });
+      }
+
+      case "createBackup": {
+        const name = String(body.name || "").trim();
+        if (!name) throw new Error("Give the backup a name");
+        if (name.length > 60) throw new Error("Keep the name under 60 characters");
+        const entry = await snapshotNow(name, "manual");
+        return json(200, { ok: true, backup: entry, backups: await readBackupIndex() });
+      }
+
+      case "restoreBackup": {
+        const key = String(body.key || "");
+        if (!key.startsWith("backups/")) throw new Error("Pick a backup to restore");
+        const snap = await readJSON(key, null);
+        if (!snap || !snap.parts) throw new Error("That backup is missing or unreadable");
+        // A restore is a big, deliberate override, so take a snapshot of what we are replacing
+        // first: that makes restoring itself undoable.
+        await snapshotNow("before restore " + new Date().toISOString().slice(0, 16).replace("T", " "), "automatic, taken before restoring " + snap.name);
+        // Only the database is written back; the run history is left as it is.
+        const parts = snap.parts;
+        if (parts.catalog) await writeJSON("catalog.json", parts.catalog);
+        if (parts.desk) await writeJSON("desk.json", parts.desk);
+        if (parts.candidate) await writeJSON("candidate.json", parts.candidate);
+        else await deleteKey("candidate.json");
+        return json(200, {
+          ok: true,
+          restored: { key, name: snap.name, createdAt: snap.createdAt, ...countsOf(snap) },
+          backups: await readBackupIndex()
+        });
+      }
+
+      case "deleteBackup": {
+        const key = String(body.key || "");
+        if (!key.startsWith("backups/")) throw new Error("Pick a backup to delete");
+        await deleteKey(key);
+        const left = (await readBackupIndex()).filter((e) => e.key !== key);
+        await writeBackupIndex(left);
+        return json(200, { ok: true, backups: left });
       }
 
       case "discardCandidate": {
