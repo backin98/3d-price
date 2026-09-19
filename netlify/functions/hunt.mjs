@@ -1,18 +1,17 @@
 import store from "../../lib/netlify-store.cjs";
 import catalogUnion from "../../lib/catalog-union.cjs";
+import search from "../../lib/search-match.cjs";
 
 const { readJSON } = store;
 const { collapseByMagellan, pricesToTry } = catalogUnion;
 
+// Token search over the row and its offers (see lib/search-match.cjs): a family query finds a
+// branched row even when its own name is only a slug.
+const { filterSearch } = search;
+
 function filterList(list, q) {
   if (!q) return list || [];
-  return (list || []).filter((p) =>
-    [p.name, p.brand, p.polymer, p.variant, p.color, p.unit]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase()
-      .includes(q)
-  );
+  return filterSearch(list, q);
 }
 
 export default async (req) => {

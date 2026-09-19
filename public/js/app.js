@@ -231,15 +231,55 @@
     return state.liveProducts || C.products || [];
   }
 
+  // Mirrors lib/search-match.cjs. A family query ("Creality K2 Plus Combo 3D Yazıcı") has to
+  // find a row named "creality k2 plus combo", so match on tokens and look at the offers too.
+  const SEARCH_STOP = new Set([
+    "3d", "yazici", "printer", "fiyat", "fiyati", "inceleme", "yorum", "stok", "stoktan", "stokta",
+    "ve", "ile", "the", "and", "with", "for", "adet", "urun", "urunu", "model", "makine", "makinesi",
+    "kutu", "hediyeli", "indirimli", "kampanya", "yeni", "new", "sifir", "orijinal", "tl", "try"
+  ]);
+
+  function foldText(value) {
+    return String(value == null ? "" : value)
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/\p{M}/gu, "")
+      .replace(/ı/g, "i")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function searchTokens(query) {
+    return foldText(query).split(/[^\p{L}\p{N}]+/u).filter((t) => t && !SEARCH_STOP.has(t));
+  }
+
+  function searchHaystack(p) {
+    const offers = p && p.offers ? p.offers : [];
+    return foldText([
+      p && p.name,
+      displayName(p),
+      p && p.brand,
+      p && p.polymer,
+      p && p.variant,
+      p && p.color,
+      p && p.unit,
+      aisleName(p && p.aisle),
+      ...offers.flatMap((o) => [o.store, o.sourceTitle, String((o && o.url) || "").split("/").filter(Boolean).pop()])
+    ].filter(Boolean).join(" "));
+  }
+
   function searchRelevance(p) {
-    const q = state.query.trim().toLowerCase();
+    const q = foldText(state.query);
     if (!q) return 0;
-    const names = [p.name, displayName(p)].map((name) => String(name || "").toLowerCase());
+    const names = [p.name, displayName(p)].map(foldText);
     if (names.some((name) => name === q)) return 100;
-    if (names.some((name) => name.split(/[^\p{L}\p{N}]+/u).includes(q))) return 80;
-    if (names.some((name) => name.includes(q))) return 60;
-    if ([p.brand, p.polymer, p.variant, p.color].some((value) => String(value || "").toLowerCase() === q)) return 50;
-    return 10;
+    const toks = searchTokens(q);
+    if (!toks.length) return 30; // a query of filler words ("3d yazıcı") matches the category
+    const hay = searchHaystack(p);
+    if (!toks.every((t) => hay.includes(t))) return 0;
+    if (names.some((name) => toks.every((t) => name.includes(t)))) return 90;
+    if (names.some((name) => name.includes(toks[0]))) return 70;
+    return 50; // found it through an offer's own title or its URL
   }
 
   function selectSearchWorld() {
@@ -263,21 +303,9 @@
   }
 
   function matchingProducts() {
-    const q = state.query.trim().toLowerCase();
-    return catalog().filter((p) => {
-      if (!q) return true;
-      const blob = [
-        p.name,
-        displayName(p),
-        p.brand,
-        p.unit,
-        aisleName(p.aisle),
-        ...(p.offers || []).map((o) => o.store)
-      ]
-        .join(" ")
-        .toLowerCase();
-      return blob.includes(q);
-    });
+    if (!state.query.trim()) return catalog();
+    // searchRelevance already folds, drops filler words and walks the offers; 0 means "no".
+    return catalog().filter((p) => searchRelevance(p) > 0);
   }
 
   function filLabel(kind, id) {
@@ -289,11 +317,15 @@
     const list = state.liveFilaments || [];
     const q = state.query.trim().toLowerCase();
     const asksPlabs = /\bplabs\b/i.test(q);
+    const toks = searchTokens(q);
     return list.filter((p) => {
       // PLABS is a distinct polymer, never a partial PLA/ABS or general match.
       if (p.polymer === "plabs" && !asksPlabs) return false;
       if (asksPlabs && p.polymer !== "plabs") return false;
-      return !q || filBlob(p).includes(q);
+      if (!q) return true;
+      const hay = foldText(filBlob(p) + " " + (p.offers || []).map((o) => o.sourceTitle).join(" "));
+      // Filler-only queries ("filament") match the category; otherwise every token must land.
+      return !toks.length || toks.every((t) => hay.includes(t));
     });
   }
 
@@ -1361,7 +1393,7 @@
   }
 
   window.__imgFail = imgFail;
-  window.__3dp = { bestOffer, liveOffers, isSellable, productImages, imgFail };
+  window.__3dp = { state, bestOffer, liveOffers, isSellable, productImages, imgFail, matchingProducts, matchingFilaments, searchRelevance, searchHaystack, foldText };
 
   function escapeHtml(str) {
     return String(str)

@@ -124,7 +124,7 @@ const html = (body) => '<html><body>' + body + '</body></html>';
     live: { compared: 'Compared', on: 'Online', preorder: 'Preorder', noImage: 'No image' },
     cart: { empty: '', remove: 'Remove' }, sheet: {}, bestOffer: 'Best', wasPrice: 'was {price}',
     brand: {}, dir: {}, documentTitle: {}, emptyAisle: {}, emptySearchBody: {}, emptySearchTitle: {},
-    filament: {}, header: {}, hunter: {}, lang: {}, offerCount: {}, productExact: {}, productPhrases: {},
+    filament: {}, header: {}, hunter: {}, lang: {}, offerCount: {}, productExact: {}, productPhrases: [],
     profile: {}, resultsCount: {}, savedDeal: {}, saveDeal: {}
   };
   const nodes = new Map();

@@ -777,8 +777,20 @@ export default async (req) => {
         const [offer] = found.offers.splice(at, 1);
         const scraped = String(offer.sourceTitle || "").trim();
         if (to === "new") {
+          // No scraped title: name it from the URL slug, tidied up, rather than leaving a raw
+          // lowercase slug as the product name ("creality k2 plus combo").
           const slug = (() => {
-            try { return decodeURIComponent(new URL(url).pathname.split("/").filter(Boolean).pop() || "").replace(/[-_]+/g, " ").trim(); } catch (_) { return ""; }
+            try {
+              const tail = decodeURIComponent(new URL(url).pathname.split("/").filter(Boolean).pop() || "");
+              return tail
+                .replace(/[-_]+/g, " ")
+                .replace(/\s+/g, " ")
+                .trim()
+                .split(" ")
+                .filter((w) => w && !/^\d{3,}$/.test(w)) // drop trailing id numbers
+                .map((w) => (/[0-9]/.test(w) || w.length <= 2 ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
+                .join(" ");
+            } catch (_) { return ""; }
           })();
           const row = {
             ...found,

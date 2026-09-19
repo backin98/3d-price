@@ -298,6 +298,23 @@
     ];
   }
 
+  const ADMIN_STOP = new Set(["3d", "yazici", "printer", "fiyat", "fiyati", "inceleme", "stok", "stoktan", "ve", "ile", "adet", "urun", "model", "makine", "makinesi", "kutu", "hediye", "yeni", "tl", "try"]);
+
+  // Lowercase, strip accents, and treat dotless ı as i, so "yazici" finds "Yazıcı".
+  function adminFold(value) {
+    return String(value == null ? "" : value).toLowerCase().normalize("NFD").replace(/\p{M}/gu, "").replace(/ı/g, "i").replace(/\s+/g, " ").trim();
+  }
+
+  function adminMatches(p, query) {
+    const toks = adminFold(query).split(/[^\p{L}\p{N}]+/u).filter((t) => t && !ADMIN_STOP.has(t));
+    if (!toks.length) return true;
+    const hay = adminFold([
+      p.id, p.name, p.brand, p.color, p.polymer, p.variant, p.unit, p.aisle,
+      ...(p.offers || []).flatMap((o) => [o.store, o.sourceTitle, String((o && o.url) || "").split("/").filter(Boolean).pop()])
+    ].filter(Boolean).join(" "));
+    return toks.every((t) => hay.includes(t));
+  }
+
   function filteredProducts() {
     const q = state.catalogQuery.trim().toLowerCase();
     const shop = state.catalogShop;
@@ -317,8 +334,9 @@
         if (variant === "laser" && !a.laser) return false;
       }
       if (!q) return true;
-      return [p.id, p.name, p.brand, p.color, p.polymer, p.variant, p.unit]
-        .filter(Boolean).join(" ").toLowerCase().includes(q);
+      // Token search over the row and its offers, so a family query finds a branched row whose
+      // own name is just a slug. Mirrors lib/search-match.cjs.
+      return adminMatches(p, q);
     }).slice(0, state.catalogLimit);
   }
 

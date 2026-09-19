@@ -94,7 +94,7 @@ const context = {
       desk: {}, locations: [], aisles: [], banners: [], ads: [], units: [], products: [],
       live: { compared: 'Compared' }, cart: {}, sheet: {}, bestOffer: 'Best', brand: {}, dir: {},
       documentTitle: {}, emptyAisle: {}, emptySearchBody: {}, emptySearchTitle: {}, filament: {}, header: {},
-      hunter: {}, lang: {}, offerCount: {}, productExact: {}, productPhrases: {}, profile: {}, resultsCount: {},
+      hunter: {}, lang: {}, offerCount: {}, productExact: {}, productPhrases: [], profile: {}, resultsCount: {},
       savedDeal: {}, saveDeal: {}, wasPrice: 'was'
     }
   },
