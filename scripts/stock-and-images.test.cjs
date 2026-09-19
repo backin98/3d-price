@@ -143,11 +143,14 @@ const html = (body) => '<html><body>' + body + '</body></html>';
     ResizeObserver: function () { this.observe = () => {}; }
   };
   // Load the module without its bootstrap: we exercise the helpers, not the first render.
+  // Load the storefront module without running its bootstrap. Matching whole lines is
+  // deliberate: a regex over the file mangled nested calls on me once already.
+  const boot = /^\s*(?:initStatic|bind)\(\);\s*$|^\s*huntRhino\(state\.query \|\| \""\);\s*$/;
   const src = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'app.js'), 'utf8')
     .split('\r\n').join('\n')
-    .replace(/\n\s*initStatic\(\);/, '')
-    .replace(/\n\s*bind\(\);/, '')
-    .replace(/\n\s*huntRhino\([^)]*\);/, '');
+    .split('\n')
+    .filter((line) => !boot.test(line))
+    .join('\n');
   vm.runInNewContext(src, context);
   const api = context.window.__3dp;
   assert.ok(api, 'storefront helpers are exposed for testability');

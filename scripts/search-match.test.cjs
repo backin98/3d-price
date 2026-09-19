@@ -79,9 +79,14 @@ const context = {
   addEventListener() {}, fetch: async () => ({ ok: false, status: 404, json: async () => ({}) }),
   ResizeObserver: function () { this.observe = () => {}; }
 };
-const src = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'app.js'), 'utf8')
-  .split('\r\n').join('\n')
-  .replace(/\n\s*initStatic\(\);/, '').replace(/\n\s*bind\(\);/, '').replace(/\n\s*huntRhino\([^)]*\);/, '');
+  // Load the storefront module without running its bootstrap. Matching whole lines is
+  // deliberate: a regex over the file mangled nested calls on me once already.
+  const boot = /^\s*(?:initStatic|bind)\(\);\s*$|^\s*huntRhino\(state\.query \|\| \""\);\s*$/;
+  const src = fs.readFileSync(path.join(__dirname, '..', 'public', 'js', 'app.js'), 'utf8')
+    .split('\r\n').join('\n')
+    .split('\n')
+    .filter((line) => !boot.test(line))
+    .join('\n');
 vm.runInNewContext(src, context);
 const api = context.window.__3dp;
 assert.ok(api.matchingProducts, 'the storefront search is exposed for testing');

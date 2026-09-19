@@ -155,6 +155,7 @@
     liveProducts: null,
     liveFilaments: null,
     liveStatus: "idle",
+    liveFetchedAt: 0,
     world: "printers",
     filPath: { polymer: null, variant: null, brand: null },
     lang: "en"
@@ -222,9 +223,23 @@
     }
     $("#hunter-clear").hidden = !q;
     if (changed) selectSearchWorld();
+    // The catalog is loaded once; without this, a row added or renamed in the admin stays
+    // invisible in an open tab — typing searches a list that no longer matches the site.
+    if (changed && catalogIsStale()) {
+      huntRhino(q, fromInput);
+      return;
+    }
     renderTabs();
     renderAisles();
     requestAnimationFrame(() => window.scrollTo(0, keep));
+  }
+
+  // How long a loaded catalog is trusted before a search refreshes it in the background.
+  const CATALOG_TTL_MS = 30000;
+  function catalogIsStale() {
+    if (!state.liveProducts && !state.liveFilaments) return false;
+    if (state.liveStatus === "loading") return false;
+    return Date.now() - (state.liveFetchedAt || 0) > CATALOG_TTL_MS;
   }
 
   function catalog() {
@@ -547,6 +562,7 @@
       if (!res.ok) throw new Error(data.error || "hunt failed");
       state.liveProducts = data.products || [];
       state.liveFilaments = data.filaments || [];
+      state.liveFetchedAt = Date.now();
       state.liveStatus = "ready";
       state.activeAisle = null;
       state.filPath = { polymer: null, variant: null, brand: null };
@@ -1393,7 +1409,7 @@
   }
 
   window.__imgFail = imgFail;
-  window.__3dp = { state, bestOffer, liveOffers, isSellable, productImages, imgFail, matchingProducts, matchingFilaments, searchRelevance, searchHaystack, foldText };
+  window.__3dp = { state, bestOffer, liveOffers, isSellable, productImages, imgFail, matchingProducts, matchingFilaments, searchRelevance, searchHaystack, foldText, setQuery, catalogIsStale, huntRhino };
 
   function escapeHtml(str) {
     return String(str)
@@ -1475,6 +1491,10 @@
     });
     $("#header-query").addEventListener("input", (e) => setQuery(e.target.value, "header"));
     $("#hunter-query").addEventListener("input", (e) => setQuery(e.target.value, "hunter"));
+    // An old tab should not keep showing a catalog the admin has since changed.
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && catalogIsStale()) huntRhino(state.query || "");
+    });
     $("#hunter-clear").addEventListener("click", () => setQuery(""));
 
     $("#new-tab").addEventListener("click", () => {
