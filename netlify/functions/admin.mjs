@@ -2,6 +2,7 @@
 import store from "../../lib/netlify-store.cjs";
 import auth from "../../lib/netlify-auth.cjs";
 import money from "../../lib/parse-money.cjs";
+import matcher from "../../lib/product-match.cjs";
 
 const { readJSON, writeJSON, deleteKey } = store;
 const { ownerFromHeaders, authReady } = auth;
@@ -75,6 +76,103 @@ function cloneCatalog(src) {
     products: (src?.products || []).map((p) => ({ ...p, offers: (p.offers || []).map((o) => ({ ...o })) })),
     filaments: (src?.filaments || []).map((p) => ({ ...p, offers: (p.offers || []).map((o) => ({ ...o })) }))
   };
+}
+
+// The axes the matcher actually uses. The catalog page shows them so a "Bare" and a "Combo"
+// never look alike, and the duplicates inbox refuses to merge across them.
+function axesOf(p) {
+  const id = matcher.identity(p || {});
+  return {
+    combo: id.combo === true,
+    ams: id.ams || "",
+    variant: id.variantTag || "",
+    mini: id.mini === true,
+    laser: id.laserW || "",
+    label: [id.combo ? "Combo" : "Bare", id.ams || "", id.variant ? "variant " + id.variant : "", id.mini ? "Mini" : "", id.laserW ? "laser " + id.laserW + "W" : ""]
+      .filter(Boolean).join(" · ")
+  };
+}
+
+function withAxes(catalog) {
+  const map = (list) => (list || []).map((p) => ({ ...p, axes: axesOf(p) }));
+  return { ...(catalog || {}), products: map(catalog && catalog.products), filaments: map(catalog && catalog.filaments) };
+}
+
+// Clusters of rows that are the same product by title (exact after folding, or Magellan close
+// enough), each with a suggested keeper. Pairs that differ on a hard axis are reported as
+// blocked instead, so "these two look identical but must never merge" is visible, not silent.
+function duplicateClusters(catalog, opts = {}) {
+  const rows = [...((catalog && catalog.products) || []), ...((catalog && catalog.filaments) || [])];
+  const parent = new Map(rows.map((p) => [p.id, p.id]));
+  const find = (x) => { while (parent.get(x) !== x) { parent.set(x, parent.get(parent.get(x))); x = parent.get(x); } return x; };
+  const union = (a, b) => { const ra = find(a), rb = find(b); if (ra !== rb) parent.set(ra, rb); };
+  const exactKey = (p) => matcher.fold(p.name || p.id || "");
+  const toks = (name) => matcher.tokens(name || "");
+  // One title being the other plus configuration words ("P1S" vs "P1S Combo") is the case that
+  // matters most here: those pairs score too low for a closeness test, and they are exactly the
+  // ones that must never merge, so they are found by subset and reported as blocked.
+  // Chains are the danger in clustering: H2D ~ H2D Combo ~ ... would otherwise drag H2C in.
+  // Two rows may only be joined when they name the same model (same digit-bearing tokens),
+  // so a group stays one machine instead of one product family.
+  const signature = (name) => toks(name).filter((t) => /[0-9]/.test(t)).sort().join(" ");
+  const isSubset = (a, b) => {
+    const A = toks(a), B = toks(b);
+    if (A.length < 2 || B.length < 2) return false;
+    const [sm, lg] = A.length <= B.length ? [A, B] : [B, A];
+    return sm.every((t) => lg.some((u) => u === t || matcher.similar(t, u)));
+  };
+  const byExact = new Map();
+  const blocked = [];
+  const near = [];
+  for (const p of rows) {
+    const k = exactKey(p);
+    byExact.set(k, [...(byExact.get(k) || []), p]);
+  }
+  for (const [, list] of byExact) {
+    for (let i = 1; i < list.length; i++) {
+      union(list[0].id, list[i].id);
+      near.push({ a: list[0], b: list[i], kind: "exact" });
+    }
+  }
+  for (let i = 0; i < rows.length; i++) {
+    for (let j = i + 1; j < rows.length; j++) {
+      const a = rows[i], b = rows[j];
+      if (find(a.id) === find(b.id)) continue;
+      if ((a.kind || "printer") !== (b.kind || "printer")) continue;
+      const conf = matcher.conflicts(matcher.identity(a), matcher.identity(b));
+      const close = matcher.similar(matcher.fold(a.name), matcher.fold(b.name));
+      const score = matcher.score(a.name || "", b.name || "");
+      const subset = isSubset(a.name, b.name);
+      if (!(close || score >= 0.82 || subset)) continue;
+      if (signature(a.name) !== signature(b.name)) continue;
+      if (conf.length) { blocked.push({ a: { id: a.id, name: a.name }, b: { id: b.id, name: b.name }, conflicts: conf }); continue; }
+      union(a.id, b.id);
+      near.push({ a, b, kind: subset ? "subset" : "near", score });
+    }
+  }
+  const groups = new Map();
+  for (const p of rows) {
+    const k = find(p.id);
+    groups.set(k, [...(groups.get(k) || []), p]);
+  }
+  const clusters = [...groups.values()]
+    .filter((list) => list.length > 1)
+    .map((list) => {
+      const offers = (p) => (p.offers || []).length;
+      const keeper = [...list].sort((x, y) => offers(y) - offers(x) || String(x.id).localeCompare(String(y.id)))[0];
+      return {
+        key: exactKey(list[0]),
+        name: keeper.name,
+        exact: list.every((p) => exactKey(p) === exactKey(list[0])),
+        keeperId: keeper.id,
+        rows: list.map((p) => ({
+          id: p.id, name: p.name, offers: offers(p), price: p.price, axes: axesOf(p),
+          stores: [...new Set((p.offers || []).map((o) => o.store).filter(Boolean))]
+        }))
+      };
+    })
+    .sort((a, b) => b.rows.length - a.rows.length);
+  return { clusters, blocked: blocked.slice(0, 60), scanned: rows.length };
 }
 
 function findByUrl(catalog, url) {
@@ -208,6 +306,9 @@ function collapseDuplicates(catalog) {
         byKey.set(key, p);
         continue;
       }
+      // Belt and braces: even if two titles fold to the same key, rows that differ on a hard
+      // axis (Bare/Combo, AMS, Mini, laser, variant) are left alone.
+      if (matcher.conflicts(matcher.identity(first), matcher.identity(p)).length) continue;
       const preferQwen = (x, y) => (!String(x.id).startsWith("qwen-") && String(y.id).startsWith("qwen-") ? y : x);
       const kept = preferQwen(first, p);
       const gone = kept === first ? p : first;
@@ -362,7 +463,7 @@ export default async (req) => {
     return json(200, {
       configured: authReady(),
       desk: data.desk,
-      catalog,
+      catalog: withAxes(catalog),
       candidate: data.candidate,
       jobs: data.jobs || [],
       heartbeat: await readJSON("heartbeat.json", null),
@@ -596,6 +697,52 @@ export default async (req) => {
         catalog.savedAt = new Date().toISOString();
         await writeJSON("catalog.json", catalog);
         return json(200, { ok: true, counts: { products: catalog.products.length, filaments: catalog.filaments.length } });
+      }
+
+      // The duplicates inbox: clusters with a keeper suggestion, and the near-duplicate pairs
+      // that must never merge reported separately.
+      case "suggestDuplicates": {
+        return json(200, { ok: true, ...duplicateClusters(catalog) });
+      }
+
+      // Merge selected rows into one keeper. The page keeps the previous catalog so this can
+      // be undone by saving it back.
+      case "mergeProducts": {
+        const ids = [...new Set((Array.isArray(body.ids) ? body.ids : []).map(String).filter(Boolean))];
+        const keeperId = String(body.keeperId || ids[0] || "");
+        if (ids.length < 2) throw new Error("Select at least two products to merge");
+        if (!ids.includes(keeperId)) throw new Error("The keeper must be one of the selected products");
+        const before = { products: (catalog.products || []).length, filaments: (catalog.filaments || []).length };
+        const mergeInto = (list) => {
+          const keeper = (list || []).find((p) => p.id === keeperId);
+          if (!keeper) return list;
+          const others = (list || []).filter((p) => ids.includes(p.id) && p.id !== keeperId);
+          keeper.offers = keeper.offers || [];
+          for (const other of others) {
+            for (const offer of other.offers || []) {
+              if (!offer.url || keeper.offers.some((o) => o.url === offer.url)) continue;
+              keeper.offers.push(offer);
+            }
+          }
+          const prices = keeper.offers.map((o) => Number(o.price)).filter((n) => Number.isFinite(n) && n > 0);
+          if (prices.length) keeper.price = Math.min(...prices);
+          keeper.manual = true;
+          keeper.mergedFrom = [...new Set([...(keeper.mergedFrom || []), ...others.map((p) => p.id)])];
+          return (list || []).filter((p) => !(ids.includes(p.id) && p.id !== keeperId));
+        };
+        catalog.products = mergeInto(catalog.products);
+        catalog.filaments = mergeInto(catalog.filaments);
+        catalog.productCount = catalog.products.length;
+        catalog.filamentCount = catalog.filaments.length;
+        catalog.savedAt = new Date().toISOString();
+        await writeJSON("catalog.json", catalog);
+        const keeper = findById(catalog, keeperId)?.product;
+        return json(200, {
+          ok: true,
+          keeper: { id: keeperId, name: keeper && keeper.name, offers: ((keeper && keeper.offers) || []).length },
+          merged: ids.length - 1,
+          counts: { before, after: { products: catalog.products.length, filaments: catalog.filaments.length } }
+        });
       }
 
       // Move one offer to another product row, or branch it out as its own product. This is

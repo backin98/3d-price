@@ -42,7 +42,7 @@ const context = {
 const source = fs.readFileSync('netlify/functions/admin.mjs', 'utf8')
   .replace(/^import .*;$/gm, '')
   .replace('export default async', 'globalThis.handler = async');
-const sandbox = { ...context, money: require('../lib/parse-money.cjs') };
+const sandbox = { ...context, money: require('../lib/parse-money.cjs'), matcher: require('../lib/product-match.cjs') };
 vm.runInNewContext(source, sandbox);
 
 const post = (body) => new Request('https://example.com/api/admin', {

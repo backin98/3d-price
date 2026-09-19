@@ -64,6 +64,7 @@ context.test.state.data = {
     savedAt: new Date().toISOString(),
     products: [{
       id: 'qwen-k2', name: 'Creality K2 Combo', brand: 'Creality', kind: 'printer', aisle: 'fdm', price: 76084.79, sourceTitle: 'x',
+      axes: { combo: true, ams: '', variant: '', mini: false, laser: '', label: 'Combo' },
       offers: [
         { store: 'rhino3dprinter.com', price: 32384.81, url: 'https://www.rhino3dprinter.com/creality-k2-combo-3d-yazici', sourceTitle: 'Creality K2 Combo 3D Yazıcı' },
         { store: 'rhino3dprinter.com', price: 76084.79, url: 'https://www.rhino3dprinter.com/urun/creality-k2-plus-combo', sourceTitle: 'Creality K2 Plus Combo 3D Yazıcı - 300x300x300 mm' }
@@ -81,6 +82,27 @@ assert.match(cat, /data-offer-branch="https:\/\/www.rhino3dprinter.com\/urun\/cr
 assert.match(cat, /data-offer-move="https:\/\/www.rhino3dprinter.com\/urun\/creality-k2-plus-combo"/);
 assert.match(cat, /id="catalog-targets"/, 'one shared target list for the whole page');
 assert.match(cat, /id="catalog-refresh"/, 'and a refresh button');
+// Grouping controls: badge the axis, propose a keeper, keep the dangerous buttons away.
+assert.match(cat, /axis-badge/, 'each row is badged with its axis');
+assert.match(cat, /Bare/, 'a bare row says Bare');
+assert.match(cat, /Merge selected \(0\)…/, 'merge-selected is in the toolbar');
+assert.match(cat, /Find duplicate groups/, 'the duplicates inbox has a trigger');
+assert.match(cat, /<details class="danger-zone">/, 'delete-all and the bulk merge live in a danger zone');
+assert.match(cat, /Merge exact-title duplicates \(all at once\)/, 'the bulk merge is named honestly');
+assert.equal(/id="delete-all-catalog"[^]{0,200}id="collapse-duplicates"/.test(cat), true, 'both danger buttons are inside that zone');
+context.test.state.catalogSelected = new Set(['qwen-k2', 'qwen-p1s']);
+context.test.state.data.catalog.products.push({ id: 'qwen-p1s', name: 'Bambu Lab P1S Combo 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer', offers: [{ store: 'a', price: 10, url: 'https://a/x' }] });
+const withSel = context.test.catalogHtml(context.test.state.data);
+assert.match(withSel, /Merge 2 products into one keeper/, 'picking two rows opens the keeper chooser');
+assert.match(withSel, /type="radio" name="keeper"/, 'and the keeper is chosen explicitly');
+assert.match(withSel, /Undo last merge|id="merge-selected-go"/, 'the merge is not blind');
+context.test.state.catalogSelected = new Set();
+context.test.state.dupes = { clusters: [{ key: 'k', name: 'Creality K2 Combo', exact: true, keeperId: 'qwen-k2', rows: [{ id: 'qwen-k2', name: 'Creality K2 Combo', offers: 2, axes: { label: 'Combo' }, stores: ['a'] }, { id: 'qwen-p1s', name: 'Creality K2 Combo', offers: 1, axes: { label: 'Combo' }, stores: ['b'] }] }], blocked: [{ a: { id: 'x', name: 'P1S' }, b: { id: 'y', name: 'P1S Combo' }, conflicts: ['combo'] }] };
+const withDupes = context.test.catalogHtml(context.test.state.data);
+assert.match(withDupes, /Duplicates inbox/);
+assert.match(withDupes, /data-merge-cluster="k"/, 'one group at a time can be merged');
+assert.match(withDupes, /possible duplicate of/, 'the row itself carries the hint');
+assert.match(withDupes, /must not merge/, 'blocked pairs are shown');
 console.log('PASS: six pages, fallback routing, active navigation, shop separation, overview, login visibility, authenticated polling.');
 })().catch(err=>{console.error(err);process.exitCode=1});
 

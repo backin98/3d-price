@@ -16,6 +16,13 @@
     reviewFlags: new Set(),
     reviewPlace: new Map(),
     catalogSelected: new Set(),
+    catalogShop: "",
+    catalogVariant: "",
+    dupesOnly: false,
+    dupes: null,
+    keeperId: "",
+    reviewJobId: "",
+    catalogUndo: null,
     loading: false,
     timer: null,
     workerLive: null
@@ -275,10 +282,26 @@
 
   function filteredProducts() {
     const q = state.catalogQuery.trim().toLowerCase();
-    const all = allProducts();
-    if (!q) return all.slice(0, state.catalogLimit);
-    return all.filter((p) => [p.id, p.name, p.brand, p.color, p.polymer, p.variant, p.unit]
-      .filter(Boolean).join(" ").toLowerCase().includes(q)).slice(0, state.catalogLimit);
+    const shop = state.catalogShop;
+    const variant = state.catalogVariant;
+    const dupeIds = state.dupesOnly && state.dupes
+      ? new Set((state.dupes.clusters || []).flatMap((c) => (c.rows || []).map((r) => r.id)))
+      : null;
+    return allProducts().filter((p) => {
+      if (dupeIds && !dupeIds.has(p.id)) return false;
+      if (shop && !(p.offers || []).some((o) => o.store === shop)) return false;
+      if (variant) {
+        const a = p.axes || {};
+        if (variant === "bare" && a.combo) return false;
+        if (variant === "combo" && !a.combo) return false;
+        if (variant === "ams2" && !/ams 2/i.test(a.ams || "")) return false;
+        if (variant === "mini" && !a.mini) return false;
+        if (variant === "laser" && !a.laser) return false;
+      }
+      if (!q) return true;
+      return [p.id, p.name, p.brand, p.color, p.polymer, p.variant, p.unit]
+        .filter(Boolean).join(" ").toLowerCase().includes(q);
+    }).slice(0, state.catalogLimit);
   }
 
   // ---------- render ----------
@@ -500,6 +523,19 @@
         <p class="muted">LLM help off (default): Magellan decides and close calls wait for you. On: one short Gemma ask, text only, only when Magellan is in the gray band. Hard conflicts (AMS, Combo, mini, laser) are never merged either way.<br>Visual match: on — thumbnails are fingerprinted locally when titles are a close call, and a matching photo is flagged for you to confirm. Vision never merges on its own.</p>
         ${job ? `<p><span class="badge ${job.status}">${esc(job.status)}</span> ${esc(job.progress || "")}</p>` : "<p class='muted'>No active run.</p>"}
         <h3>Live review board</h3>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0">
+          <label class="muted" style="font-size:12px">Run
+            <select id="review-job-select">
+              <option value="">newest with cards</option>
+              ${(d.jobs || []).slice(0, 25).map((j) => {
+                const cards = Object.keys(j.cards || {}).length;
+                const at = String(j.createdAt || "").replace("T", " ").slice(0, 16);
+                return `<option value="${esc(j.id)}" ${state.reviewJobId === j.id ? "selected" : ""}>${esc(j.id)} · ${esc(at)} · ${esc(j.status || "")} · ${cards} card${cards === 1 ? "" : "s"}${(j.published || []).length ? " · " + (j.published || []).length + " collected" : ""}</option>`;
+              }).join("")}
+            </select>
+          </label>
+          <small class="muted">${state.reviewJobId ? "Showing one run by hand — collected cards included, so its decisions stay editable." : "Gather a shop to fill this board."}</small>
+        </div>
         <p class="muted">Cards appear as products are gathered. Select what to publish, flag anything unsure, and choose which catalog product each listing joins — that is who it will be price-compared against.</p>
         ${reviewBoardHtml(reviewJob(d))}
         <h3>Run activity <button class="btn-sm danger" type="button" id="delete-all-runs" style="margin-left:8px">Delete all runs</button></h3>
@@ -517,8 +553,14 @@
     }
   }
 
+  // A chosen run wins, so an older shop run stays usable after Collect emptied the newest one's
+  // board. With nothing chosen we keep the old behaviour: the newest run that still has cards.
   function reviewJob(d) {
     const jobs = d.jobs || [];
+    if (state.reviewJobId) {
+      const chosen = jobs.find((j) => j.id === state.reviewJobId);
+      if (chosen) return chosen;
+    }
     return activeJob(d)
       || jobs.find((j) => j.cards && Object.keys(j.cards).length)
       || jobs.find((j) => (j.events || []).some((e) => e.card || e.urls || e.url))
@@ -528,7 +570,9 @@
 
   function collectCards(job, d) {
     const byUrl = new Map();
-    const dropped = new Set([...(job.dropped || []), ...(job.published || [])]);
+    // Published cards come back when a specific run is chosen by hand: after Collect the board
+    // looked empty, which is exactly when you want to go back and regroup.
+    const dropped = new Set([...(job.dropped || []), ...(state.reviewJobId ? [] : (job.published || []))]);
     const rank = (d) => d && (d.action === "merge" || d.action === "updated") ? 2 : d && d.action === "create" ? 1 : 0;
     const add = (url, patch) => {
       if (!url || dropped.has(url)) return;
@@ -898,19 +942,98 @@
           <h2 style="margin:0">Saved catalog</h2>
           <span class="muted">Last saved: ${esc(savedAt)}</span>
           <button class="btn-sm ghost" type="button" id="select-all-catalog">Select all</button>
-          <button class="btn-sm ghost" type="button" id="collapse-duplicates">Collapse duplicates</button>
+          <button class="btn-sm" type="button" id="merge-selected-catalog" ${state.catalogSelected.size > 1 ? "" : "disabled"}>Merge selected (${state.catalogSelected.size})…</button>
+          <button class="btn-sm ghost" type="button" id="find-duplicates">Find duplicate groups</button>
+          ${state.catalogUndo ? `<button class="btn-sm ghost" type="button" id="undo-merge">Undo last merge</button>` : ""}
           <button class="btn-sm danger" type="button" id="delete-selected-catalog" ${state.catalogSelected.size ? "" : "disabled"}>Delete selected (${state.catalogSelected.size})</button>
-          <button class="btn-sm danger" type="button" id="delete-all-catalog">Delete all</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0">
+          <label class="muted" style="font-size:12px">Shop
+            <select id="catalog-shop"><option value="">all shops</option>${[...new Set(allProducts().flatMap((p) => (p.offers || []).map((o) => o.store)).filter(Boolean))].sort().map((x) => `<option value="${esc(x)}" ${state.catalogShop === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select>
+          </label>
+          <label class="muted" style="font-size:12px">Variant
+            <select id="catalog-variant">
+              <option value="">any</option>
+              <option value="bare" ${state.catalogVariant === "bare" ? "selected" : ""}>Bare (no combo/AMS)</option>
+              <option value="combo" ${state.catalogVariant === "combo" ? "selected" : ""}>Combo</option>
+              <option value="ams2" ${state.catalogVariant === "ams2" ? "selected" : ""}>AMS 2 Pro</option>
+              <option value="mini" ${state.catalogVariant === "mini" ? "selected" : ""}>Mini</option>
+              <option value="laser" ${state.catalogVariant === "laser" ? "selected" : ""}>Laser</option>
+            </select>
+          </label>
+          <label class="muted" style="font-size:12px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="dupes-only" ${state.dupesOnly ? "checked" : ""}> Duplicates only${state.dupes ? ` (${state.dupes.clusters.length} groups)` : " — press Find duplicate groups first"}</label>
         </div>
         <p class="muted">Edits here are saved to the online catalog and take effect immediately on the storefront.</p>
+        <details class="danger-zone"><summary>Danger zone</summary>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <button class="btn-sm danger" type="button" id="delete-all-catalog">Delete every catalog product</button>
+            <button class="btn-sm danger" type="button" id="collapse-duplicates">Merge exact-title duplicates (all at once)</button>
+            <small class="muted">The second one merges rows whose titles are identical after folding — it never merges Bare with Combo, Mini or a laser variant.</small>
+          </div>
+        </details>
         <div class="search"><input id="catalog-search" aria-label="Search catalog" type="search" placeholder="Search name, brand, color, polymer…" value="${esc(state.catalogQuery)}"><span class="muted" id="catalog-count">${products.length} shown</span>
           <button class="btn-sm ghost" type="button" id="catalog-refresh">Refresh live data</button>
         </div>
         <datalist id="catalog-targets">${allProducts().map((x) => `<option value="${esc(x.name || x.id)}"></option>`).join("")}</datalist>
+        ${mergeBarHtml()}
+        ${dupesPanelHtml()}
         <div class="catalog-results" id="catalog-results">${products.map(productCard).join("") || '<div class="empty">No products found.</div>'}</div>
         <button class="ghost" id="catalog-more" style="margin-top:20px" ${products.length < state.catalogLimit ? "hidden" : ""}>Show more products</button>
       </div>
     `;
+  }
+
+  // Grouping is the job here: pick the keeper explicitly, then merge.
+  function mergeBarHtml() {
+    const picked = allProducts().filter((p) => state.catalogSelected.has(p.id));
+    if (picked.length < 2) return "";
+    const keeper = picked.find((p) => p.id === state.keeperId) || picked[0];
+    return `<div class="panel merge-bar">
+      <h3 style="margin-top:0">Merge ${picked.length} products into one keeper</h3>
+      <p class="muted">Offers are combined onto the keeper and the other rows disappear. Undo last merge puts it back.</p>
+      <ul class="keeper-list">${picked.map((p) => `<li>
+        <label><input type="radio" name="keeper" data-keeper="${esc(p.id)}" ${p.id === keeper.id ? "checked" : ""}> <strong>${esc(p.name || p.id)}</strong>
+        <span class="muted">${(p.offers || []).length} offers · ${esc(p.id)}${p.axes ? " · " + esc(p.axes.label) : ""}</span></label>
+      </li>`).join("")}</ul>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <button class="btn-sm" type="button" id="merge-selected-go">Merge into ${esc(keeper.name || keeper.id)}</button>
+        <button class="btn-sm ghost" type="button" id="merge-cancel">Cancel</button>
+        <small class="muted" id="merge-result"></small>
+      </div>
+    </div>`;
+  }
+
+  // The duplicates inbox: proposed groups with a keeper, and the pairs that look alike but
+  // differ on a hard axis, which can never be merged here.
+  function dupesPanelHtml() {
+    const d = state.dupes;
+    if (!d) return "";
+    const clusters = d.clusters || [];
+    if (!clusters.length && !(d.blocked || []).length) return '<div class="panel"><p class="muted">No duplicate groups found.</p></div>';
+    return `<div class="panel dupes-panel">
+      <h3 style="margin-top:0">Duplicates inbox</h3>
+      <p class="muted">${clusters.length} group${clusters.length === 1 ? "" : "s"} of rows that are the same product by title. Suggested keeper first. Pairs that look alike but differ on Combo / Mini / laser / variant are listed as blocked.</p>
+      ${clusters.map((c) => `<div class="dupe-cluster">
+        <div class="dupe-head">
+          <strong>${esc(c.name || c.key)}</strong>
+          <span class="badge">${c.rows.length} rows</span>
+          <span class="muted">${c.exact ? "exact title" : "near-duplicate"} · keep ${esc(c.keeperId)}</span>
+          <button class="btn-sm" type="button" data-merge-cluster="${esc(c.key)}">Merge this group</button>
+        </div>
+        <ul>${c.rows.map((r) => `<li><span class="muted">${esc(r.id)}</span> ${esc(r.name || "")} — ${r.offers} offers${r.axes ? " · " + esc(r.axes.label) : ""}${r.stores && r.stores.length ? " · " + esc(r.stores.join(", ")) : ""}${r.id === c.keeperId ? ' <span class="badge">keeper</span>' : ""}</li>`).join("")}</ul>
+      </div>`).join("")}
+      ${(d.blocked || []).length ? `<details><summary>${d.blocked.length} pairs look alike but must not merge</summary><ul>${d.blocked.map((b) => `<li>${esc(b.a.name || b.a.id)} ↔ ${esc(b.b.name || b.b.id)} <span class="muted">(${esc(b.conflicts.join(", "))})</span></li>`).join("")}</ul></details>` : ""}
+    </div>`;
+  }
+
+  // "possible duplicate of …" straight from the inbox, so the row itself says why.
+  function dupeHint(p) {
+    const d = state.dupes;
+    if (!d) return "";
+    const hit = (d.clusters || []).find((c) => (c.rows || []).some((r) => r.id === p.id));
+    if (!hit) return "";
+    const others = hit.rows.filter((r) => r.id !== p.id).map((r) => r.name || r.id);
+    return others.length ? `<span class="dupe-hint" title="same product by title">possible duplicate of ${esc(others.slice(0, 2).join(" / "))}${others.length > 2 ? " +" + (others.length - 2) : ""}</span>` : "";
   }
 
   function productCard(p) {
@@ -921,7 +1044,12 @@
       <label class="muted" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600"><input type="checkbox" data-catalog-select="${esc(p.id)}" ${on ? "checked" : ""}> Select</label>
       ${p.image ? productImg(p.image) : '<div style="height:110px;background:#e8ebef;border-radius:8px"></div>'}
       <div class="name">${esc(p.name || p.title || p.id)}</div>
-      <div class="meta">${esc([p.brand, p.shelf === "filament" ? p.polymer : p.aisle, p.unit].filter(Boolean).join(" · "))} · ${(p.offers || []).length} offers</div>
+      <div class="meta">
+        ${p.axes ? `<span class="axis-badge${p.axes.combo ? " is-combo" : " is-bare"}">${esc(p.axes.label || (p.axes.combo ? "Combo" : "Bare"))}</span>` : ""}
+        <span class="muted">${esc([p.brand, p.shelf === "filament" ? p.polymer : p.aisle, p.unit].filter(Boolean).join(" · "))} · ${(p.offers || []).length} offers</span>
+        <span class="muted" title="product id">${esc(p.id)}</span>
+        ${dupeHint(p)}
+      </div>
       <input aria-label="Product name" data-field="name" value="${common("name")}" placeholder="Name">
       <div style="display:flex;gap:6px">
         <input style="flex:1" aria-label="Product brand" data-field="brand" value="${common("brand")}" placeholder="Brand">
@@ -1140,7 +1268,7 @@
         return;
       }
       if (e.target.closest("#collapse-duplicates")) {
-        if (!confirm("Merge catalog rows that share a title into one product (offers are combined)? Compare this against the live site after.")) return;
+        if (!confirm("Merge rows whose titles are IDENTICAL after folding into one product (offers combined)? Rows that differ on Bare/Combo, Mini, laser or variant are never touched. Undo is not offered for a bulk merge — use the Duplicates inbox for one group at a time.")) return;
         try {
           const res = await action({ action: "collapseDuplicates" });
           state.catalogSelected.clear();
@@ -1167,6 +1295,79 @@
         if (btn) {
           btn.disabled = !state.catalogSelected.size;
           btn.textContent = "Delete selected (" + state.catalogSelected.size + ")";
+        }
+        return;
+      }
+      if (e.target.closest("#find-duplicates")) {
+        const btn = e.target.closest("#find-duplicates");
+        btn.disabled = true;
+        btn.textContent = "Scanning…";
+        try {
+          const res = await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "suggestDuplicates" }) });
+          state.dupes = { clusters: res.clusters || [], blocked: res.blocked || [] };
+          const n = state.dupes.clusters.length;
+          toast(n ? n + " duplicate group" + (n === 1 ? "" : "s") + " found — review each before merging." : "No duplicate groups found.");
+        } catch (err) {
+          toast(err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = "Find duplicate groups";
+          render();
+        }
+        return;
+      }
+      if (e.target.closest("[data-keeper]")) {
+        state.keeperId = e.target.closest("[data-keeper]").dataset.keeper;
+        render();
+        return;
+      }
+      if (e.target.closest("#merge-cancel")) {
+        state.keeperId = "";
+        state.catalogSelected.clear();
+        render();
+        toast("Merge cancelled.");
+        return;
+      }
+      if (e.target.closest("[data-merge-cluster]") || e.target.closest("#merge-selected-go")) {
+        const clusterKey = e.target.closest("[data-merge-cluster]") ? e.target.closest("[data-merge-cluster]").dataset.mergeCluster : "";
+        const cluster = clusterKey ? (state.dupes && state.dupes.clusters || []).find((c) => c.key === clusterKey) : null;
+        const ids = cluster ? cluster.rows.map((r) => r.id) : allProducts().filter((p) => state.catalogSelected.has(p.id)).map((p) => p.id);
+        const keeperId = cluster ? cluster.keeperId : (state.keeperId || ids[0]);
+        if (ids.length < 2) { toast("Nothing to merge."); return; }
+        if (!confirm("Merge " + ids.length + " rows into " + keeperId + "? Offers are combined; the other rows disappear. Undo is available right after.")) return;
+        const btn = e.target.closest("button");
+        const label = btn.textContent;
+        btn.disabled = true;
+        btn.textContent = "Merging…";
+        try {
+          // Keep the previous catalog so a wrong merge can be put back in one press.
+          state.catalogUndo = state.data && state.data.catalog ? JSON.parse(JSON.stringify(state.data.catalog)) : null;
+          const res = await action({ action: "mergeProducts", ids, keeperId });
+          state.catalogSelected.clear();
+          state.keeperId = "";
+          state.dupes = null;
+          state.dupesOnly = false;
+          toast("Merged " + (res.merged + 1) + " rows into " + (res.keeper.name || res.keeper.id) + " (" + res.keeper.offers + " offers). Undo is in the toolbar.");
+        } catch (err) {
+          state.catalogUndo = null;
+          toast(err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = label;
+        }
+        return;
+      }
+      if (e.target.closest("#undo-merge")) {
+        const prev = state.catalogUndo;
+        if (!prev) { toast("Nothing to undo."); return; }
+        if (!confirm("Put the catalog back to how it was before that merge?")) return;
+        try {
+          await action({ action: "saveCatalog", catalog: prev });
+          state.catalogUndo = null;
+          state.dupes = null;
+          toast("Merge undone — the catalog is back as it was.");
+        } catch (err) {
+          toast(err.message);
         }
         return;
       }
@@ -1753,6 +1954,22 @@
       const placeQ = e.target.getAttribute && e.target.getAttribute("data-review-place-q");
       if (placeQ != null) {
         fillPlaceHits(e.target.closest(".review-card"), decodeURIComponent(placeQ), e.target.value);
+        return;
+      }
+      if (e.target.id === "review-job-select") {
+        state.reviewJobId = e.target.value;
+        state.reviewSelected.clear();
+        state.reviewPlace.clear();
+        render();
+        toast(state.reviewJobId ? "Showing run " + state.reviewJobId + " — collected cards are visible again." : "Showing the newest run with cards.");
+        return;
+      }
+      if (e.target.id === "catalog-shop" || e.target.id === "catalog-variant" || e.target.id === "dupes-only") {
+        if (e.target.id === "catalog-shop") state.catalogShop = e.target.value;
+        if (e.target.id === "catalog-variant") state.catalogVariant = e.target.value;
+        if (e.target.id === "dupes-only") state.dupesOnly = e.target.checked;
+        state.catalogLimit = 40;
+        render();
         return;
       }
       if (e.target.id === "catalog-search") {
