@@ -110,12 +110,16 @@ const t = context.test;
 assert.match(t.catalogHtml(t.state.data), /ontoggle="window\.__keepOpen&&window\.__keepOpen\(this\)"/, 'each disclosure remembers itself inline');
 assert.equal(typeof context.window.__keepOpen, 'function', 'and the global exists');
 assert.equal(t.openAttr('offers:qwen-k2'), '', 'closed by default');
-t.rememberDetails({ target: { dataset: { detailKey: 'offers:qwen-k2' }, open: true } });
-assert.equal(t.openAttr('offers:qwen-k2'), ' open', 'opening is remembered in state');
+// Called the way the inline handler calls it: the element itself, not an event.
+t.rememberDetails({ dataset: { detailKey: 'offers:qwen-k2' }, open: true });
+assert.equal(t.openAttr('offers:qwen-k2'), ' open', 'opening an element is remembered in state');
 assert.match(t.catalogHtml(t.state.data), /data-detail-key="offers:qwen-k2" open/, 'so the re-render keeps it open');
-t.rememberDetails({ target: { dataset: { detailKey: 'danger' }, open: true } });
+t.rememberDetails({ dataset: { detailKey: 'danger' }, open: true });
 assert.match(t.catalogHtml(t.state.data), /data-detail-key="danger" open/, 'the danger zone too');
-t.rememberDetails({ target: { dataset: { detailKey: 'offers:qwen-k2' }, open: false } });
+// A delegated listener would pass an event instead; both shapes must work.
+t.rememberDetails({ target: { dataset: { detailKey: 'blocked' }, open: true } });
+assert.equal(t.openAttr('blocked'), ' open', 'event shape works too');
+t.rememberDetails({ dataset: { detailKey: 'offers:qwen-k2' }, open: false });
 assert.equal(t.openAttr('offers:qwen-k2'), '', 'closing is remembered as well');
 assert.doesNotMatch(t.catalogHtml(t.state.data), /data-detail-key="offers:qwen-k2" open/, 'and stays closed after a re-render');
 t.rememberDetails({ target: { dataset: {} } });

@@ -31,12 +31,13 @@
     workerLive: null
   };
 
-  // Remembers which disclosures are open so a re-render does not close them.
+  // Remembers which disclosures are open so a re-render does not close them. Inline ontoggle
+  // passes the element itself, a delegated listener passes an event — accept both shapes.
   const isOpen = (key) => state.openDetails.has(key);
   const openAttr = (key) => (isOpen(key) ? " open" : "");
   const detailAttrs = (key) => `data-detail-key="${esc(key)}"${openAttr(key)} ontoggle="window.__keepOpen&&window.__keepOpen(this)"`;
   function rememberDetails(e) {
-    const el = e && e.target;
+    const el = e && e.dataset ? e : (e && e.target);
     if (!el || !el.dataset || !el.dataset.detailKey) return;
     if (el.open) state.openDetails.add(el.dataset.detailKey);
     else state.openDetails.delete(el.dataset.detailKey);
@@ -246,24 +247,24 @@
           state.data = data;
           await pingWorker();
           renderHeaderOnly();
-          if (state.tab === "overview") $("#tab-overview").innerHTML = overviewHtml(data);
-          if (state.tab === "jobs") $("#tab-jobs").innerHTML = jobsHtml(data);
+          if (state.tab === "overview") paint("#tab-overview", overviewHtml(data));
+          if (state.tab === "jobs") paint("#tab-jobs", jobsHtml(data));
           if (state.tab === "ai") {
             const ae = document.activeElement;
             if (ae && $("#tab-ai")?.contains(ae) && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA")) return;
-            $("#tab-ai").innerHTML = aiHtml(data);
+            paint("#tab-ai", aiHtml(data));
           }
           if (state.tab === "catalog") {
             const ae = document.activeElement;
             if (ae && $("#tab-catalog")?.contains(ae) && (ae.tagName === "INPUT" || ae.tagName === "TEXTAREA" || ae.tagName === "SELECT")) return;
-            $("#tab-catalog").innerHTML = catalogHtml(data);
+            paint("#tab-catalog", catalogHtml(data));
           }
           if (state.tab === "runs") {
             const ae = document.activeElement;
             const typing = ae && (ae.tagName === "SELECT" || (ae.tagName === "INPUT" && ae.type !== "checkbox"));
             if (typing && $("#tab-runs")?.contains(ae)) return;
             const url = $("#shop-url")?.value, kind = $("#shop-kind")?.value, max = $("#shop-max")?.value, cat = $("#run-cat")?.value, shop = $("#run-shop")?.value, llm = $("#run-llm")?.checked;
-            $("#tab-runs").innerHTML = runsHtml(data);
+            paint("#tab-runs", runsHtml(data));
             if ($("#shop-url")) { $("#shop-url").value = url; $("#shop-kind").value = kind; $("#shop-max").value = max; }
             if ($("#run-llm") && llm !== undefined) $("#run-llm").checked = llm;
             if ($("#run-shop") && shop) $("#run-shop").value = shop;
@@ -330,16 +331,28 @@
     if ($("#ai-status")) $("#ai-status").innerHTML = aiStatusHtml(d);
   }
 
+  // Setting innerHTML throws away everything the DOM knows — including which <details> are
+  // open, focus and scroll. An idle 5s poll produces byte-identical markup, so only write when
+  // something actually changed. Every tab goes through here.
+  const painted = new Map();
+  function paint(sel, html) {
+    const el = $(sel);
+    if (!el) return;
+    if (painted.get(sel) === html) return;
+    painted.set(sel, html);
+    el.innerHTML = html;
+  }
+
   function render() {
     const d = state.data;
     if (!d) return;
-    $("#tab-overview").innerHTML = overviewHtml(d);
-    $("#tab-runs").innerHTML = runsHtml(d);
-    $("#tab-catalog").innerHTML = catalogHtml(d);
-    $("#tab-shops").innerHTML = shopsHtml(d);
-    $("#tab-merch").innerHTML = merchHtml(d);
-    $("#tab-ai").innerHTML = aiHtml(d);
-    $("#tab-jobs").innerHTML = jobsHtml(d);
+    paint("#tab-overview", overviewHtml(d));
+    paint("#tab-runs", runsHtml(d));
+    paint("#tab-catalog", catalogHtml(d));
+    paint("#tab-shops", shopsHtml(d));
+    paint("#tab-merch", merchHtml(d));
+    paint("#tab-ai", aiHtml(d));
+    paint("#tab-jobs", jobsHtml(d));
     renderHeaderOnly();
     selectPage();
   }
@@ -1281,7 +1294,7 @@
       }
       if (e.target.closest("#select-all-catalog")) {
         allProducts().forEach((p) => state.catalogSelected.add(p.id));
-        $("#tab-catalog").innerHTML = catalogHtml(state.data);
+        paint("#tab-catalog", catalogHtml(state.data));
         return;
       }
       if (e.target.closest("#collapse-duplicates")) {
@@ -1402,7 +1415,7 @@
       }
       if (e.target.closest("#catalog-more")) {
         state.catalogLimit += 40;
-        $("#tab-catalog").innerHTML = catalogHtml(state.data);
+        paint("#tab-catalog", catalogHtml(state.data));
       }
       if (e.target.closest("[data-mismatch-discard]")) {
         const url = decodeURIComponent(e.target.closest("[data-mismatch-discard]").dataset.mismatchDiscard);
