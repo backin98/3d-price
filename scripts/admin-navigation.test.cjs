@@ -9,7 +9,7 @@ function node(sel) { if(!nodes.has(sel)) nodes.set(sel,{hidden:true,innerHTML:''
 let poll, calls=0;
 const data={desk:{shops:[],banners:[],promoted:[]},catalog:{products:[],filaments:[]},jobs:[]};
 const context={URL,document:{querySelector:node,querySelectorAll:sel=>sel==='.tab-panel'?panels:links},location:{hash:''},window:{},setInterval:fn=>{poll=fn;return 1},clearInterval(){},setTimeout(){},clearTimeout(){},fetch:async()=>{calls++;return {ok:true,status:200,json:async()=>data}}};
-let source=fs.readFileSync('public/admin/admin.js','utf8').replace('  init();','  globalThis.test = {state, render, selectPage, startPolling, shopsHtml, merchHtml, overviewHtml, runsHtml, shopCategories, categoryNames, categoryUrlForShop};');
+let source=fs.readFileSync('public/admin/admin.js','utf8').replace('  init();','  globalThis.test = {state, render, selectPage, startPolling, shopsHtml, merchHtml, overviewHtml, runsHtml, shopCategories, categoryNames, categoryUrlForShop, catalogHtml, productCard};');
 vm.runInNewContext(source,context);
 context.test.state.data=data;
 context.test.render();
@@ -57,6 +57,30 @@ assert.match(fs.readFileSync('public/admin/admin.css','utf8'),/\[hidden\] \{ dis
  context.test.startPolling();
  node('#login').hidden=false; await poll(); assert.equal(calls,0);
  node('#login').hidden=true; await poll(); await new Promise(resolve=>setImmediate(resolve)); assert.equal(calls,1);
- console.log('PASS: six pages, fallback routing, active navigation, shop separation, overview, login visibility, authenticated polling.');
+ // The catalog must show where an offer came from and how to regroup it.
+context.test.state.data = {
+  desk: { shops: [], banners: [], promoted: [] },
+  catalog: {
+    savedAt: new Date().toISOString(),
+    products: [{
+      id: 'qwen-k2', name: 'Creality K2 Combo', brand: 'Creality', kind: 'printer', aisle: 'fdm', price: 76084.79, sourceTitle: 'x',
+      offers: [
+        { store: 'rhino3dprinter.com', price: 32384.81, url: 'https://www.rhino3dprinter.com/creality-k2-combo-3d-yazici', sourceTitle: 'Creality K2 Combo 3D Yazıcı' },
+        { store: 'rhino3dprinter.com', price: 76084.79, url: 'https://www.rhino3dprinter.com/urun/creality-k2-plus-combo', sourceTitle: 'Creality K2 Plus Combo 3D Yazıcı - 300x300x300 mm' }
+      ]
+    }], filaments: []
+  },
+  candidate: { products: [], filaments: [] }, jobs: []
+};
+const cat = context.test.catalogHtml(context.test.state.data);
+assert.match(cat, /2 offers — source, scraped title, worker title/, 'the panel is labelled');
+assert.match(cat, /scraped: Creality K2 Plus Combo 3D Yazıcı - 300x300x300 mm/, 'the scraped title is shown');
+assert.match(cat, /worker: Creality K2 Combo/, 'the worker title is shown');
+assert.match(cat, /urun\/creality-k2-plus-combo/, 'the source url slug is shown');
+assert.match(cat, /data-offer-branch="https:\/\/www.rhino3dprinter.com\/urun\/creality-k2-plus-combo"/);
+assert.match(cat, /data-offer-move="https:\/\/www.rhino3dprinter.com\/urun\/creality-k2-plus-combo"/);
+assert.match(cat, /id="catalog-targets"/, 'one shared target list for the whole page');
+assert.match(cat, /id="catalog-refresh"/, 'and a refresh button');
+console.log('PASS: six pages, fallback routing, active navigation, shop separation, overview, login visibility, authenticated polling.');
 })().catch(err=>{console.error(err);process.exitCode=1});
 

@@ -110,9 +110,12 @@ function applySelectedListings(live, candidate, items) {
     const url = String(item.url || card.url || "");
     if (!url) continue;
     const found = findByUrl(candidate || {}, url);
+    // The scraped title travels with the offer so the catalog can show where it came from
+    // and offer a regroup/branch when the matcher grouped it wrong.
+    const scrapedTitle = String(card.name || "").trim();
     const offer = found?.offer
-      ? { ...found.offer }
-      : { store: offerStore(url, card), price: card.price, url, image: card.image || "" };
+      ? { ...found.offer, sourceTitle: found.offer.sourceTitle || scrapedTitle }
+      : { store: offerStore(url, card), price: card.price, url, image: card.image || "", sourceTitle: scrapedTitle };
     const shelf = found?.shelf || (card.kind === "filament" ? "filaments" : "products");
     const dest = next[shelf];
     const mergeId = item.action === "merge" ? String(item.candidateId || "") : "";
@@ -593,6 +596,78 @@ export default async (req) => {
         catalog.savedAt = new Date().toISOString();
         await writeJSON("catalog.json", catalog);
         return json(200, { ok: true, counts: { products: catalog.products.length, filaments: catalog.filaments.length } });
+      }
+
+      // Move one offer to another product row, or branch it out as its own product. This is
+      // how a wrongly grouped offer (a K2 Plus sitting on a K2 row) gets separated, using the
+      // scraped title we recorded at harvest time.
+      case "retargetOffer": {
+        const url = String(body.url || "").trim();
+        const from = String(body.from || "").trim();
+        const to = String(body.to || "").trim();
+        if (!url || !from || !to) throw new Error("retargetOffer needs url, from and to");
+        const shelves = [catalog.products || [], catalog.filaments || []];
+        const found = shelves.map((list) => list.find((p) => p.id === from)).find(Boolean);
+        if (!found) throw new Error("Source product not found");
+        const at = (found.offers || []).findIndex((o) => o.url === url);
+        if (at < 0) throw new Error("That offer is not on the source product");
+        const priceOf = (p) => {
+          const prices = (p.offers || []).map((o) => Number(o.price)).filter((n) => Number.isFinite(n) && n > 0);
+          return prices.length ? Math.min(...prices) : p.price;
+        };
+        const shelfOf = (kind) => (kind === "filament" ? catalog.filaments : catalog.products);
+        // Validate the destination before touching anything, so a refused move is a no-op.
+        let target = null;
+        if (to === "new") {
+          // stays null: a new row is always allowed
+        } else {
+          target = shelves.flat().find((p) => p.id === to);
+          if (!target) throw new Error("Target product not found");
+          if (target.id === from) throw new Error("Already on that product");
+          if ((target.offers || []).some((o) => o.url === url)) throw new Error("Target already has that offer");
+        }
+        const [offer] = found.offers.splice(at, 1);
+        const scraped = String(offer.sourceTitle || "").trim();
+        if (to === "new") {
+          const slug = (() => {
+            try { return decodeURIComponent(new URL(url).pathname.split("/").filter(Boolean).pop() || "").replace(/[-_]+/g, " ").trim(); } catch (_) { return ""; }
+          })();
+          const row = {
+            ...found,
+            id: "man-" + listingId(url).replace(/^sel-/, ""),
+            name: scraped || slug || url,
+            offers: [offer],
+            price: priceOf({ offers: [offer] }),
+            url: offer.url,
+            image: offer.image || found.image,
+            sourceId: offer.store || found.sourceId,
+            source: offer.store || found.source,
+            manual: true
+          };
+          delete row.similar;
+          shelfOf(row.kind).push(row);
+        } else {
+          target.offers = target.offers || [];
+          target.offers.push(offer);
+          target.price = priceOf(target);
+        }
+        // A row that lost its last offer is gone: an empty product is not a product.
+        if (!(found.offers || []).length) {
+          catalog.products = (catalog.products || []).filter((p) => p.id !== found.id);
+          catalog.filaments = (catalog.filaments || []).filter((p) => p.id !== found.id);
+        } else {
+          found.price = priceOf(found);
+        }
+        catalog.productCount = (catalog.products || []).length;
+        catalog.filamentCount = (catalog.filaments || []).length;
+        catalog.savedAt = new Date().toISOString();
+        await writeJSON("catalog.json", catalog);
+        return json(200, {
+          ok: true,
+          action: to === "new" ? "branched" : "moved",
+          scrapedTitle: scraped,
+          counts: { products: catalog.products.length, filaments: catalog.filaments.length }
+        });
       }
 
       case "deleteAllCatalog": {

@@ -3,8 +3,10 @@ const assert = require('node:assert/strict');
 const { decidePair, rankCandidates } = require('../lib/product-match.cjs');
 
 const P = (name, extra = {}) => ({ id: name, name, kind: 'printer', brand: 'Bambu Lab', ...extra });
-const KE = P('Creality Ender 3 V3 KE', { brand: 'Creality' });
-const SE = P('Creality Ender 3 V3 SE', { brand: 'Creality' });
+// A real gray pair from the live catalog: different models that shops describe almost
+// identically. KE vs SE would no longer do — those are variant conflicts by rule now.
+const KE = P('Bambu Lab H2C Laser Full Combo 10W', { brand: 'Bambu Lab' });
+const SE = P('Bambu Lab H2S 10W Laser Full Combo 3D Yazıcı Özellikleri', { brand: 'Bambu Lab' });
 
 // Gray band on titles alone: two model letters apart, same brand, no hard conflict.
 const gray = decidePair(KE, SE);
@@ -55,8 +57,8 @@ assert.equal(buffer.action, 'merge', 'noise-only titles merge without vision or 
 assert.equal(buffer.matchPath, 'magellan');
 
 // rankCandidates takes the same optional score map.
-const ranked = rankCandidates(KE, [SE, P('Creality K2 Combo', { brand: 'Creality' })], { 'Creality Ender 3 V3 SE': 0.95 });
-assert.equal(ranked[0].item.name, 'Creality Ender 3 V3 SE');
+const ranked = rankCandidates(KE, [SE, P('Creality K2 Combo', { brand: 'Creality' })], { 'Bambu Lab H2S 10W Laser Full Combo 3D Yazıcı Özellikleri': 0.95 });
+assert.equal(ranked[0].item.name, 'Bambu Lab H2S 10W Laser Full Combo 3D Yazıcı Özellikleri');
 assert.equal(ranked[0].decision.photoMatch, true, 'the map reaches decidePair through rankCandidates');
 assert.equal(rankCandidates(KE, [SE])[0].decision.action, 'review', 'without the map, plain Magellan');
 

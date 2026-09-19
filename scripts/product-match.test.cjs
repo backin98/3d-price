@@ -122,4 +122,13 @@ assert.equal(decidePair(
   { name: "Bambu Lab P1s 3D Yazıcı Ams'siz 256 x 256mm", brand: 'Bambu Lab', kind: 'printer' },
   { id: 's', name: 'Bambu Lab P1S Combo 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer' }
 ).action, 'create', 'a bare printer never merges into a Combo');
+// A variant word names a different machine: the catalog had K2 Plus, K2 Pro and K2 all
+// sitting on one row because "Plus"/"Pro" were treated as padding.
+const k2 = (n) => ({ name: n, brand: 'Creality', kind: 'printer' });
+assert.equal(decidePair(k2('Creality K2 Plus Combo 3D Yazici'), { id: 'k2', ...k2('Creality K2 Combo 3D Yazici') }).action, 'create', 'K2 Plus is not K2');
+assert.equal(decidePair(k2('Creality K2 Pro Combo 3D Yazici'), { id: 'k2', ...k2('Creality K2 Combo 3D Yazici') }).action, 'create', 'K2 Pro is not K2');
+assert.deepEqual(conflicts(identity(k2('Creality K2 Plus Combo')), identity(k2('Creality K2 Combo'))), ['variant']);
+// ...but the same variant worded differently is still one product.
+assert.equal(decidePair(k2('Creality K2 Plus Combo 3D Yazici'), { id: 'p', ...k2('Creality K2 Plus Combo 3D Printer') }).action, 'merge');
+assert.equal(decidePair(k2('Bambu Lab H2S Combo 3D Yazici'), { id: 'h', name: 'Bambu Lab H2S Combo Yazici', brand: 'Bambu Lab', kind: 'printer' }).action, 'merge', 'no variant word, no new split');
 console.log('PASS: Magellan merges typos/synonyms, splits combo and color, classifies polymer/variant.');

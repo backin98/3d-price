@@ -903,7 +903,10 @@
           <button class="btn-sm danger" type="button" id="delete-all-catalog">Delete all</button>
         </div>
         <p class="muted">Edits here are saved to the online catalog and take effect immediately on the storefront.</p>
-        <div class="search"><input id="catalog-search" aria-label="Search catalog" type="search" placeholder="Search name, brand, color, polymer…" value="${esc(state.catalogQuery)}"><span class="muted" id="catalog-count">${products.length} shown</span></div>
+        <div class="search"><input id="catalog-search" aria-label="Search catalog" type="search" placeholder="Search name, brand, color, polymer…" value="${esc(state.catalogQuery)}"><span class="muted" id="catalog-count">${products.length} shown</span>
+          <button class="btn-sm ghost" type="button" id="catalog-refresh">Refresh live data</button>
+        </div>
+        <datalist id="catalog-targets">${allProducts().map((x) => `<option value="${esc(x.name || x.id)}"></option>`).join("")}</datalist>
         <div class="catalog-results" id="catalog-results">${products.map(productCard).join("") || '<div class="empty">No products found.</div>'}</div>
         <button class="ghost" id="catalog-more" style="margin-top:20px" ${products.length < state.catalogLimit ? "hidden" : ""}>Show more products</button>
       </div>
@@ -925,8 +928,39 @@
         <input style="flex:1" aria-label="Product color" data-field="color" value="${common("color")}" placeholder="Color">
       </div>
       ${p.shelf === "filament" ? `<div style="display:flex;gap:6px"><select aria-label="Product polymer" data-field="polymer">${["pla", "petg", "abs", "asa", "tpu", "pc", "pa", "pet", "plabs", "other"].map((x) => `<option ${(edit.polymer || p.polymer) === x ? "selected" : ""}>${x}</option>`).join("")}</select><select aria-label="Product variant" data-field="variant">${["standard", "plus", "rapid", "silk", "matte", "cf", "gf", "wood", "glow", "marble", "rainbow", "combo", "basic", "pure"].map((x) => `<option ${(edit.variant || p.variant) === x ? "selected" : ""}>${x}</option>`).join("")}</select></div>` : `<input aria-label="Product aisle" data-field="aisle" value="${common("aisle")}" placeholder="Aisle">`}
+      ${offersPanel(p)}
       <div class="actions"><button class="btn-sm" data-save-product="${esc(p.id)}">Save</button><button class="btn-sm ghost" data-reset-product="${esc(p.id)}">Reset</button></div>
     </div>`;
+  }
+
+  // Where every offer on this row actually came from, and the two ways out of a wrong group:
+  // move it onto another product, or branch it out as a product of its own.
+  function offersPanel(p) {
+    const offers = p.offers || [];
+    if (!offers.length) return "";
+    const rows = offers.map((o, i) => {
+      const slug = String(o.url || "").split("/").pop() || "";
+      return `<li class="offer-src" data-offer-url="${esc(o.url)}">
+        <div class="offer-src-head">
+          <strong>${esc(o.store || "?")}</strong>
+          <span class="muted">${esc(o.price != null ? String(o.price) : "")}</span>
+          ${/^https?:\/\//i.test(o.url || "") ? `<a href="${esc(o.url)}" target="_blank" rel="noopener noreferrer">source ↗</a>` : ""}
+          <span class="muted">${esc(o.stockStatus || "stock ?")}</span>
+        </div>
+        <div class="muted" title="scraped title">scraped: ${esc(o.sourceTitle || "(not recorded yet — re-run the shop)")}</div>
+        <div class="muted" title="worker title">worker: ${esc(p.name || p.id)}</div>
+        <div class="muted" title="url slug">${esc(slug)}</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+          <input list="catalog-targets" data-offer-move-q="${esc(o.url)}" placeholder="Move to product…" style="flex:1;min-width:140px">
+          <button class="btn-sm" type="button" data-offer-move="${esc(o.url)}" data-offer-from="${esc(p.id)}" data-offer-name="${esc(p.name || "")}">Move</button>
+          <button class="btn-sm ghost" type="button" data-offer-branch="${esc(o.url)}" data-offer-from="${esc(p.id)}" title="Split this offer into a product of its own, named from the scraped title">Branch as own product</button>
+        </div>
+      </li>`;
+    }).join("");
+    return `<details class="offer-src-box">
+      <summary>${offers.length} offer${offers.length === 1 ? "" : "s"} — source, scraped title, worker title</summary>
+      <ul class="offer-src-list">${rows}</ul>
+    </details>`;
   }
 
   function shopsHtml(d) {
@@ -1259,6 +1293,64 @@
           });
           toast("Deleted " + urls.length + " products from the run.");
         } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("#catalog-refresh")) {
+        const btn = e.target.closest("#catalog-refresh");
+        btn.disabled = true;
+        try {
+          await loadData();
+          render();
+          toast("Reloaded from the live catalog.");
+        } catch (err) {
+          toast(err.message);
+        } finally {
+          btn.disabled = false;
+        }
+        return;
+      }
+      if (e.target.closest("[data-offer-branch]")) {
+        const btn = e.target.closest("[data-offer-branch]");
+        const url = btn.dataset.offerBranch;
+        const from = btn.dataset.offerFrom;
+        if (!confirm("Take this offer off this product and make it a product of its own, named from its scraped title?")) return;
+        btn.disabled = true;
+        try {
+          const res = await action({ action: "retargetOffer", url, from, to: "new" });
+          toast("Branched: " + (res.scrapedTitle || "new product") + " is now its own row.");
+        } catch (err) {
+          toast(err.message);
+        } finally {
+          btn.disabled = false;
+        }
+        return;
+      }
+      if (e.target.closest("[data-offer-move]")) {
+        const btn = e.target.closest("[data-offer-move]");
+        const url = btn.dataset.offerMove;
+        const from = btn.dataset.offerFrom;
+        const box = btn.closest(".offer-src");
+        const typed = ((box && box.querySelector("[data-offer-move-q]")) || {}).value || "";
+        const want = typed.trim().toLowerCase();
+        const target = allProducts().find((x) => String(x.name || "").toLowerCase() === want)
+          || allProducts().find((x) => (x.name || "").toLowerCase().includes(want) && want.length > 3);
+        if (!target) {
+          toast("Type the name of the product this offer belongs to (pick one from the list).");
+          return;
+        }
+        if (target.id === from) {
+          toast("It is already on that product.");
+          return;
+        }
+        btn.disabled = true;
+        try {
+          await action({ action: "retargetOffer", url, from, to: target.id });
+          toast("Moved onto " + (target.name || target.id) + ".");
+        } catch (err) {
+          toast(err.message);
+        } finally {
+          btn.disabled = false;
+        }
         return;
       }
       if (e.target.closest("#check-stock") || e.target.closest("#check-stock-all")) {
