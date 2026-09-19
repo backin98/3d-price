@@ -1104,6 +1104,7 @@
           <span class="muted">${esc(o.price != null ? String(o.price) : "")}</span>
           ${/^https?:\/\//i.test(o.url || "") ? `<a href="${esc(o.url)}" target="_blank" rel="noopener noreferrer">source ↗</a>` : ""}
           <span class="muted">${esc(o.stockStatus || "stock ?")}</span>
+          ${o.priceSuspect ? `<span class="badge failed" title="the number on the page looked wrong, so this price is not trusted">price suspect: ${esc(o.priceSuspect)}</span>` : ""}
         </div>
         <div class="muted" title="scraped title">scraped: ${esc(o.sourceTitle || "(not recorded yet — re-run the shop)")}</div>
         <div class="muted" title="worker title">worker: ${esc(p.name || p.id)}</div>

@@ -110,9 +110,12 @@
   function bestOffer(product) {
     const offers = liveOffers(product).slice();
     if (!offers.length) return (product.offers || [])[0] || { store: "", price: 0 };
-    const notPreorder = offers.filter((o) => !o.preorder);
-    const pool = notPreorder.length ? notPreorder : offers;
-    return pool.sort((a, b) => a.price - b.price)[0];
+    // A price we could not believe is not a price anyone can buy at: it never sets the headline.
+    const believable = offers.filter((o) => !o.priceSuspect);
+    const pool = believable.length ? believable : offers;
+    const notPreorder = pool.filter((o) => !o.preorder);
+    const finalPool = notPreorder.length ? notPreorder : pool;
+    return finalPool.sort((a, b) => a.price - b.price)[0];
   }
 
   function hasPreorder(p) {

@@ -213,7 +213,8 @@ function applySelectedListings(live, candidate, items) {
     const scrapedTitle = String(card.name || "").trim();
     const offer = found?.offer
       ? { ...found.offer, sourceTitle: found.offer.sourceTitle || scrapedTitle }
-      : { store: offerStore(url, card), price: card.price, url, image: card.image || "", sourceTitle: scrapedTitle };
+      : { store: offerStore(url, card), price: card.price, url, image: card.image || "", sourceTitle: scrapedTitle,
+          priceSuspect: card.priceSuspect === true ? "harvest" : undefined, priceCurrency: card.currency || undefined };
     const shelf = found?.shelf || (card.kind === "filament" ? "filaments" : "products");
     const dest = next[shelf];
     const mergeId = item.action === "merge" ? String(item.candidateId || "") : "";
