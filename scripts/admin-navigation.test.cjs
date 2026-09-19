@@ -8,8 +8,9 @@ const nodes = new Map();
 function node(sel) { if(!nodes.has(sel)) nodes.set(sel,{hidden:true,innerHTML:'',textContent:'',value:'',contains:()=>false}); return nodes.get(sel); }
 let poll, calls=0;
 const data={desk:{shops:[],banners:[],promoted:[]},catalog:{products:[],filaments:[]},jobs:[]};
-const context={URL,document:{querySelector:node,querySelectorAll:sel=>sel==='.tab-panel'?panels:links},location:{hash:''},window:{},setInterval:fn=>{poll=fn;return 1},clearInterval(){},setTimeout(){},clearTimeout(){},fetch:async()=>{calls++;return {ok:true,status:200,json:async()=>data}}};
-let source=fs.readFileSync('public/admin/admin.js','utf8').replace('  init();','  globalThis.test = {state, render, selectPage, startPolling, shopsHtml, merchHtml, overviewHtml, runsHtml, shopCategories, categoryNames, categoryUrlForShop, catalogHtml, productCard};');
+const listeners=[];
+const context={URL,document:{querySelector:node,querySelectorAll:sel=>sel==='.tab-panel'?panels:links,addEventListener:(t,fn,c)=>listeners.push({t,fn,capture:c===true})},location:{hash:''},window:{},setInterval:fn=>{poll=fn;return 1},clearInterval(){},setTimeout(){},clearTimeout(){},fetch:async()=>{calls++;return {ok:true,status:200,json:async()=>data}}};
+let source=fs.readFileSync('public/admin/admin.js','utf8').replace('  init();','  globalThis.test = {state, render, selectPage, startPolling, shopsHtml, merchHtml, overviewHtml, runsHtml, shopCategories, categoryNames, categoryUrlForShop, catalogHtml, productCard, rememberDetails, openAttr};');
 vm.runInNewContext(source,context);
 context.test.state.data=data;
 context.test.render();
@@ -87,7 +88,7 @@ assert.match(cat, /axis-badge/, 'each row is badged with its axis');
 assert.match(cat, /Bare/, 'a bare row says Bare');
 assert.match(cat, /Merge selected \(0\)…/, 'merge-selected is in the toolbar');
 assert.match(cat, /Find duplicate groups/, 'the duplicates inbox has a trigger');
-assert.match(cat, /<details class="danger-zone">/, 'delete-all and the bulk merge live in a danger zone');
+assert.match(cat, /<details class="danger-zone"[^>]*>/, 'delete-all and the bulk merge live in a danger zone');
 assert.match(cat, /Merge exact-title duplicates \(all at once\)/, 'the bulk merge is named honestly');
 assert.equal(/id="delete-all-catalog"[^]{0,200}id="collapse-duplicates"/.test(cat), true, 'both danger buttons are inside that zone');
 context.test.state.catalogSelected = new Set(['qwen-k2', 'qwen-p1s']);
@@ -103,6 +104,23 @@ assert.match(withDupes, /Duplicates inbox/);
 assert.match(withDupes, /data-merge-cluster="k"/, 'one group at a time can be merged');
 assert.match(withDupes, /possible duplicate of/, 'the row itself carries the hint');
 assert.match(withDupes, /must not merge/, 'blocked pairs are shown');
-console.log('PASS: six pages, fallback routing, active navigation, shop separation, overview, login visibility, authenticated polling.');
+// The triangle must survive the 5s poll that rebuilds the page HTML.
+const t = context.test;
+// The markup carries its own ontoggle, so it works whatever order bind() ran in.
+assert.match(t.catalogHtml(t.state.data), /ontoggle="window\.__keepOpen&&window\.__keepOpen\(this\)"/, 'each disclosure remembers itself inline');
+assert.equal(typeof context.window.__keepOpen, 'function', 'and the global exists');
+assert.equal(t.openAttr('offers:qwen-k2'), '', 'closed by default');
+t.rememberDetails({ target: { dataset: { detailKey: 'offers:qwen-k2' }, open: true } });
+assert.equal(t.openAttr('offers:qwen-k2'), ' open', 'opening is remembered in state');
+assert.match(t.catalogHtml(t.state.data), /data-detail-key="offers:qwen-k2" open/, 'so the re-render keeps it open');
+t.rememberDetails({ target: { dataset: { detailKey: 'danger' }, open: true } });
+assert.match(t.catalogHtml(t.state.data), /data-detail-key="danger" open/, 'the danger zone too');
+t.rememberDetails({ target: { dataset: { detailKey: 'offers:qwen-k2' }, open: false } });
+assert.equal(t.openAttr('offers:qwen-k2'), '', 'closing is remembered as well');
+assert.doesNotMatch(t.catalogHtml(t.state.data), /data-detail-key="offers:qwen-k2" open/, 'and stays closed after a re-render');
+t.rememberDetails({ target: { dataset: {} } });
+t.rememberDetails({});
+assert.ok(true, 'a toggle from an unrelated element is ignored');
+console.log('PASS: six pages, fallback routing, active navigation, shop separation, overview, login visibility, authenticated polling, disclosure state.');
 })().catch(err=>{console.error(err);process.exitCode=1});
 

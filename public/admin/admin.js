@@ -23,10 +23,27 @@
     keeperId: "",
     reviewJobId: "",
     catalogUndo: null,
+    // Which disclosures the user opened. The 5s poll rebuilds the page HTML, which would
+    // otherwise slam every <details> shut while you are working in it.
+    openDetails: new Set(),
     loading: false,
     timer: null,
     workerLive: null
   };
+
+  // Remembers which disclosures are open so a re-render does not close them.
+  const isOpen = (key) => state.openDetails.has(key);
+  const openAttr = (key) => (isOpen(key) ? " open" : "");
+  const detailAttrs = (key) => `data-detail-key="${esc(key)}"${openAttr(key)} ontoggle="window.__keepOpen&&window.__keepOpen(this)"`;
+  function rememberDetails(e) {
+    const el = e && e.target;
+    if (!el || !el.dataset || !el.dataset.detailKey) return;
+    if (el.open) state.openDetails.add(el.dataset.detailKey);
+    else state.openDetails.delete(el.dataset.detailKey);
+  }
+
+  // Inline ontoggle keeps this working no matter how the page was re-rendered.
+  window.__keepOpen = rememberDetails;
 
   function esc(s) {
     return String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -964,7 +981,7 @@
           <label class="muted" style="font-size:12px;display:flex;gap:6px;align-items:center"><input type="checkbox" id="dupes-only" ${state.dupesOnly ? "checked" : ""}> Duplicates only${state.dupes ? ` (${state.dupes.clusters.length} groups)` : " — press Find duplicate groups first"}</label>
         </div>
         <p class="muted">Edits here are saved to the online catalog and take effect immediately on the storefront.</p>
-        <details class="danger-zone"><summary>Danger zone</summary>
+        <details class="danger-zone" ${detailAttrs("danger")}><summary>Danger zone</summary>
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <button class="btn-sm danger" type="button" id="delete-all-catalog">Delete every catalog product</button>
             <button class="btn-sm danger" type="button" id="collapse-duplicates">Merge exact-title duplicates (all at once)</button>
@@ -1022,7 +1039,7 @@
         </div>
         <ul>${c.rows.map((r) => `<li><span class="muted">${esc(r.id)}</span> ${esc(r.name || "")} — ${r.offers} offers${r.axes ? " · " + esc(r.axes.label) : ""}${r.stores && r.stores.length ? " · " + esc(r.stores.join(", ")) : ""}${r.id === c.keeperId ? ' <span class="badge">keeper</span>' : ""}</li>`).join("")}</ul>
       </div>`).join("")}
-      ${(d.blocked || []).length ? `<details><summary>${d.blocked.length} pairs look alike but must not merge</summary><ul>${d.blocked.map((b) => `<li>${esc(b.a.name || b.a.id)} ↔ ${esc(b.b.name || b.b.id)} <span class="muted">(${esc(b.conflicts.join(", "))})</span></li>`).join("")}</ul></details>` : ""}
+      ${(d.blocked || []).length ? `<details ${detailAttrs("blocked")}><summary>${d.blocked.length} pairs look alike but must not merge</summary><ul>${d.blocked.map((b) => `<li>${esc(b.a.name || b.a.id)} ↔ ${esc(b.b.name || b.b.id)} <span class="muted">(${esc(b.conflicts.join(", "))})</span></li>`).join("")}</ul></details>` : ""}
     </div>`;
   }
 
@@ -1085,7 +1102,7 @@
         </div>
       </li>`;
     }).join("");
-    return `<details class="offer-src-box">
+    return `<details class="offer-src-box" ${detailAttrs("offers:" + p.id)}>
       <summary>${offers.length} offer${offers.length === 1 ? "" : "s"} — source, scraped title, worker title</summary>
       <ul class="offer-src-list">${rows}</ul>
     </details>`;
@@ -2032,5 +2049,6 @@
     }
   }
 
+  globalThis.test = { state, rememberDetails, openAttr };
   init();
 })();
