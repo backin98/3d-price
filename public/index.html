@@ -13,7 +13,7 @@
       href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+Arabic:wght@400;600;700&family=Sora:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=sf1" />
+    <link rel="stylesheet" href="css/styles.css?v=sf2" />
   </head>
   <body>
     <a class="skip-link" href="#main" data-i18n="header.skipToContent">Skip to hunt</a>
@@ -47,10 +47,11 @@
 
       <form class="header-search" id="header-search" role="search">
         <label class="sr-only" for="header-query" data-i18n="header.searchPlaceholder">Search a product</label>
-        <input id="header-query" name="q" type="search" autocomplete="off" enterkeyhint="search" />
+        <input id="header-query" name="q" type="search" autocomplete="off" enterkeyhint="search" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="header-suggest" />
         <button class="icon-btn" type="submit" data-i18n-aria="header.searchSubmitAria">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
+        <div class="suggest" id="header-suggest" role="listbox" aria-label="Search suggestions" hidden></div>
         <button class="icon-btn" id="header-location" type="button" data-i18n-aria="header.locationAria">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5Z"/></svg>
         </button>
@@ -151,6 +152,6 @@
     </noscript>
 
     <script src="content/site-content.js"></script>
-    <script src="js/app.js?v=sf1"></script>
+    <script src="js/app.js?v=sf2"></script>
   </body>
 </html>

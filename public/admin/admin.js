@@ -312,7 +312,9 @@
       p.id, p.name, p.brand, p.color, p.polymer, p.variant, p.unit, p.aisle,
       ...(p.offers || []).flatMap((o) => [o.store, o.sourceTitle, String((o && o.url) || "").split("/").filter(Boolean).pop()])
     ].filter(Boolean).join(" "));
-    return toks.every((t) => hay.includes(t));
+    const hayWords = hay.split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+    // Every word must land, as a word or as the start of one, so half-typed searches work.
+    return toks.every((t) => hay.includes(t) || hayWords.some((w) => w.startsWith(t)));
   }
 
   function filteredProducts() {

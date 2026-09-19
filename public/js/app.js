@@ -156,6 +156,8 @@
     liveFilaments: null,
     liveStatus: "idle",
     liveFetchedAt: 0,
+    suggestIndex: -1,
+    suggestClosed: false,
     world: "printers",
     filPath: { polymer: null, variant: null, brand: null },
     lang: "en"
@@ -284,17 +286,168 @@
   }
 
   function searchRelevance(p) {
-    const q = foldText(state.query);
-    if (!q) return 0;
-    const names = [p.name, displayName(p)].map(foldText);
-    if (names.some((name) => name === q)) return 100;
-    const toks = searchTokens(q);
-    if (!toks.length) return 30; // a query of filler words ("3d yazıcı") matches the category
-    const hay = searchHaystack(p);
-    if (!toks.every((t) => hay.includes(t))) return 0;
-    if (names.some((name) => toks.every((t) => name.includes(t)))) return 90;
-    if (names.some((name) => name.includes(toks[0]))) return 70;
-    return 50; // found it through an offer's own title or its URL
+    return searchScoreLocal(p, state.query).score;
+  }
+
+  // Mirrors lib/search-match.cjs exactly (browsers cannot require it): fold, drop filler words,
+  // match against the row AND its offers, allow prefixes and one-letter typos, then rank.
+  // Recall matters: a query with an extra word must not hide the family it belongs to.
+  function wordsOf(text) {
+    return foldText(text).split(/[^\p{L}\p{N}]+/u).filter(Boolean);
+  }
+
+  function nearToken(a, b) {
+    if (a === b) return true;
+    if (a.length < 4 || b.length < 4 || Math.abs(a.length - b.length) > 1) return false;
+    let i = 0, j = 0, edits = 0;
+    while (i < a.length && j < b.length) {
+      if (a[i] === b[j]) { i++; j++; continue; }
+      if (a[i] === b[j + 1] && a[i + 1] === b[j]) { edits++; i += 2; j += 2; continue; }
+      if (++edits > 1) return false;
+      if (a.length > b.length) i++;
+      else if (b.length > a.length) j++;
+      else { i++; j++; }
+    }
+    return edits + (a.length - i) + (b.length - j) <= 1;
+  }
+
+  const tokenHits = (token, list) => list.some((w) => w === token || w.startsWith(token) || nearToken(w, token));
+
+  function searchScoreLocal(p, query) {
+    const wanted = searchTokens(query);
+    if (!wanted.length) return { score: query && query.trim() ? 1 : 0, matched: 0, total: 0, inName: 0 };
+    const nameWords = wordsOf(p.name);
+    const hayWords = wordsOf(searchHaystack(p));
+    const inName = wanted.filter((t) => tokenHits(t, nameWords)).length;
+    const anywhere = wanted.filter((t) => tokenHits(t, hayWords)).length;
+    const foldedName = foldText(p.name);
+    const foldedQuery = foldText(query).trim();
+    if (foldedName === foldedQuery || nameWords.join(" ") === wanted.join(" ")) return { score: 100, matched: wanted.length, total: wanted.length, inName };
+    if (inName === wanted.length) {
+      const first = nameWords.indexOf(wanted[0]);
+      const boost = first === 0 ? 8 : first > 0 && first <= 2 ? 4 : 0;
+      return { score: 80 + boost, matched: inName, total: wanted.length, inName };
+    }
+    if (anywhere === wanted.length) return { score: 60, matched: anywhere, total: wanted.length, inName };
+    if (anywhere >= Math.max(1, Math.ceil(wanted.length / 2))) return { score: 30 + anywhere, matched: anywhere, total: wanted.length, inName };
+    return { score: 0, matched: anywhere, total: wanted.length, inName };
+  }
+
+  // What the storefront shows: everything that scored, best first. Related rows come last.
+  function rankProducts(list, query) {
+    if (!query || !query.trim()) return list || [];
+    return (list || [])
+      .map((p) => ({ p, s: searchScoreLocal(p, query) }))
+      .filter(({ s }) => s.score > 0)
+      .sort((a, b) => b.s.score - a.s.score || String(a.p.name || "").localeCompare(String(b.p.name || "")))
+      .map(({ p }) => p);
+  }
+
+  // ---------- the search bar ----------
+  // Suggestions as you type: the same ranking the results grid uses, so what you see in the
+  // list is what you get when you press Enter. Keyboard: up/down to move, Enter to open the
+  // highlighted product, Escape to close (again to clear).
+  const SUGGEST_LIMIT = 6;
+  let suggestTimer = null;
+
+  function bestPriceLabel(p) {
+    const o = bestOffer(p);
+    if (!o || !Number.isFinite(Number(o.price))) return "";
+    const shops = liveOffers(p).length;
+    return money(o.price) + (shops > 1 ? " · " + fill(C.live.compared, { n: shops }) : "");
+  }
+
+  function suggestRows() {
+    return matchingProducts().slice(0, SUGGEST_LIMIT);
+  }
+
+  function renderSuggest() {
+    const box = $("#header-suggest");
+    if (!box) return;
+    const q = state.query.trim();
+    if (!q || state.suggestClosed) {
+      box.hidden = true;
+      box.innerHTML = "";
+      $("#header-query").setAttribute("aria-expanded", "false");
+      return;
+    }
+    const rows = suggestRows();
+    const total = matchingProducts().length;
+    if (!rows.length) {
+      box.innerHTML = `<div class="suggest-empty">${escapeHtml(
+        state.lang === "tr" ? "Sonuç yok" : "No matches"
+      )}</div>`;
+      box.hidden = false;
+      $("#header-query").setAttribute("aria-expanded", "true");
+      return;
+    }
+    box.innerHTML =
+      rows
+        .map((p, i) => {
+          const related = searchScoreLocal(p, q).score < 60;
+          const img = productImages(p)[0];
+          return `<button class="suggest-row${i === state.suggestIndex ? " is-active" : ""}" type="button" role="option"
+            aria-selected="${i === state.suggestIndex ? "true" : "false"}" id="suggest-${i}" data-open-sheet="${escapeHtml(p.id)}" data-suggest-index="${i}">
+            <span class="suggest-thumb">${img ? `<img src="${escapeHtml(img.url)}" alt="" loading="lazy" onerror="window.__imgFail&&window.__imgFail(this)">` : ""}</span>
+            <span class="suggest-text"><strong>${escapeHtml(displayName(p))}</strong>
+              <em>${escapeHtml(bestPriceLabel(p))}</em></span>
+            ${related ? `<span class="suggest-related">${escapeHtml(state.lang === "tr" ? "ilgili" : "related")}</span>` : ""}
+          </button>`;
+        })
+        .join("") +
+      `<button class="suggest-all" type="button" id="suggest-all">${escapeHtml(
+        fill(C.live.results, { n: total })
+      )}</button>`;
+    box.hidden = false;
+    $("#header-query").setAttribute("aria-expanded", "true");
+    const active = box.querySelector(".is-active");
+    if (active) $("#header-query").setAttribute("aria-activedescendant", active.id);
+    else $("#header-query").removeAttribute("aria-activedescendant");
+  }
+
+  function hideSuggest() {
+    state.suggestClosed = true;
+    state.suggestIndex = -1;
+    renderSuggest();
+  }
+
+  function onSuggestKey(e) {
+    const box = $("#header-suggest");
+    const open = box && !box.hidden && box.querySelector(".suggest-row");
+    if (e.key === "Escape") {
+      if (open) {
+        e.preventDefault();
+        hideSuggest();
+      } else if (state.query) {
+        e.preventDefault();
+        setQuery("");
+      }
+      return;
+    }
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+    if (!open) {
+      state.suggestClosed = false;
+      renderSuggest();
+      return;
+    }
+    e.preventDefault();
+    const count = box.querySelectorAll(".suggest-row").length;
+    state.suggestIndex = e.key === "ArrowDown"
+      ? (state.suggestIndex + 1) % count
+      : (state.suggestIndex - 1 + count) % count;
+    renderSuggest();
+  }
+
+  // Escape on the input must not also close the drawer; the drawer has its own handler.
+  function onSuggestEnter(e) {
+    const box = $("#header-suggest");
+    if (!box || box.hidden || state.suggestIndex < 0) return;
+    const row = box.querySelector(`[data-suggest-index="${state.suggestIndex}"]`);
+    if (!row) return;
+    e.preventDefault();
+    hideSuggest();
+    state.sheetProduct = row.getAttribute("data-open-sheet");
+    openDrawer("sheet");
   }
 
   function selectSearchWorld() {
@@ -319,8 +472,8 @@
 
   function matchingProducts() {
     if (!state.query.trim()) return catalog();
-    // searchRelevance already folds, drops filler words and walks the offers; 0 means "no".
-    return catalog().filter((p) => searchRelevance(p) > 0);
+    // Ranked with recall: exact matches first, related variants still listed below them.
+    return rankProducts(catalog(), state.query);
   }
 
   function filLabel(kind, id) {
@@ -1489,7 +1642,32 @@
       e.preventDefault();
       huntRhino($("#hunter-query").value, "hunter");
     });
-    $("#header-query").addEventListener("input", (e) => setQuery(e.target.value, "header"));
+    $("#header-query").addEventListener("input", (e) => {
+      setQuery(e.target.value, "header");
+      state.suggestClosed = false;
+      state.suggestIndex = -1;
+      clearTimeout(suggestTimer);
+      suggestTimer = setTimeout(renderSuggest, 120);
+    });
+    $("#header-query").addEventListener("keydown", (e) => {
+      onSuggestKey(e);
+      if (e.key === "Enter") onSuggestEnter(e);
+    });
+    $("#header-query").addEventListener("focus", () => {
+      if (state.query.trim()) {
+        state.suggestClosed = false;
+        renderSuggest();
+      }
+    });
+    $("#header-suggest").addEventListener("click", (e) => {
+      if (e.target.closest("#suggest-all")) {
+        hideSuggest();
+        huntRhino(state.query, "header");
+        return;
+      }
+      // A suggestion row carries data-open-sheet, so the drawer handler opens it.
+      if (e.target.closest(".suggest-row")) hideSuggest();
+    });
     $("#hunter-query").addEventListener("input", (e) => setQuery(e.target.value, "hunter"));
     // An old tab should not keep showing a catalog the admin has since changed.
     document.addEventListener("visibilitychange", () => {
@@ -1530,6 +1708,7 @@
     $("#header-location").addEventListener("click", () => openDrawer("location"));
 
     document.addEventListener("click", (e) => {
+      if ($("#header-suggest") && !e.target.closest("#header-search")) hideSuggest();
       const close = e.target.closest("[data-close]");
       if (close) {
         closeDrawers();

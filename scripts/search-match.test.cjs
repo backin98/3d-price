@@ -95,14 +95,44 @@ api.state.liveProducts = [branched, sibling, p1s];
 api.state.liveFilaments = [];
 api.state.query = 'Creality K2 Plus Combo 3D Yazıcı';
 const found = api.matchingProducts().map((p) => p.id);
-assert.deepEqual(found, ['man-sdqdo9'], 'the storefront finds the branched row by its family');
+// Ranked with recall: the exact family match leads and the other variants follow below it.
+assert.equal(found[0], 'man-sdqdo9', 'the storefront finds the branched row by its family, first');
+assert.ok(found.length >= 1, 'and lists it with the rest of the family: ' + JSON.stringify(found));
 api.state.query = 'k2';
 assert.equal(api.matchingProducts().length, 2, 'the family query shows both K2 rows together');
 api.state.query = 'with buffer';
 assert.equal(api.matchingProducts().map((p) => p.id).join(), 'qwen-p1s', 'an offer title is searchable in the storefront too');
 api.state.query = 'k2 plus';
-assert.equal(api.matchingProducts().map((p) => p.id).join(), 'man-sdqdo9', 'and the plain sibling stays out of it');
+const plusRanked = api.matchingProducts().map((p) => p.id);
+assert.equal(plusRanked[0], 'man-sdqdo9', 'the Plus itself ranks first for "k2 plus"');
+assert.ok(plusRanked.indexOf('qwen-k2') > 0, 'siblings rank below it rather than disappearing');
 api.state.query = '';
 assert.equal(api.matchingProducts().length, 3, 'an empty query returns everything');
+
+// --- ranking, recall, prefixes and typos (the general search, not a K2 patch) -----------
+const { searchScore, rankSearch } = require('../lib/search-match.cjs');
+const four = [
+  { id: 'k2', name: 'Creality K2 3D Yazıcı', offers: [{ url: 'https://x/creality-k2-3d-yazici' }] },
+  { id: 'k2c', name: 'Creality K2 Combo 3D Yazıcı', offers: [{ url: 'https://x/creality-k2-combo' }, { sourceTitle: 'Creality K2 Pro Combo', url: 'https://x/creality-k2-pro-combo' }] },
+  { id: 'k2pro', name: 'Creality K2 Pro Combo 3D Yazıcı', offers: [{ url: 'https://x/creality-k2-pro-combo' }] },
+  { id: 'k2plus', name: 'Creality K2 Plus Combo', offers: [{ url: 'https://x/urun/creality-k2-plus-combo' }] }
+];
+const ids = (q) => rankSearch(four, q).map((p) => p.id);
+
+// The complaint: "k2 pro" dropped the K2 Plus because a strict AND hid every sibling.
+assert.equal(ids('k2').length, 4, 'the family query shows every variant');
+assert.equal(ids('k2 pro')[0], 'k2pro', 'the row that really says "pro" ranks first');
+assert.ok(ids('k2 pro').includes('k2plus'), 'and the other variants are still listed, ranked below');
+assert.ok(searchScore(four[2], 'k2 pro').score > searchScore(four[3], 'k2 pro').score, 'exact beats related');
+
+// Typing half a word, or fat-fingering it, still finds the product.
+assert.equal(ids('k2 plu')[0], 'k2plus', 'a prefix finds it');
+assert.equal(ids('k2 plsu')[0], 'k2plus', 'a swapped pair finds it');
+assert.equal(ids('creality k2 pro combo 3d yazici')[0], 'k2pro', 'a full title finds it, filler words ignored');
+assert.equal(ids('bambu p1s').length, 0, 'a query with no match still returns nothing');
+
+// Ranking is stable and deterministic.
+assert.deepEqual(ids('k2 pro'), ids('k2 pro'), 'same query, same order');
+assert.equal(searchScore(four[0], 'k2').score, searchScore(four[1], 'k2').score, 'equal rows score equally');
 
 console.log('PASS: family searches find branched and slug-named rows, offers are searchable, Turkish folds both ways, and siblings stay distinct.');
