@@ -313,22 +313,32 @@
 
   const tokenHits = (token, list) => list.some((w) => w === token || w.startsWith(token) || nearToken(w, token));
 
+  // The model number anchors the search, variant words only refine it (mirrors
+  // lib/search-match.cjs): a row missing the model is not this family, while a row missing only
+  // a variant word still is — that is what keeps "k2 pro" from filling up with unrelated
+  // "Pro" products and from dropping the K2 Plus.
+  const isAnchorToken = (t) => /[0-9]/.test(t);
+
   function searchScoreLocal(p, query) {
     const wanted = searchTokens(query);
     if (!wanted.length) return { score: query && query.trim() ? 1 : 0, matched: 0, total: 0, inName: 0 };
+    const anchors = wanted.filter(isAnchorToken);
     const nameWords = wordsOf(p.name);
     const hayWords = wordsOf(searchHaystack(p));
     const inName = wanted.filter((t) => tokenHits(t, nameWords)).length;
     const anywhere = wanted.filter((t) => tokenHits(t, hayWords)).length;
+    const anchorsHere = anchors.filter((t) => tokenHits(t, hayWords)).length;
+    if (anchors.length && anchorsHere < anchors.length) return { score: 0, matched: anywhere, total: wanted.length, inName };
     const foldedName = foldText(p.name);
     const foldedQuery = foldText(query).trim();
     if (foldedName === foldedQuery || nameWords.join(" ") === wanted.join(" ")) return { score: 100, matched: wanted.length, total: wanted.length, inName };
     if (inName === wanted.length) {
-      const first = nameWords.indexOf(wanted[0]);
+      const first = nameWords.indexOf(wanted.find(isAnchorToken) || wanted[0]);
       const boost = first === 0 ? 8 : first > 0 && first <= 2 ? 4 : 0;
       return { score: 80 + boost, matched: inName, total: wanted.length, inName };
     }
     if (anywhere === wanted.length) return { score: 60, matched: anywhere, total: wanted.length, inName };
+    if (anchors.length && anchorsHere === anchors.length) return { score: 45, matched: anywhere, total: wanted.length, inName };
     if (anywhere >= Math.max(1, Math.ceil(wanted.length / 2))) return { score: 30 + anywhere, matched: anywhere, total: wanted.length, inName };
     return { score: 0, matched: anywhere, total: wanted.length, inName };
   }

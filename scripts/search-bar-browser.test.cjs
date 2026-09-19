@@ -18,7 +18,9 @@ const catalog = {
     row('k2c', 'Creality K2 Combo 3D Yazıcı', 'https://www.rhino3dprinter.com/creality-k2-combo-3d-yazici', 32384.81),
     row('k2pro', 'Creality K2 Pro Combo 3D Yazıcı', 'https://www.rhino3dprinter.com/urun/creality-k2-pro-combo', 46236.14),
     row('k2plus', 'Creality K2 Plus Combo', 'https://www.rhino3dprinter.com/urun/creality-k2-plus-combo', 76084.79),
-    row('p1s', 'Bambu Lab P1S Combo 3D Yazıcı', 'https://www.rhino3dprinter.com/bambu-lab-p1s-combo', 34986)
+    row('p1s', 'Bambu Lab P1S Combo 3D Yazıcı', 'https://www.rhino3dprinter.com/bambu-lab-p1s-combo', 34986),
+    row('m7', 'Anycubic Photon Mono M7 Pro MSLA 3D Printer', 'https://www.rhino3dprinter.com/anycubic-m7-pro', 18999),
+    row('ams', 'Bambu Lab AMS 2 Pro - Automatic Material System', 'https://www.rhino3dprinter.com/ams-2-pro', 9999)
   ],
   filaments: []
 };
@@ -69,6 +71,8 @@ const server = http.createServer((req, res) => {
     assert.ok(ids.includes('k2plus'), 'the K2 Plus is still offered, not dropped: ' + JSON.stringify(ids));
     assert.ok(ids.includes('k2c'), 'and so is the K2 Combo');
     assert.equal(ids.includes('p1s'), false, 'unrelated products stay out');
+    assert.equal(ids.includes('m7'), false, 'an unrelated "Pro" printer stays out');
+    assert.equal(ids.includes('ams'), false, 'and so does an AMS module');
     const related = await page.$$eval('#header-suggest .suggest-related', (els) => els.length);
     assert.ok(related >= 1, 'the rows ranked below are labelled related');
     assert.equal(await page.$eval('#header-query', (el) => el.getAttribute('aria-expanded')), 'true', 'the combobox reports itself open');

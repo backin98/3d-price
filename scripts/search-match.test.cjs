@@ -125,6 +125,21 @@ assert.equal(ids('k2 pro')[0], 'k2pro', 'the row that really says "pro" ranks fi
 assert.ok(ids('k2 pro').includes('k2plus'), 'and the other variants are still listed, ranked below');
 assert.ok(searchScore(four[2], 'k2 pro').score > searchScore(four[3], 'k2 pro').score, 'exact beats related');
 
+// The model number anchors it: unrelated "Pro" products must not outrank the K2 family.
+const noisy = [
+  ...four,
+  { id: 'm7', name: 'Anycubic Photon Mono M7 Pro MSLA 3D Printer', offers: [{ url: 'https://x/anycubic-m7-pro' }] },
+  { id: 'ams', name: 'Bambu Lab AMS 2 Pro - Automatic Material System', offers: [{ url: 'https://x/ams-2-pro' }] },
+  { id: 'h2d', name: 'Bambu Lab H2D 3D Printer', offers: [{ url: 'https://x/h2d' }] }
+];
+const noisyIds = rankSearch(noisy, 'k2 pro').map((p) => p.id);
+assert.equal(noisyIds[0], 'k2pro', 'the K2 Pro leads');
+assert.ok(noisyIds.includes('k2plus'), 'the K2 Plus is still there: ' + JSON.stringify(noisyIds));
+assert.equal(noisyIds.includes('m7'), false, 'an unrelated "Pro" printer is not this family');
+assert.equal(noisyIds.includes('ams'), false, 'nor is an AMS module');
+assert.equal(noisyIds.includes('h2d'), false, 'nor another model entirely');
+assert.equal(rankSearch(noisy, 'k2').length, 4, 'a bare model query still shows the whole family');
+
 // Typing half a word, or fat-fingering it, still finds the product.
 assert.equal(ids('k2 plu')[0], 'k2plus', 'a prefix finds it');
 assert.equal(ids('k2 plsu')[0], 'k2plus', 'a swapped pair finds it');
