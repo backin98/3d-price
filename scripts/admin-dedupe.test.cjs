@@ -89,3 +89,59 @@ const products = () => store['catalog.json'].products;
 
   console.log('PASS: URL and title dedupe on publish, duplicate rows collapse into the Magellan row.');
 })().catch((e) => { console.error(e); process.exitCode = 1; });
+
+// ---------------------------------------------------------------------------------------------
+// Running the same shop twice (or publishing twice) must not show the same listing twice.
+// The URL is the identity: one store's listing lives in exactly one product.
+(async () => {
+  const api = require('node:vm');
+  const source = fs.readFileSync('netlify/functions/admin.mjs', 'utf8')
+    .replace(/^import .*;$/gm, '')
+    .replace('export default async', 'globalThis.handler = async');
+  const files = {
+    'catalog.json': {
+      source: { id: 'multi', name: 'Shops' }, savedAt: '2026-01-01T00:00:00.000Z',
+      products: [
+        { id: 'a', name: 'Bambu Lab H2D Lazer Full Combo 10W 3D Yazıcı', offers: [
+          { store: 'robotizmo.net', price: 114009.82, url: 'https://www.robotizmo.net/h2d-10w' },
+          { store: 'robotizmo.net', price: 114009.82, url: 'https://www.robotizmo.net/h2s-10w' }
+        ] },
+        { id: 'b', name: 'Bambu Lab H2C Lazer Full Combo', offers: [
+          { store: 'robotizmo.net', price: 114009.82, url: 'https://www.robotizmo.net/h2c-40w' },
+          { store: 'robotizmo.net', price: 114009.82, url: 'https://www.robotizmo.net/h2s-10w' }
+        ] }
+      ],
+      filaments: []
+    },
+    'desk.json': { shops: [], banners: [] }
+  };
+  const store = {
+    readJSON: async (k, fb) => (k in files ? JSON.parse(JSON.stringify(files[k])) : fb),
+    writeJSON: async (k, v) => { files[k] = JSON.parse(JSON.stringify(v)); },
+    deleteKey: async (k) => { delete files[k]; }
+  };
+  const sandbox = {
+    console, Response, crypto: require('node:crypto'), store,
+    auth: { ownerFromHeaders: () => ({ role: 'owner' }), authReady: () => true },
+    money: require('../lib/parse-money.cjs'),
+    matcher: require('../lib/product-match.cjs')
+  };
+  api.runInNewContext(source, sandbox);
+  const post = (body) => sandbox.handler({ method: 'POST', headers: { get: () => null, entries: () => [][Symbol.iterator]() }, json: async () => body });
+
+  const before = await (await sandbox.handler({ method: 'GET', headers: { get: () => null, entries: () => [][Symbol.iterator]() } })).json();
+  assert.equal(before.duplicateOffers.length, 1, 'the API reports the duplicated listing');
+  assert.equal(before.duplicateOffers[0].url, 'https://www.robotizmo.net/h2s-10w');
+
+  const fixed = await (await post({ action: 'dedupeOfferUrls' })).json();
+  assert.equal(fixed.groups, 1, 'one group fixed');
+  assert.equal(fixed.removed, 1, 'one duplicate copy removed');
+  assert.equal(fixed.left, 0, 'nothing left duplicated');
+  const rows = files['catalog.json'].products;
+  assert.equal(rows.length, 2, 'both products survive — only the copied listing was taken off the wrong one');
+  const owners = rows.filter((r) => (r.offers || []).some((o) => o.url === 'https://www.robotizmo.net/h2s-10w'));
+  assert.equal(owners.length, 1, 'the listing now belongs to exactly one product: ' + JSON.stringify(owners.map((r) => r.name)));
+  assert.equal(owners[0].id, 'a', 'and it is the product whose title matches the URL, not the one it leaked onto');
+  assert.equal(rows.find((r) => r.id === 'b').offers.length, 1, 'the other product keeps its own listing');
+  console.log('PASS: running a shop twice leaves one listing on one product — duplicates are detectable and fixable, not silent.');
+})().catch((e) => { console.error(e); process.exitCode = 1; });

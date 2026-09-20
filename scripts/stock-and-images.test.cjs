@@ -27,7 +27,9 @@ const catalog = () => ({
   filaments: []
 });
 
-const html = (body) => '<html><body>' + body + '</body></html>';
+// Real product pages are six figures of markup; the reader refuses anything much smaller
+// because a truncated response is not a verdict about stock.
+const html = (body) => '<html><head><title>t</title></head><body>' + body + '<div>' + ' '.repeat(2200) + '</div></body></html>';
 
 (async () => {
   // --- planning: only what is stale or never checked -------------------------------
@@ -192,4 +194,56 @@ const html = (body) => '<html><body>' + body + '</body></html>';
   assert.ok(webp.replaced, 'only when every vendor image failed does the placeholder appear');
 
   console.log('PASS: out-of-stock vendors leave the comparison, stale stock is re-checked from the page, and a dead thumbnail falls through to another vendor.');
+})().catch((e) => { console.error(e); process.exitCode = 1; });
+
+// ---------------------------------------------------------------------------------------------
+// Real shops are slow, rate-limited and sometimes answer with half a page. None of that is
+// evidence about stock: a fetch that failed must leave the offer alone, never mark it dead.
+const stock = require('../lib/stock-refresh.cjs');
+const pageWith = (inner) => '<!doctype html><html><body>' + inner + '</body></html>';
+
+(async () => {
+  const ok = (html) => async () => new Response(html, { status: 200 });
+
+  // A timeout on the first two attempts, then a clean answer: a laggy shop must be retried.
+  let calls = 0;
+  const flaky = async () => {
+    calls += 1;
+    if (calls < 3) { const e = new Error('aborted'); e.name = 'AbortError'; throw e; }
+    return new Response(pageWith('<div class="buy">Sepete Ekle</div><div>46.236,14 TL</div>' + ' '.repeat(2400)), { status: 200 });
+  };
+  const retried = await stock.checkOfferStock('https://laggy.example/p', { fetchImpl: flaky, timeoutMs: 50 });
+  assert.equal(calls, 3, 'it tried three times: ' + calls);
+  assert.equal(retried.status, 'in_stock', 'and used the answer once the shop woke up: ' + JSON.stringify(retried));
+
+  // Every attempt failing is "unknown", which keeps the offer on the site.
+  const dead = await stock.checkOfferStock('https://down.example/p', { fetchImpl: async () => { throw new Error('ECONNRESET'); }, timeoutMs: 50 });
+  assert.equal(dead.status, 'unknown', 'a network failure is not out-of-stock: ' + JSON.stringify(dead));
+  assert.equal(dead.verified, false, 'and it is not claimed as verified');
+
+  // A 500 from their side is their problem: retry, then unknown.
+  let five = 0;
+  const broken = await stock.checkOfferStock('https://broken.example/p', { fetchImpl: async () => { five += 1; return new Response('boom', { status: 503 }); }, timeoutMs: 50 });
+  assert.equal(broken.status, 'unknown', 'a 503 is not out-of-stock');
+  assert.equal(five, 3, 'and it was retried: ' + five);
+
+  // A truncated page (slow server, partial flush) says nothing.
+  const partial = await stock.checkOfferStock('https://slow.example/p', { fetchImpl: ok('<html><body>Tükendi'), timeoutMs: 50 });
+  assert.equal(partial.status, 'unknown', 'half a page is not a verdict: ' + JSON.stringify(partial));
+  assert.equal(partial.method, 'short-page');
+
+  // A real "tükendi" in the buy box still counts, once the page is whole.
+  const out = await stock.checkOfferStock('https://gone.example/p', {
+    fetchImpl: ok(pageWith('<div class="buy">Sepete Ekle</div><div class="stock">Bu ürün tükendi</div>' + 'x'.repeat(2500))),
+    timeoutMs: 50
+  });
+  assert.equal(out.status, 'out_of_stock', 'a complete page saying tükendi is believed: ' + JSON.stringify(out));
+
+  // A delisted page is still the strongest signal there is, and is not retried.
+  let gone = 0;
+  const delisted = await stock.checkOfferStock('https://404.example/p', { fetchImpl: async () => { gone += 1; return new Response('nope', { status: 404 }); }, timeoutMs: 50 });
+  assert.equal(delisted.status, 'out_of_stock', '404 means gone');
+  assert.equal(gone, 1, 'no pointless retries on a delisted page');
+
+  console.log('PASS: a laggy or half-answering shop never marks an offer dead — only a complete page (or a 404) does.');
 })().catch((e) => { console.error(e); process.exitCode = 1; });

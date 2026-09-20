@@ -1047,6 +1047,8 @@
           <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <button class="btn-sm danger" type="button" id="delete-all-catalog">Delete every catalog product</button>
             <button class="btn-sm danger" type="button" id="collapse-duplicates">Merge exact-title duplicates (all at once)</button>
+            <button class="btn-sm danger" type="button" id="dedupe-offer-urls" ${(state.data && state.data.duplicateOffers || []).length ? "" : "disabled"}>Fix one listing in two products (${(state.data && state.data.duplicateOffers || []).length})</button>
+            <small class="muted">The third one keeps a store's listing on a single product, so the same shop is never compared twice.</small>
             <small class="muted">The second one merges rows whose titles are identical after folding — it never merges Bare with Combo, Mini or a laser variant.</small>
           </div>
         </details>
@@ -1449,6 +1451,14 @@
         } catch (err) {
           toast(err.message);
         }
+        return;
+      }
+      if (e.target.closest("#dedupe-offer-urls")) {
+        const n = ((state.data && state.data.duplicateOffers) || []).length;
+        if (!confirm("Move " + n + " duplicated store listing" + (n === 1 ? "" : "s") + " onto a single product each? The storefront stops comparing that shop twice.")) return;
+        action({ action: "dedupeOfferUrls" })
+          .then((r) => toast(r.groups ? "Fixed " + r.groups + " duplicated listing" + (r.groups === 1 ? "" : "s") + " (removed " + r.removed + " copies)." : "Nothing to fix."))
+          .catch((err) => toast(err.message));
         return;
       }
       if (e.target.closest("#backup-create")) {

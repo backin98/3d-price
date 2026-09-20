@@ -64,6 +64,39 @@ async function saveJobList(jobs) {
   await writeJSON("jobs.json", jobs);
 }
 
+// Remove every other row's copy of an offer URL, keeping the one that should own it. An offer URL
+// identifies one listing on one shop, so two rows carrying it means the storefront compares the
+// same shop twice — and the second product's price is fiction.
+function stripOfferUrl(catalog, url, keepRowId) {
+  const rows = [...(catalog.products || []), ...(catalog.filaments || [])];
+  let moved = 0;
+  for (const row of rows) {
+    if (!row.offers || row.id === keepRowId) continue;
+    const before = row.offers.length;
+    row.offers = row.offers.filter((o) => String(o.url || "") !== url);
+    moved += before - row.offers.length;
+  }
+  // A row with no offers left is not a product any more.
+  const keep = (list) => (list || []).filter((r) => (r.offers || []).length);
+  catalog.products = keep(catalog.products);
+  catalog.filaments = keep(catalog.filaments);
+  return moved;
+}
+
+// How many URLs are currently in more than one row, and which.
+function findDuplicateOfferUrls(catalog) {
+  const seen = new Map();
+  for (const row of [...(catalog.products || []), ...(catalog.filaments || [])]) {
+    for (const o of row.offers || []) {
+      const url = String(o.url || "");
+      if (!url) continue;
+      if (!seen.has(url)) seen.set(url, []);
+      seen.get(url).push(row);
+    }
+  }
+  return [...seen.entries()].filter(([, rows]) => rows.length > 1).map(([url, rows]) => ({ url, rows: rows.map((r) => ({ id: r.id, name: r.name })) }));
+}
+
 // ---------- backups ----------
 // A named snapshot of everything the admin owns. The index is a single key so listing costs one
 // read and never depends on blob-listing behaviour. Restoring writes the snapshot back over the
@@ -293,6 +326,9 @@ function applySelectedListings(live, candidate, items) {
     // fresh row for a URL the live catalog already carries (qwen- vs sel- duplicates).
     const already = findByUrl(next, url)?.product;
     if (already) {
+      // One store, one row. If this URL already sits in a different product, take it out of
+      // there — otherwise the same listing is compared twice on the storefront.
+      stripOfferUrl(next, url, already.id);
       if (!already.offers) already.offers = [];
       if (!already.offers.some((o) => o.url === url)) already.offers.push(offer);
       applied += 1;
@@ -524,6 +560,7 @@ export default async (req) => {
       candidate: data.candidate,
       jobs: data.jobs || [],
       backups: await readBackupIndex(),
+      duplicateOffers: findDuplicateOfferUrls(catalog),
       heartbeat: await readJSON("heartbeat.json", null),
       counts: {
         products: (catalog.products || []).length,
@@ -673,6 +710,23 @@ export default async (req) => {
         else jobs = [];
         await saveJobList(jobs);
         return json(200, { ok: true, removed: before - jobs.length, left: jobs.length });
+      }
+
+      case "dedupeOfferUrls": {
+        // One listing, one row. The keeper is the row whose name carries the most of the offer's
+        // own words; when that is a tie the longer, more specific name wins.
+        const rowsOf = (cat) => [...(cat.products || []), ...(cat.filaments || [])];
+        const dupes = findDuplicateOfferUrls(catalog);
+        let removed = 0;
+        for (const d of dupes) {
+          const slugWords = String(d.url).split("/").pop().replace(/[-_]+/g, " ").toLowerCase().split(/\s+/).filter((w) => w.length > 2);
+          const score = (name) => slugWords.filter((w) => String(name || "").toLowerCase().includes(w)).length;
+          const keeper = rowsOf(catalog).filter((r) => d.rows.some((x) => x.id === r.id))
+            .sort((a, b) => score(b.name) - score(a.name) || String(b.name || "").length - String(a.name || "").length)[0];
+          if (keeper) removed += stripOfferUrl(catalog, d.url, keeper.id);
+        }
+        await writeJSON("catalog.json", catalog);
+        return json(200, { ok: true, groups: dupes.length, removed, left: findDuplicateOfferUrls(catalog).length });
       }
 
       case "createBackup": {

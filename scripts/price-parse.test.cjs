@@ -129,3 +129,31 @@ assert.equal(api.bestOffer(product).store, 'rhino.example', 'the 2.1M offer neve
 assert.equal(api.liveOffers(product).length, 2, 'it stays visible for comparison, just not as best');
 
 console.log('PASS: prices parse by locale, badges and neighbours are never glued, the Rhino card reads 46.236,14 and nonsense is flagged instead of believed.');
+
+// ---------------------------------------------------------------------------------------------
+// Prices must come from what the page declares, never from numbers lying around in scripts.
+// The 3dultra repro: the real price (94.850,00 TL) is in JSON-LD while the card text is
+// script-rendered, and scanning the raw HTML produced "2" — which then won "best price".
+const { structuredPrice, visibleText, priceFloor } = require('../lib/harvest.js');
+const declaredPage = `<!doctype html><html><head>
+  <script type="application/ld+json">{"@type":"Product","name":"Bambu Lab H2D 3D Yazıcı","offers":{"@type":"Offer","price":"94850.00","priceCurrency":"TRY"}}</script>
+  <script>var qty=2,width=5,total=3;</script>
+  <style>.x{width:2px;z-index:5}</style>
+  </head><body><div class="card">Sepete Ekle <span>2</span> <span>5</span></div></body></html>`;
+
+assert.deepEqual(structuredPrice(declaredPage), { price: 94850, currency: 'TRY', method: 'json-ld' }, 'the declared price wins');
+assert.equal(visibleText(declaredPage).includes('qty'), false, 'scripts are not text');
+assert.equal(visibleText(declaredPage).includes('z-index'), false, 'nor are styles');
+assert.equal(visibleText(declaredPage).includes('Sepete Ekle'), true, 'the card text still is');
+assert.equal(/^\s*2\s*$/.test(visibleText(declaredPage).trim()), false, 'the junk 2 is not the whole text');
+assert.equal(priceFloor('printer', 'TRY'), 1000, 'a 2 TL printer is not a printer');
+assert.equal(priceFloor('filament', 'TRY'), 60, 'but a 300 TL spool is real');
+assert.ok(priceFloor('printer', 'USD') < 1000 / 30, 'the floor is interpreted per currency');
+
+// Microdata, meta and a data attribute are all declarations too.
+assert.equal(structuredPrice('<div itemscope><meta itemprop="price" content="1234,56"></div>').price, 1234.56);
+assert.equal(structuredPrice('<meta property="product:price:amount" content="4999">').method, 'meta');
+assert.equal(structuredPrice('<div data-price="7899.00"></div>').price, 7899);
+assert.equal(structuredPrice('<html><body>nothing here</body></html>'), null, 'and nothing declared means nothing declared');
+
+console.log('PASS: a price is taken from what the page declares, script noise can never become a price, and implausible prices are refused.');
