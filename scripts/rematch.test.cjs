@@ -13,10 +13,10 @@ const askDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rematch-'));
 const Module = require('node:module');
 const load = Module._load;
 let asked = 0;
-let answer = { decision: 'merge', matchId: 'cat-p1s', confidence: 0.92, reason: 'same printer, shops spell AMS differently' };
+let answer = { decision: 'merge', identityId: 'bambu/p1s/combo/ams', confidence: 0.92, reason: 'same printer, shops spell AMS differently' };
 Module._load = function (request, ...rest) {
   if (request === '../scripts/local-qwen.cjs') {
-    return { ask: async (task, input) => { asked += 1; assert.equal(task, 'match-gray'); lastInput = input; return answer; } };
+    return { ask: async (task, input) => { asked += 1; assert.equal(task, 'match-catalog-guided', 'the pass asks the catalog-guided question'); lastInput = input; return answer; } };
   }
   return load.call(this, request, ...rest);
 };
@@ -38,10 +38,13 @@ const listing = { name: 'Bambu Lab P1s Combo 3D Yazıcı Ams ile 16 Renge Kadar 
   assert.equal(merged.matchId, 'cat-p1s');
   assert.equal(merged.candidates[0].id, 'cat-p1s', 'the best catalog candidates are reported back');
   assert.ok(merged.candidates.every((c) => typeof c.score === 'number'));
-  assert.ok(lastInput.candidates.length <= 3, 'only the top few candidates are sent, not the whole catalog');
+  assert.ok(lastInput.allowedIdentities.length <= 8, 'only a closed list of identities is sent, not the whole catalog');
+  assert.ok(lastInput.allowedIdentities.every((e) => e.identityId), 'each allowed identity carries an id the model may answer with');
+  assert.ok(lastInput.allowedIdentities.some((e) => e.identityId === 'bambu/p1s/bare'), 'and the bare configuration of the same model is offered too');
+  assert.ok(lastInput.hardConflicts.includes('bare≠combo'), 'the conflict rules travel with the question');
 
   // 1b. The local model says "match", not "merge" — that must merge, not hold.
-  answer = { decision: 'match', matchId: 'cat-p1s', confidence: 0.95, reason: 'same printer' };
+  answer = { decision: 'match', identityId: 'bambu/p1s/combo/ams', confidence: 0.95, reason: 'same printer' };
   const synonym = await gemmaPick(listing, catalog, { dir: askDir });
   assert.equal(synonym.action, 'merge', 'a "match" answer is a merge, not a silent hold');
 
@@ -56,13 +59,24 @@ const listing = { name: 'Bambu Lab P1s Combo 3D Yazıcı Ams ile 16 Renge Kadar 
   assert.equal(asked, before, 'no model call when there is nothing to compare against');
 
   // 4. A hard conflict cannot be merged by the model, even when it says merge.
-  answer = { decision: 'merge', matchId: 'cat-bare', confidence: 0.95, reason: 'looks the same to me' };
-  const bare = { name: 'Bambu Lab P1S 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer', url: 'https://shop.example/bare' };
-  const held = await gemmaPick({ ...bare, name: 'Bambu Lab P1S 3D Yazıcı' }, [
-    { id: 'cat-p1s', name: 'Bambu Lab P1S Combo 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer', offers: [{ url: 'https://rhino.example/p1s-combo' }] }
+  answer = { decision: 'merge', identityId: 'bambu/p1s/bare', confidence: 0.95, reason: 'looks the same to me' };
+  const held = await gemmaPick({ name: 'Bambu Lab P1S Combo AMS ile 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer', url: 'https://shop.example/p1s-combo' }, [
+    { id: 'cat-bare', name: 'Bambu Lab P1S 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer', offers: [{ url: 'https://rhino.example/p1s' }] }
   ], { dir: askDir });
-  assert.equal(held.action, 'hold', 'combo/bare conflict survives the aggressive pass');
-  answer = { decision: 'create', matchId: null, confidence: 0.9, reason: 'nothing like it in the catalog' };
+  assert.equal(held.action, 'hold', 'a combo listing cannot be merged onto the bare row');
+  assert.equal(held.rejected, 'conflict');
+
+  // 4b. An identity the catalog never offered is a hallucination, not a merge.
+  answer = { decision: 'merge', identityId: 'bambu/h2d/combo/ams-2-pro', confidence: 0.99, reason: 'sure' };
+  const invented = await gemmaPick(listing, catalog, { dir: askDir });
+  assert.equal(invented.action, 'hold', 'a hallucinated identity is refused');
+  assert.equal(invented.rejected, 'hallucinated-id');
+  assert.ok(invented.allowed.includes('bambu/p1s/combo/ams'), 'the allowed list is reported back for the audit');
+
+  // 4c. A confident create still creates.
+  answer = { decision: 'create', identityId: null, confidence: 0.9, reason: 'nothing like it in the catalog' };
+  const created = await gemmaPick(listing, catalog, { dir: askDir });
+  assert.equal(created.action, 'create', 'a real new product is still created');
 
   // 5. The review board offers both buttons, disabled until there is something to ask about.
   const context = {

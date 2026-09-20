@@ -894,7 +894,7 @@
         <span class="muted">${cards.length} gathered</span>
       </div>
       <div class="review-toolbar">
-        <span class="muted">Aggressive LLM help — Gemma on what the matcher could not sort, against the current catalog:</span>
+        <span class="muted">Aggressive LLM help — Gemma on what the matcher could not sort. It may only choose an identity from the current catalog (or say "new"/"hold"), and it can never override a hard split:</span>
         <button class="btn-sm" type="button" id="gemma-unmatched" ${unmatched ? "" : "disabled"}>Ask Gemma: all unmatched (${unmatched})</button>
         <button class="btn-sm" type="button" id="gemma-selected" ${selected ? "" : "disabled"}>Ask Gemma: selected (${selected})</button>
       </div>
@@ -919,7 +919,8 @@
             : dec.action === "held" || dec.action === "hold" ? "Worker match: held — " + String(dec.reason || (dec.candidateName && "compared with " + dec.candidateName) || "needs a look").slice(0, 120)
             : "gathered — waiting for match";
           const visualNote = typeof dec.visual === "number" ? " · visual " + dec.visual.toFixed(2) : "";
-          const pathNote = dec.matchPath === "gemma-gray" ? " · Gemma-gray"
+          const pathNote = dec.matchPath === "gemma-catalog-guided" ? " · Gemma (catalog-guided)" + (dec.identityId ? " · " + dec.identityId : "") + (dec.rejected ? " · rejected: " + dec.rejected : "")
+            : dec.matchPath === "gemma-gray" ? " · Gemma-gray"
             : dec.nearDupe ? (dec.photoMatch ? " · near duplicate — same thumbnail, confirm" : " · near duplicate — review") + visualNote
             : dec.matchPath === "magellan+visual" ? " · Magellan + visual" + visualNote
             : (dec.matchPath === "magellan" || dec.rule === "magellan") ? " · Magellan" : "";

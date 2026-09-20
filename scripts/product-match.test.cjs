@@ -106,10 +106,12 @@ assert.equal(decidePair(
   { name: 'Bambu Lab H2D Laser Full Combo 10W 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer' },
   { id: 'r', name: 'Bambu Lab H2D Combo 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer' }
 ).action, 'create');
+// A laser SKU differs on two axes: the wattage and the technology itself ("laser" vs the
+// plain FDM machine), so both are reported.
 assert.deepEqual(conflicts(
   identity({ name: 'Bambu Lab H2S Laser Full Combo 10W', brand: 'Bambu Lab', kind: 'printer' }),
   identity({ name: 'Bambu Lab H2S Combo 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer' })
-), ['laser']);
+).sort(), ['laser', 'technology']);
 // …but a bare "lazer" marketing mention without watts must not split a pair.
 assert.equal(conflicts(
   identity({ name: 'Bambu Lab H2S Combo Lazer Kazıma Destekli', brand: 'Bambu Lab', kind: 'printer' }),
@@ -127,7 +129,7 @@ assert.equal(decidePair(
 const k2 = (n) => ({ name: n, brand: 'Creality', kind: 'printer' });
 assert.equal(decidePair(k2('Creality K2 Plus Combo 3D Yazici'), { id: 'k2', ...k2('Creality K2 Combo 3D Yazici') }).action, 'create', 'K2 Plus is not K2');
 assert.equal(decidePair(k2('Creality K2 Pro Combo 3D Yazici'), { id: 'k2', ...k2('Creality K2 Combo 3D Yazici') }).action, 'create', 'K2 Pro is not K2');
-assert.deepEqual(conflicts(identity(k2('Creality K2 Plus Combo')), identity(k2('Creality K2 Combo'))), ['variant']);
+assert.deepEqual(conflicts(identity(k2('Creality K2 Plus Combo')), identity(k2('Creality K2 Combo'))).sort(), ['model', 'variant']);
 // ...but the same variant worded differently is still one product.
 assert.equal(decidePair(k2('Creality K2 Plus Combo 3D Yazici'), { id: 'p', ...k2('Creality K2 Plus Combo 3D Printer') }).action, 'merge');
 assert.equal(decidePair(k2('Bambu Lab H2S Combo 3D Yazici'), { id: 'h', name: 'Bambu Lab H2S Combo Yazici', brand: 'Bambu Lab', kind: 'printer' }).action, 'merge', 'no variant word, no new split');

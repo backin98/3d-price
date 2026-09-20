@@ -3,10 +3,11 @@ const assert = require('node:assert/strict');
 const { decidePair, rankCandidates } = require('../lib/product-match.cjs');
 
 const P = (name, extra = {}) => ({ id: name, name, kind: 'printer', brand: 'Bambu Lab', ...extra });
-// A real gray pair from the live catalog: different models that shops describe almost
-// identically. KE vs SE would no longer do — those are variant conflicts by rule now.
-const KE = P('Bambu Lab H2C Laser Full Combo 10W', { brand: 'Bambu Lab' });
-const SE = P('Bambu Lab H2S 10W Laser Full Combo 3D Yazıcı Özellikleri', { brand: 'Bambu Lab' });
+// A gray pair: same model, same axes, and both shops padding the title with something the
+// other does not say. (Different models are not gray any more — the brand reference settles
+// the model core, the feeder generation and laser wattage as hard conflicts.)
+const KE = P('Bambu Lab X1C Combo 3D Yazıcı Cift Nozul', { brand: 'Bambu Lab' });
+const SE = P('Bambu Lab X1C Combo 3D Yazıcı Kamera', { brand: 'Bambu Lab' });
 
 // Gray band on titles alone: two model letters apart, same brand, no hard conflict.
 const gray = decidePair(KE, SE);
@@ -18,6 +19,31 @@ assert.equal(gray.nearDupe, true, 'a gray title is a near-duplicate hold');
 const strong = decidePair(KE, SE, 0.95);
 assert.equal(strong.action, 'review', 'a matching thumbnail holds, it does not merge');
 assert.equal(strong.photoMatch, true);
+
+// The reference table's splits are hard: no thumbnail and no model may override them.
+const { conflicts: axisConflicts, identity } = require('../lib/product-match.cjs');
+const hard = [
+  ['Bambu Lab H2C Laser Full Combo 10W', 'Bambu Lab H2S 10W Laser Full Combo 3D Yazıcı Özellikleri'],
+  ['Bambu Lab H2D Laser Full Combo 40W', 'Bambu Lab H2D Laser Full Combo 10W'],
+  ['Bambu Lab P1S Combo', 'Bambu Lab P1S AMS 2 Pro Combo'],
+  ['Bambu Lab A1 Combo', 'Bambu Lab A1 mini Combo'],
+  ['Creality K2 Combo 3D Yazıcı', 'Creality K2 Plus Combo 3D Yazıcı'],
+  ['Anycubic Kobra S1 ACE 2 Pro Combo', 'Anycubic Kobra S1 Combo']
+];
+for (const [a, b] of hard) {
+  const br = /Creality/.test(a) ? 'Creality' : /Anycubic/.test(a) ? 'Anycubic' : 'Bambu Lab';
+  const ca = identity({ name: a, brand: br, kind: 'printer' });
+  const cb = identity({ name: b, brand: br, kind: 'printer' });
+  assert.ok(axisConflicts(ca, cb).length > 0, 'hard split expected: ' + a + ' vs ' + b);
+  const tipped = decidePair({ name: a, brand: br, kind: 'printer' }, { id: 'x', name: b, brand: br, kind: 'printer' }, 1);
+  assert.equal(tipped.action, 'create', 'a perfect thumbnail cannot merge a hard split: ' + a);
+}
+
+// Sovol's "ACE" is a model word, never Anycubic's feeder.
+assert.equal(axisConflicts(
+  identity({ name: 'Sovol SV06 ACE 3D Yazıcı', brand: 'Sovol', kind: 'printer' }),
+  identity({ name: 'Sovol SV06 3D Yazıcı', brand: 'Sovol', kind: 'printer' })
+).includes('model'), true, 'SV06 ACE is its own model');
 assert.equal(strong.matchPath, 'magellan+visual');
 assert.equal(strong.visual, 0.95, 'the visual score rides along for the review board');
 assert.match(strong.reason, /confirm/);
@@ -57,8 +83,8 @@ assert.equal(buffer.action, 'merge', 'noise-only titles merge without vision or 
 assert.equal(buffer.matchPath, 'magellan');
 
 // rankCandidates takes the same optional score map.
-const ranked = rankCandidates(KE, [SE, P('Creality K2 Combo', { brand: 'Creality' })], { 'Bambu Lab H2S 10W Laser Full Combo 3D Yazıcı Özellikleri': 0.95 });
-assert.equal(ranked[0].item.name, 'Bambu Lab H2S 10W Laser Full Combo 3D Yazıcı Özellikleri');
+const ranked = rankCandidates(KE, [SE, P('Creality K2 Combo', { brand: 'Creality' })], { 'Bambu Lab X1C Combo 3D Yazıcı Kamera': 0.95 });
+assert.equal(ranked[0].item.name, 'Bambu Lab X1C Combo 3D Yazıcı Kamera');
 assert.equal(ranked[0].decision.photoMatch, true, 'the map reaches decidePair through rankCandidates');
 assert.equal(rankCandidates(KE, [SE])[0].decision.action, 'review', 'without the map, plain Magellan');
 

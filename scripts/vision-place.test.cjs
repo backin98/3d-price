@@ -24,19 +24,19 @@ const catalogFile = path.join(dir, 'catalog.json');
 const writeCatalog = (candidateImage = IMG_CANDIDATE) => fs.writeFileSync(catalogFile, JSON.stringify({
   products: [{
     id: 'rhino-se',
-    name: 'Bambu Lab H2S 10W Laser Full Combo 3D Yazıcı Özellikleri',
+    name: 'Bambu Lab X1C Combo 3D Yazıcı Kamera',
     brand: 'Bambu Lab',
     kind: 'printer',
-    offers: [{ store: 'Rhino', price: 12000, url: 'https://rhino.example/h2s-laser', image: candidateImage }]
+    offers: [{ store: 'Rhino', price: 12000, url: 'https://rhino.example/x1c-combo', image: candidateImage }]
   }],
   filaments: []
 }));
 const listing = (image) => [{
-  name: 'Bambu Lab H2C Laser Full Combo 10W',
+  name: 'Bambu Lab X1C Combo 3D Yazıcı Cift Nozul',
   brand: 'Bambu Lab',
   kind: 'printer',
   price: 11000,
-  url: 'https://shop.example/h2c-laser',
+  url: 'https://shop.example/x1c-combo',
   image
 }];
 
