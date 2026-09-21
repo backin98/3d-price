@@ -439,6 +439,50 @@ acceptance test. A, D and E are the ones that cause the user-visible symptoms (H
 running out of room would leave a half-changed matcher, which is exactly how this repo has broken
 before.
 
+### Item A of the GitHub recheck: the H2S/A1 magnet is stopped
+
+`lib/product-match.cjs` now has a real diff - the file the report correctly said was byte-identical.
+
+**Root cause, confirmed by the failing transcript before the fix:**
+```
+BEFORE: "Bambu Lab" vs "Bambu Lab H2S 3D Yazıcı"  ->  merge | magellan title subset
+        (reproduced, and git diff main -- lib/product-match.cjs was EMPTY)
+AFTER:  ->  create | different model
+```
+`conflicts()` read `if (a.modelCore && b.modelCore && a.modelCore !== b.modelCore)` - it needed BOTH
+sides populated, so a brand-only title produced no clash, fell through to the `titleSubset` merge, and
+welded every other shop's offers onto one card.
+
+The fix treats a one-sided model core as a conflict **for printers**. It is scoped to printers on
+purpose: the first attempt applied it to everything and broke a filament pair
+(`Elegoo PLA Siyah` vs `Elegoo PLA Black` expected merge), because a spool has no model core and
+requiring both sides split every colour pair. Caught by the suite.
+
+`scripts/magnet-merge.test.cjs` asserts all of it, including that genuine same-model pairs still merge
+so the fix is not an over-correction:
+```
+create | different model              | Bambu Lab vs Bambu Lab H2S 3D Yazıcı
+create | different model              | Bambu Lab Combo vs Bambu Lab A1 Combo 3D Yazıcı
+create | different model              | Bambu Lab 3D Yazıcı Combo vs Bambu Lab H2S Combo
+create | different combo, model       | Bambu Lab vs Bambu Lab A1 Combo 3D Yazıcı
+create | different variant, model     | Creality vs Creality K2 Plus
+create | different model              | Bambu Lab A1 3D Yazıcı vs Bambu Lab H2S 3D Yazıcı
+```
+Suite: 37 pass / 0 fail.
+
+### Still NOT done from the recheck list
+
+- **Slug -> modelCore** (item A, second half). Metatech's ".../bambu-lab-a1-3d-printer" with the page
+  text "Bambu Lab" is now safely refused a merge, but it still creates as an *unnamed* card rather than
+  being identified as A1. The test asserts the current behaviour explicitly so this cannot be forgotten.
+- `lib/search-match.cjs` still puts offer URL last segments in the haystack (item C).
+- `api/hunt.js` still uses loose `.includes(q)` and defaults printer brands to RhinoLab (item D).
+- `lib/harvest.js` still emits Metatech's brand-only title where the page has a correct JSON-LD name (item B).
+- `lib/qwen-place.cjs` placement still applies a Magellan merge without the baseline gate (item E).
+
+Do NOT re-harvest and rematch on the PC worker alone: the magnet fix must be pulled onto the worker
+first, and the live card is still polluted from the previous run's data regardless of the matcher.
+
 ### Next
 Step 1b: canonicalise shop from the URL host, then group listings by Magellan's family key to propose
 candidate "same" pairs -> `docs/real-groups.jsonl`, flagged as Magellan-proposed (NOT ground truth).
