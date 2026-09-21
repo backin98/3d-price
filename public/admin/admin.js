@@ -589,9 +589,18 @@
         <h2>Start a shop run</h2>
         <p class="muted">Category names are shared (Filament, Printers). The URL is unique to the shop you pick — Robolink never crawls Rhino’s link.</p>
         <form class="form-row" id="run-form">
-          <div class="field"><label for="run-shop">Shop</label><select id="run-shop"><option value="">Choose a shop</option>${shops.map((s) => `<option value="${esc(s.id)}"${selectedShop && selectedShop.id === s.id ? " selected" : ""}>${esc(s.name || s.id)}</option>`).join("")}</select></div>
-          <div class="field" style="flex:2"><label for="run-cat">Category</label><select id="run-cat">${nameOptionsHtml(names, selectedName)}</select></div>
-          <div class="field" style="flex:2"><label for="shop-url">Category URL</label><input id="shop-url" type="text" required placeholder="https://www.shop.com/kategori/filament" value="${esc((job && job.url) || "")}"></div>
+          <div id="run-rows" style="flex:1 0 100%;display:flex;flex-direction:column;gap:8px;border:1px solid #c7d2fe;border-radius:10px;padding:12px;background:#f8faff">
+            <div class="run-row" data-row="1" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+              <div class="field"><label for="run-shop">Shop 1</label><select id="run-shop" class="run-shop"><option value="">Choose a shop</option>${shops.map((s) => `<option value="${esc(s.id)}"${selectedShop && selectedShop.id === s.id ? " selected" : ""}>${esc(s.name || s.id)}</option>`).join("")}</select></div>
+              <div class="field" style="flex:2"><label for="run-cat">Category</label><select id="run-cat" class="run-cat">${nameOptionsHtml(names, selectedName)}</select></div>
+              <div class="field" style="flex:2"><label for="shop-url">Category URL</label><input id="shop-url" class="run-url" type="text" required placeholder="https://www.shop.com/kategori/filament" value="${esc((job && job.url) || "")}"></div>
+              <button class="ghost" type="button" id="add-shop-row" title="Add another shop to this run" style="width:36px;height:36px;border-radius:50%;font-size:20px;line-height:1;padding:0;flex:0 0 auto">+</button>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-top:1px dashed #c7d2fe;padding-top:8px">
+              <button class="primary" type="button" id="run-all" title="Queue every shop above, one after another">Run all</button>
+              <span class="muted" style="font-size:12px">Runs them top to bottom, one at a time, so each shop is matched against the ones already run.</span>
+            </div>
+          </div>
           <div class="field"><label for="shop-kind">Kind</label><select id="shop-kind"><option value="both" ${(job && job.kind) === "both" ? "selected" : ""}>Both</option><option value="printer" ${(job && job.kind) === "printer" ? "selected" : ""}>Printers</option><option value="filament" ${(job && job.kind) === "filament" ? "selected" : ""}>Filament</option></select></div>
           <div class="field"><label for="shop-max">Max products</label><input id="shop-max" type="number" min="1" max="400" value="${(job && job.maxProducts) || 200}"></div>
           <label class="muted" style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="run-llm" ${llmOn ? "checked" : ""}> AI help on very close matches</label>
@@ -1933,34 +1942,127 @@
         }
         finally { state.loading = false; btn.disabled = false; }
       }
+      // ---- multi-shop run form: helpers shared by Queue run and Run all ----
+      function isHttps(u) {
+        // Deliberately not a regex: this code is generated, and a generated regex escaped wrong once
+        // already and took the whole admin down. A prefix compare cannot be escaped wrong.
+        return String(u || "").slice(0, 8).toLowerCase() === "https://";
+      }
+      function collectRunRows(isQuick) {
+        if (isQuick) return [{ shop: null, cat: "", url: ((($("#run-url") || {}).value) || "").trim() }];
+        return Array.from(document.querySelectorAll("#run-rows .run-row")).map((el) => {
+          const sEl = el.querySelector(".run-shop");
+          const cEl = el.querySelector(".run-cat");
+          const uEl = el.querySelector(".run-url");
+          return { shop: shopById(state.data, sEl ? sEl.value : ""), cat: cEl ? cEl.value : "", url: uEl ? uEl.value.trim() : "" };
+        }).filter((r) => r.url || (r.shop && r.shop.id));
+      }
+      function runRowProblem(r) {
+        if (!isHttps(r.url)) return "Use an HTTPS shop URL on every filled row.";
+        if (!r.shop) return "Pick a shop on every filled row.";
+        if (r.cat && !categoryUrlForShop(r.shop, r.cat)) return "Add the category URL for " + r.cat + " under Shops first. Do not reuse another shop link.";
+        if (urlHostOf(r.url) !== shopHostOf(r.shop)) return "That category URL is not on " + (r.shop.name || r.shop.id) + ".";
+        return "";
+      }
+      function waitForRunJob(id) {
+        // Poll until the job is terminal. Run all depends on this: the next shop must not start until
+        // this one has published, or order stops deciding which card an offer joins.
+        return new Promise((resolve) => {
+          let waited = 0;
+          const tick = async () => {
+            try {
+              const d = await api("/api/admin");
+              const j = (d.jobs || []).find((x) => x.id === id);
+              if (!j || j.status === "complete" || j.status === "failed" || j.status === "aborted") return resolve(j || null);
+            } catch (_) { /* keep waiting */ }
+            waited += 4000;
+            if (waited > 3600000) return resolve(null);
+            setTimeout(tick, 4000);
+          };
+          setTimeout(tick, 4000);
+        });
+      }
+
+      if (e.target.id === "add-shop-row") {
+        e.preventDefault();
+        const container = $("#run-rows");
+        const first = container && container.querySelector(".run-row");
+        if (!first) return;
+        const row = first.cloneNode(true);
+        row.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
+        row.querySelectorAll("label").forEach((el) => el.removeAttribute("for"));
+        row.querySelectorAll("input").forEach((el) => { el.value = ""; });
+        row.querySelectorAll("select").forEach((el) => { el.selectedIndex = 0; });
+        row.querySelectorAll("button").forEach((el) => el.remove());
+        const n = container.querySelectorAll(".run-row").length + 1;
+        const lab = row.querySelector("label");
+        if (lab) lab.textContent = "Shop " + n;
+        const rm = document.createElement("button");
+        rm.type = "button";
+        rm.className = "ghost remove-shop-row";
+        rm.textContent = "Remove";
+        row.appendChild(rm);
+        container.insertBefore(row, container.lastElementChild);
+        return;
+      }
+      if (e.target.classList && e.target.classList.contains("remove-shop-row")) {
+        const row = e.target.closest(".run-row");
+        if (row) row.remove();
+        return;
+      }
+
+      if (e.target.id === "run-all") {
+        e.preventDefault();
+        const rows = collectRunRows(false);
+        if (!rows.length) { toast("Pick a shop and its category URL first."); return; }
+        const kind = ($("#shop-kind") || {}).value || "both";
+        const maxProducts = Number(($("#shop-max") || {}).value || 200);
+        const llmValue = $("#run-llm") ? $("#run-llm").checked : undefined;
+        const btn = e.target;
+        const original = btn.textContent;
+        btn.disabled = true;
+        (async () => {
+          for (let i = 0; i < rows.length; i += 1) {
+            const r = rows[i];
+            const who = r.shop ? (r.shop.name || r.shop.id) : "shop";
+            btn.textContent = "Running " + (i + 1) + "/" + rows.length + " - " + who;
+            const problem = runRowProblem(r);
+            if (problem) { toast(problem); continue; }
+            try {
+              const created = await action({ action: "createJob", type: "shop", url: r.url, kind, maxProducts, autoLlmMatch: llmValue });
+              try { await notifyWorker(created.job); } catch (kickErr) { console.warn(kickErr); }
+              await waitForRunJob(created.job.id);
+            } catch (err) { toast(who + ": " + err.message); }
+          }
+          btn.textContent = original;
+          btn.disabled = false;
+          toast("Run all finished - " + rows.length + " shop(s).");
+        })();
+        return;
+      }
+
       if (e.target.id === "quick-run" || e.target.id === "run-form") {
         e.preventDefault();
-        const url = $(e.target.id === "quick-run" ? "#run-url" : "#shop-url").value.trim();
-        const kind = $(e.target.id === "quick-run" ? "#run-kind" : "#shop-kind").value;
-        const maxProducts = Number($("#shop-max")?.value || 200);
-        if (!/^https:\/\//i.test(url)) { toast("Use an HTTPS shop URL."); return; }
-        const pickedShop = shopById(state.data, $("#run-shop") && $("#run-shop").value);
-        const catName = $("#run-cat") && $("#run-cat").value;
-        if (!pickedShop) { toast("Pick a shop."); return; }
-        const shopUrl = categoryUrlForShop(pickedShop, catName);
-        if (catName && !shopUrl) {
-          toast("Add this shop’s own URL for " + catName + " on Shops. Do not reuse another shop’s link.");
-          return;
-        }
-        if (urlHostOf(url) !== shopHostOf(pickedShop)) {
-          toast("That category URL is not on " + (pickedShop.name || pickedShop.id) + ".");
-          return;
-        }
-        try {
-          const created = await action({ action: "createJob", type: "shop", url, kind, maxProducts, autoLlmMatch: $("#run-llm") ? $("#run-llm").checked : undefined });
+        const isQuick = e.target.id === "quick-run";
+        const rows = collectRunRows(isQuick);
+        if (!rows.length) { toast("Pick a shop and its category URL."); return; }
+        const kind = ($(isQuick ? "#run-kind" : "#shop-kind") || {}).value || "both";
+        const maxProducts = Number(($("#shop-max") || {}).value || 200);
+        const llmValue = $("#run-llm") ? $("#run-llm").checked : undefined;
+        const problems = [];
+        let queued = 0;
+        for (const r of rows) {
+          const problem = isQuick ? "" : runRowProblem(r);
+          if (problem) { problems.push(problem); continue; }
           try {
-            await notifyWorker(created.job);
-            toast("Run sent to the worker.");
-          } catch (kickErr) {
-            toast("Queued. Start the worker on this PC if it stays on Waiting: node worker/online-worker.cjs");
-            console.warn(kickErr);
-          }
-        } catch (err) { toast(err.message); }
+            const created = await action({ action: "createJob", type: "shop", url: r.url, kind, maxProducts, autoLlmMatch: llmValue });
+            queued += 1;
+            try { await notifyWorker(created.job); } catch (kickErr) { console.warn(kickErr); }
+          } catch (err) { problems.push(err.message); }
+        }
+        if (queued > 1) toast(queued + " runs queued, one per shop. Use Run all to do them in order.");
+        else if (queued === 1) toast("Run sent to the worker.");
+        if (problems.length) toast(problems[0] + (problems.length > 1 ? " (+" + (problems.length - 1) + " more)" : ""));
       }
       if (e.target.matches(".add-shop-cat") || e.target.closest(".add-shop-cat") === e.target) {
         e.preventDefault();
