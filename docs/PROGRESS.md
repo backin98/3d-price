@@ -25,17 +25,56 @@
   replacement. Confirmed: `A1 tarzı` / `muadil` -> unknown; `AMS uyumlu` on a real H2S -> match.
 - Tags: `2stable-5 -> c77190f`, `2stable-6 -> 0272ddb`. Suite: 33/33.
 
-## Part B — Laya (STARTED, install only)
+## Part B — Laya (install + smoke test DONE; zero-shot is NOT trustworthy)
 
-- `laya 0.3.4` installed and imports on Python 3.14.5 with `torch 2.14.0+cpu`, `transformers 5.17.0`,
-  into `.venv-laya`. `USE_TF=0`. No GPU.
-- **The documented API is wrong.** There is no `preload=True`. Real signatures:
-  `Router.__init__(self, models: Dict[str,str]|None=None, device=None, token=None, max_loaded=1, default='english', ...)`
-  `Router.predict(self, state: str|dict|list, questions: Dict, model=None, task=None, lang=None)`
-  Warming means passing `models={...}` with `max_loaded`. Anyone building from the old notes fails at
-  line one.
-- **Next:** smoke test — `Router()` warm-up, 3 real Turkish listings, print raw output + latency per
-  checkpoint (default / multilingual / typed-decisions) to `docs/laya-smoke.txt`.
+Toolchain: `laya 0.3.4`, `torch 2.14.0+cpu`, `transformers 5.17.0`, Python 3.14.5, `USE_TF=0`, in
+`.venv-laya`. Weights: `multilingual/model.safetensors` (644 MB) cached under
+`~/.cache/huggingface/hub/models--convaiinnovations--laya`. Full repo is 2.4 GB (three checkpoints).
+
+### CORRECTION: `preload=True` DOES exist
+
+I earlier wrote that it did not, because I read a truncated signature. The real one:
+```
+Router.__init__(self, models: Dict[str,str]|None=None, device=None, token=None, max_loaded=1,
+                default='english', auto_task_detection=False, standalone_repos=False,
+                preload: bool = False)
+Router.predict(self, state: str|dict|list, questions: Dict, model=None, task=None, lang=None) -> Dict
+```
+`Router()` builds in 0.0s (lazy); the model loads on the first `predict`.
+
+### Smoke test — `scripts/laya-smoke.py` -> `docs/laya-smoke.txt`
+
+Latency: **first call 18.0s** (includes load), **every later call 0.10-0.11s**. Fast enough to be a
+sidecar once warm.
+
+Response shape (verified): `res["answers"][qid]` holds `{"type","noul"|"choice","probabilities",
+"confidence","action"}`; `res["routing"]` reports which checkpoint answered. `usage.output_tokens:0`
+- it is an encoder, it never generates.
+
+Routing: Turkish text is auto-routed to the multilingual checkpoint, but the detector labels it
+`language: "fr"` ("Latin script but language looks like 'fr', not English"). Right destination,
+wrong label; passing `lang="tr"` explicitly is worth trying.
+
+### Results on real Turkish titles (multilingual checkpoint)
+
+| listing | question | Laya | truth | verdict |
+|---|---|---|---|---|
+| Bambu Lab H2C 10 Watt Combo 3D Yazici | same as "H2C Combo Laser 10 Watt"? | **different** (0.339/0.661, conf 0.076) | same | **WRONG - false split** |
+| Bambu Lab H2C Combo Laser 10 Watt 3D Yazici | same as "H2C Combo Laser 10 Watt"? | same (0.9462, conf 0.698) | same | ok (trivially identical strings) |
+| Bambu Lab A1 tarzi nozzle uyumlu yedek parca | is an actual printer? | **yes** (0.857) | no, spare part | **WRONG** |
+| Bambu Lab A1 tarzi nozzle uyumlu yedek parca | same as "H2C Combo Laser 10 Watt"? | **same** (0.877) | no | **BADLY WRONG** |
+
+It failed the single case the whole task was about (the word-order H2C pair) and called an A1 nozzle
+accessory "same" as an H2C. Confidences are low (0.08-0.70), which matches the model card's
+near-chance zero-shot number.
+
+**Consequence for thresholds:** with auto-accept at 0.90 a set threshold, NO observed answer reaches
+it - every decision would fall to admin review, so Laya as an auto-decider does nothing useful today.
+
+### Next
+Fine-tune (freeze the encoder, train the decision head) on labeled pairs, or train a small
+classifier on Laya embeddings. Do not wire Laya into the gray band until it beats Magellan alone on
+false-merge rate.
 
 ## Known issues
 

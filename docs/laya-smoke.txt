@@ -1,0 +1,30 @@
+laya Router.__init__: (self, models: Dict[str, str] | None = None, device: str | None = None, token: str | None = None, max_loaded: int = 1, default: str = 'english', auto_task_detection: bool = False, standalone_repos: bool = False, preload: bool = False)
+laya Router.predict : (self, state: str | dict | list, questions: Dict[str, Any], model: str | None = None, task: str | None = None, lang: str | None = None) -> Dict[str, Any]
+
+Router() built in 0.0s
+===                              model=multilingual  18.02s
+    title: Bambu Lab H2C 10 Watt Combo 3D Yazıcı
+    routing: {"model": "multilingual", "repo": "convaiinnovations/laya/multilingual", "reason": "explicit model='multilingual'", "detection": null, "workflow": null}
+    raw: {"model": "laya-rl-agent", "answers": {"is_printer": {"type": "noul", "noul": 0.975, "confidence": 0.975, "action": {"act_probability": 1.0}}, "same_as_h2c_combo_laser": {"type": "choice", "choice": "different", "probabilities": {"same": 0.339, "different": 0.661}, "confidence": 0.0761, "action": {"act_probability": 1.0}}}, "usage": {"input_tokens": 132, "output_tokens": 0}, "routing": {"model": "multilingual", "repo": "convaiinnovations/laya/multilingual", "reason": "explicit model='multilingual'", "detection": null, "workflow": null}}
+===                              model=None  0.11s
+    title: Bambu Lab H2C 10 Watt Combo 3D Yazıcı
+    routing: {"model": "multilingual", "repo": "convaiinnovations/laya/multilingual", "reason": "Latin script but language looks like 'fr', not English", "detection": {"script": "latin", "script_profile": {"latin"
+    raw: {"model": "laya-rl-agent", "answers": {"is_printer": {"type": "noul", "noul": 0.975, "confidence": 0.975, "action": {"act_probability": 1.0}}, "same_as_h2c_combo_laser": {"type": "choice", "choice": "different", "probabilities": {"same": 0.339, "different": 0.661}, "confidence": 0.0761, "action": {"act_probability": 1.0}}}, "usage": {"input_tokens": 132, "output_tokens": 0}, "routing": {"model": "multilingual", "repo": "convaiinnovations/laya/multilingual", "reason": "Latin script but language looks like 'fr', not English", "detection": {"script": "latin", "script_profile": {"latin": 1.0}, "language": "fr", "is_english": false, "non_latin_fraction": 0.0}, "workflow": null}}
+===                              model=multilingual  0.11s
+    title: Bambu Lab H2C Combo Laser 10 Watt 3D Yazıcı
+    routing: {"model": "multilingual", "repo": "convaiinnovations/laya/multilingual", "reason": "explicit model='multilingual'", "detection": null, "workflow": null}
+    raw: {"model": "laya-rl-agent", "answers": {"is_printer": {"type": "noul", "noul": 0.9757, "confidence": 0.9757, "action": {"act_probability": 1.0}}, "same_as_h2c_combo_laser": {"type": "choice", "choice": "same", "probabilities": {"same": 0.9462, "different": 0.0538}, "confidence": 0.6977, "action": {"act_probability": 1.0}}}, "usage": {"input_tokens": 134, "output_tokens": 0}, "routing": {"model": "multilingual", "repo": "convaiinnovations/laya/multilingual", "reason": "explicit model='multilingual'", "detection": null, "workflow": null}}
+===                              model=None  0.10s
+    title: Bambu Lab H2C Combo Laser 10 Watt 3D Yazıcı
+    routing: {"model": "multilingual", "repo": "convaiinnovations/laya/multilingual", "reason": "Latin script but language looks like 'fr', not English", "detection": {"script": "latin", "script_profile": {"latin"
+    raw: {"model": "laya-rl-agent", "answers": {"is_printer": {"type": "noul", "noul": 0.9757, "confidence": 0.9757, "action": {"act_probability": 1.0}}, "same_as_h2c_combo_laser": {"type": "choice", "choice": "same", "probabilities": {"same": 0.9462, "different": 0.0538}, "confidence": 0.6977, "action": {"act_probability": 1.0}}}, "usage": {"input_tokens": 134, "output_tokens": 0}, "routing": {"model": "multilingual", "repo": "convaiinnovations/laya/multilingual", "reason": "Latin script but language looks like 'fr', not English", "detection": {"script": "latin", "script_profile": {"latin": 1.0}, "language": "fr", "is_english": false, "non_latin_fraction": 0.0}, "workflow": null}}
+===                              model=multilingual  0.11s
+    title: Bambu Lab A1 tarzı nozzle uyumlu yedek parça
+    routing: {"model": "multilingual", "repo": "convaiinnovations/laya/multilingual", "reason": "explicit model='multilingual'", "detection": null, "workflow": null}
+    raw: {"model": "laya-rl-agent", "answers": {"is_printer": {"type": "noul", "noul": 0.8566, "confidence": 0.8566, "action": {"act_probability": 1.0}}, "same_as_h2c_combo_laser": {"type": "choice", "choice": "same", "probabilities": {"same": 0.8773, "different": 0.1227}, "confidence": 0.4629, "action": {"act_probability": 1.0}}}, "usage": {"input_tokens": 126, "output_tokens": 0}, "routing": {"model": "multilingual", "repo": "convaiinnovations/laya/multilingual", "reason": "explicit model='multilingual'", "detection": null, "workflow": null}}
+===                              model=None  0.10s
+    title: Bambu Lab A1 tarzı nozzle uyumlu yedek parça
+    routing: {"model": "multilingual", "repo": "convaiinnovations/laya/multilingual", "reason": "Latin script but language looks like 'fr', not English", "detection": {"script": "latin", "script_profile": {"latin"
+    raw: {"model": "laya-rl-agent", "answers": {"is_printer": {"type": "noul", "noul": 0.8566, "confidence": 0.8566, "action": {"act_probability": 1.0}}, "same_as_h2c_combo_laser": {"type": "choice", "choice": "same", "probabilities": {"same": 0.8773, "different": 0.1227}, "confidence": 0.4629, "action": {"act_probability": 1.0}}}, "usage": {"input_tokens": 126, "output_tokens": 0}, "routing": {"model": "multilingual", "repo": "convaiinnovations/laya/multilingual", "reason": "Latin script but language looks like 'fr', not English", "detection": {"script": "latin", "script_profile": {"latin": 1.0}, "language": "fr", "is_english": false, "non_latin_fraction": 0.0}, "workflow": null}}
+
+saved -> docs/laya-smoke.txt
