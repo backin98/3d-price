@@ -309,6 +309,32 @@ worth watching in real scrapes.
 CAVEAT repeated so it is not forgotten: the 100% is on a set whose generated "same" pairs are mostly
 trivial (casing, folding, noise). The meaningful number is still the hand-written edges, now 15/15.
 
+### Step 0 (wattage context) ATTEMPTED, NOT DONE - and I broke a file doing it
+
+Goal: a wattage counts as a laser wattage only near laser context (lazer/laser/modul/engraver/kazima),
+never near power-supply words (adaptor, guc kaynagi, PSU, power, isitici, heater, bed, tabla).
+
+Three attempts, all failed:
+1. **I corrupted `lib/product-match.cjs`.** I replaced the helper by slicing between index positions and
+   the end-marker found the wrong closing brace, truncating a `const` - 21 of 34 test files failed.
+   Recovered with `git checkout`. Lesson: never slice a JS file by brace search; replace a single known
+   line, or use the editor.
+2. The targeted replacement then missed because the working copy has **CRLF** endings and my search
+   string used `
+`. Same class of mistake as the backslash one: assuming the bytes instead of checking.
+3. With the CRLF issue fixed the replacement applied, but verification failed and auto-rolled back. I ran
+   out of room to establish whether it was the syntax check or the assertion, so I stopped rather than
+   guess again.
+
+State left behind: `lib/product-match.cjs` and `scripts/modifier-order.test.cjs` are at the committed
+green versions. **Suite 34/34, eval 375/375, false-merge 0, false-split 0.** The veto is NOT implemented.
+
+IMPORTANT for whoever continues: the spec asks for laser context to be REQUIRED, but that re-splits the
+H2C pair, because `"Bambu Lab H2C 10 Watt Combo 3D Yazici"` contains no laser word while
+`"Bambu Lab H2C Combo Laser 10 Watt 3D Yazici"` does. Those two are the must-pass case. So the rule has
+to be: power/heater words VETO, and absence of context still counts as the laser module. The veto list
+is the load-bearing part; requiring positive context contradicts step 1's own requirement.
+
 ### Next
 Fine-tune (freeze the encoder, train the decision head) on labeled pairs, or train a small
 classifier on Laya embeddings. Do not wire Laya into the gray band until it beats Magellan alone on
