@@ -594,11 +594,11 @@
           <div class="field" style="flex:2"><label for="shop-url">Category URL</label><input id="shop-url" type="text" required placeholder="https://www.shop.com/kategori/filament" value="${esc((job && job.url) || "")}"></div>
           <div class="field"><label for="shop-kind">Kind</label><select id="shop-kind"><option value="both" ${(job && job.kind) === "both" ? "selected" : ""}>Both</option><option value="printer" ${(job && job.kind) === "printer" ? "selected" : ""}>Printers</option><option value="filament" ${(job && job.kind) === "filament" ? "selected" : ""}>Filament</option></select></div>
           <div class="field"><label for="shop-max">Max products</label><input id="shop-max" type="number" min="1" max="400" value="${(job && job.maxProducts) || 200}"></div>
-          <label class="muted" style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="run-llm" ${llmOn ? "checked" : ""}> LLM help on very close matches</label>
+          <label class="muted" style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="run-llm" ${llmOn ? "checked" : ""}> AI help on very close matches</label>
           <button class="primary" type="submit" ${job ? "disabled" : ""}>Queue run</button>
           ${job ? `<button class="ghost danger" type="button" id="abort-active">Abort ${job.id}</button><button class="ghost danger" type="button" id="delete-run">Delete run</button>` : ""}
         </form>
-        <p class="muted">LLM help off (default): Magellan decides and close calls wait for you. On: one short Gemma ask, text only, only when Magellan is in the gray band. Hard conflicts (AMS, Combo, mini, laser) are never merged either way.<br>Visual match: on — thumbnails are fingerprinted locally when titles are a close call, and a matching photo is flagged for you to confirm. Vision never merges on its own.</p>
+        <p class="muted">AI help off (default): Magellan decides and close calls wait for you. No AI server is needed either way. On: one short AI ask, text only, only when Magellan is in the gray band. Hard conflicts (AMS, Combo, mini, laser) are never merged either way.<br>Visual match: on — thumbnails are fingerprinted locally when titles are a close call, and a matching photo is flagged for you to confirm. Vision never merges on its own.</p>
         ${job ? `<p><span class="badge ${job.status}">${esc(job.status)}</span> ${esc(job.progress || "")}</p>` : "<p class='muted'>No active run.</p>"}
         <h3>Live review board</h3>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0">
@@ -894,9 +894,9 @@
         <span class="muted">${cards.length} gathered</span>
       </div>
       <div class="review-toolbar">
-        <span class="muted">Aggressive LLM help — Gemma on what the matcher could not sort. It may only choose an identity from the current catalog (or say "new"/"hold"), and it can never override a hard split:</span>
-        <button class="btn-sm" type="button" id="gemma-unmatched" ${unmatched ? "" : "disabled"}>Ask Gemma: all unmatched (${unmatched})</button>
-        <button class="btn-sm" type="button" id="gemma-selected" ${selected ? "" : "disabled"}>Ask Gemma: selected (${selected})</button>
+        <span class="muted">Aggressive AI help — for what the matcher could not sort. It may only choose an identity from the current catalog (or say "new"/"hold"), and it can never override a hard split:</span>
+        <button class="btn-sm" type="button" id="gemma-unmatched" ${unmatched ? "" : "disabled"}>Ask AI: all unmatched (${unmatched})</button>
+        <button class="btn-sm" type="button" id="gemma-selected" ${selected ? "" : "disabled"}>Ask AI: selected (${selected})</button>
       </div>
       <div class="review-board" id="review-board">
         ${cards.map((e) => {
@@ -919,8 +919,8 @@
             : dec.action === "held" || dec.action === "hold" ? "Worker match: held — " + String(dec.reason || (dec.candidateName && "compared with " + dec.candidateName) || "needs a look").slice(0, 120)
             : "gathered — waiting for match";
           const visualNote = typeof dec.visual === "number" ? " · visual " + dec.visual.toFixed(2) : "";
-          const pathNote = dec.matchPath === "gemma-catalog-guided" ? " · Gemma (catalog-guided)" + (dec.identityId ? " · " + dec.identityId : "") + (dec.rejected ? " · rejected: " + dec.rejected : "")
-            : dec.matchPath === "gemma-gray" ? " · Gemma-gray"
+          const pathNote = dec.matchPath === "gemma-catalog-guided" ? " · AI (catalog-guided)" + (dec.identityId ? " · " + dec.identityId : "") + (dec.rejected ? " · rejected: " + dec.rejected : "")
+            : dec.matchPath === "gemma-gray" ? " · AI-gray"
             : dec.nearDupe ? (dec.photoMatch ? " · near duplicate — same thumbnail, confirm" : " · near duplicate — review") + visualNote
             : dec.matchPath === "magellan+visual" ? " · Magellan + visual" + visualNote
             : (dec.matchPath === "magellan" || dec.rule === "magellan") ? " · Magellan" : "";
@@ -1274,7 +1274,7 @@
   function aiHtml(d) {
     const desk = d.desk || {};
     const shown = (state.workerLive && state.workerLive.connection && state.workerLive.connection.modelUrl) || desk.modelUrl || "";
-    return '<div class="panel"><h2>Local AI server</h2><p class="muted">The worker on this PC scans LM Studio (ports 1234 and 1235) and Ollama (11434). Paste a URL only if you use a different address.</p><form id="ai-form" class="form-row" novalidate><div class="field"><label for="ai-url">AI server URL (optional)</label><input id="ai-url" type="text" inputmode="url" autocomplete="off" placeholder="auto-detect" value="' + esc(shown) + '"><small class="muted">Leave blank and click Detect.</small></div><button type="button" class="ghost" id="ai-detect">Detect</button><button type="submit" class="primary">Save &amp; connect</button></form><label class="muted" style="display:flex;align-items:center;gap:8px;margin-top:12px"><input type="checkbox" id="auto-llm-match" ' + (desk.autoLlmMatch === true ? "checked" : "") + '> Auto LLM match (extreme uncertainty only)</label><p class="muted">Off (default): Magellan only; gray titles wait for you. On: one short Gemma ask only when Magellan is in the extreme gray band. Never for stock, VAT, or price.</p></div><div class="panel"><h2>Connection status</h2><div id="ai-status" role="status">' + aiStatusHtml(d) + '</div></div>';
+    return '<div class="panel"><h2>Local AI server</h2><p class="muted">The worker on this PC scans LM Studio (ports 1234 and 1235) and Ollama (11434). Paste a URL only if you use a different address.</p><form id="ai-form" class="form-row" novalidate><div class="field"><label for="ai-url">AI server URL (optional)</label><input id="ai-url" type="text" inputmode="url" autocomplete="off" placeholder="auto-detect" value="' + esc(shown) + '"><small class="muted">Leave blank and click Detect.</small></div><button type="button" class="ghost" id="ai-detect">Detect</button><button type="submit" class="primary">Save &amp; connect</button></form><label class="muted" style="display:flex;align-items:center;gap:8px;margin-top:12px"><input type="checkbox" id="auto-llm-match" ' + (desk.autoLlmMatch === true ? "checked" : "") + '> Auto AI match (extreme uncertainty only)</label><p class="muted">Off (default): Magellan only; gray titles wait for you. On: one short AI ask only when Magellan is in the extreme gray band. Never for stock, VAT, or price.</p></div><div class="panel"><h2>Connection status</h2><div id="ai-status" role="status">' + aiStatusHtml(d) + '</div></div>';
   }
 
   function jobsHtml(d) {
@@ -1735,7 +1735,7 @@
         const btn = e.target.closest("button");
         const label = btn.textContent;
         btn.disabled = true;
-        btn.textContent = "Asking Gemma…";
+        btn.textContent = "Asking AI…";
         try {
           const live = await pingWorker();
           if (!live.ok) throw new Error(live.error || "Local worker offline — start it with node worker/online-worker.cjs on this PC.");
@@ -1747,14 +1747,14 @@
             })
           });
           const data = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(data.error || "Gemma pass failed");
+          if (!res.ok) throw new Error(data.error || "AI pass failed");
           let merged = 0, created = 0, held = 0;
           for (const r of data.results || []) {
             if (r.action === "merge" && r.matchId) { state.reviewPlace.set(r.url, { action: "merge", candidateId: r.matchId }); merged += 1; }
             else if (r.action === "create") { state.reviewPlace.set(r.url, { action: "create", candidateId: "" }); created += 1; }
             else held += 1;
           }
-          toast("Gemma answered " + data.asked + " of " + targets.length + ": " + merged + " merge, " + created + " new, " + held + " still unsure. Check the board, then publish.");
+          toast("AI answered " + data.asked + " of " + targets.length + ": " + merged + " merge, " + created + " new, " + held + " still unsure. Check the board, then publish.");
         } catch (err) {
           toast(err.message);
         } finally {
@@ -2039,7 +2039,7 @@
         const on = e.target.checked === true;
         action({ action: "saveMatchSettings", autoLlmMatch: on }).then((saved) => {
           if (saved && saved.desk && state.data) state.data.desk = { ...state.data.desk, ...saved.desk };
-          toast(on ? "Auto LLM match on: Gemma only in extreme gray." : "Auto LLM match off: Magellan only.");
+          toast(on ? "Auto AI match on: one AI ask, extreme gray only." : "Auto AI match off: Magellan only, no AI server needed.");
         }).catch((err) => toast(err.message));
         return;
       }

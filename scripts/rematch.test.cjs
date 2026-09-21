@@ -1,4 +1,4 @@
-// Aggressive LLM help: a second, on-demand pass. It must only run when asked, only on what
+// Aggressive AI help: a second, on-demand pass. It must only run when asked, only on what
 // the deterministic pass could not sort, and it must never publish by itself.
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
@@ -91,9 +91,9 @@ const listing = { name: 'Bambu Lab P1s Combo 3D Yazıcı Ams ile 16 Renge Kadar 
     { card: { url: 'https://shop.example/mystery', name: 'Unmatched mystery', kind: 'printer' }, decision: {} }
   ] };
   const html = context.test.reviewBoardHtml(job, { catalog: { products: [], filaments: [] } });
-  assert.match(html, /Aggressive LLM help/);
-  assert.match(html, /id="gemma-unmatched"[^>]*>Ask Gemma: all unmatched \(1\)/, 'counts only the unmatched card');
-  assert.match(html, /id="gemma-selected" disabled[^>]*>Ask Gemma: selected \(0\)/, 'disabled until cards are selected');
+  assert.match(html, /Aggressive AI help/);
+  assert.match(html, /id="gemma-unmatched"[^>]*>Ask AI: all unmatched \(1\)/, 'counts only the unmatched card');
+  assert.match(html, /id="gemma-selected" disabled[^>]*>Ask AI: selected \(0\)/, 'disabled until cards are selected');
 
   // --- the endpoint: validation and refusals, no model needed -------------------------
   const port = 18791;
@@ -133,7 +133,7 @@ const listing = { name: 'Bambu Lab P1s Combo 3D Yazıcı Ams ile 16 Renge Kadar 
     child.kill();
   }
 
-  console.log('PASS: aggressive Gemma help is on demand only, excludes the row it came from, cannot override conflicts, and says so when it has nothing to work with.');
+  console.log('PASS: aggressive AI help is on demand only, excludes the row it came from, cannot override conflicts, and says so when it has nothing to work with.');
 })()
   .catch((e) => { console.error(e); process.exitCode = 1; })
   .finally(() => { Module._load = load; fs.rmSync(askDir, { recursive: true, force: true }); });
