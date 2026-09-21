@@ -11,6 +11,7 @@
     catalogQuery: "",
     catalogLimit: 40,
     editing: new Map(), // productId -> {shelf, object}
+    pendingImages: new Map(),
     bannersDraft: null,
     pickedPin: null,
     reviewSelected: new Set(),
@@ -70,6 +71,35 @@
       ? `onerror="if(!this.dataset.fb){this.dataset.fb='1';this.src='${esc(fb)}';}else{this.outerHTML='<span class=review-noimg>no image</span>'}"`
       : `onerror="this.outerHTML='<span class=review-noimg>no image</span>'"`;
     return `<img src="${esc(src)}" alt="" loading="lazy" referrerpolicy="no-referrer" ${err}${extraClass ? ` class="${extraClass}"` : ""}>`;
+  }
+
+  function prepareThumbnail(file) {
+    if (!file || !/^image\/(?:jpeg|png|webp)$/.test(file.type)) return Promise.reject(new Error("Choose a JPG, PNG or WebP image."));
+    if (file.size > 12 * 1024 * 1024) return Promise.reject(new Error("Choose an image smaller than 12 MB."));
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = () => reject(new Error("Could not read that image."));
+      reader.onload = () => {
+        const image = new Image();
+        image.onerror = () => reject(new Error("Could not decode that image."));
+        image.onload = () => {
+          const scale = Math.min(1, 720 / Math.max(image.naturalWidth, image.naturalHeight));
+          const canvas = document.createElement("canvas");
+          canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+          canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+          canvas.getContext("2d").drawImage(image, 0, 0, canvas.width, canvas.height);
+          canvas.toBlob((blob) => {
+            if (!blob || blob.size > 1024 * 1024) return reject(new Error("The resized thumbnail is still larger than 1 MB."));
+            const out = new FileReader();
+            out.onerror = () => reject(new Error("Could not prepare that image."));
+            out.onload = () => resolve({ type: blob.type, data: String(out.result).split(",")[1], preview: out.result });
+            out.readAsDataURL(blob);
+          }, "image/webp", 0.86);
+        };
+        image.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   function toast(msg) {
@@ -1148,11 +1178,13 @@
 
   function productCard(p) {
     const edit = state.editing.get(p.id) || { ...p, shelf: p.shelf };
+    const pendingImage = state.pendingImages.get(p.id);
     const common = (k) => esc(edit[k] ?? p[k] ?? "");
     const on = state.catalogSelected.has(p.id);
     return `<div class="product-card${on ? " is-selected" : ""}" data-product-id="${esc(p.id)}">
       <label class="muted" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600"><input type="checkbox" data-catalog-select="${esc(p.id)}" ${on ? "checked" : ""}> Select</label>
-      ${p.image ? productImg(p.image) : '<div style="height:110px;background:#e8ebef;border-radius:8px"></div>'}
+      <div class="catalog-thumb">${pendingImage ? `<img src="${esc(pendingImage.preview)}" alt="Uploaded thumbnail preview">` : p.image ? productImg(p.image) : '<div class="catalog-thumb-empty"></div>'}</div>
+      <label class="catalog-image-upload">Upload thumbnail<input type="file" accept="image/jpeg,image/png,image/webp" data-product-image="${esc(p.id)}"></label>
       <div class="name">${esc(p.name || p.title || p.id)}</div>
       <div class="meta">
         ${p.axes ? `<span class="axis-badge${p.axes.combo ? " is-combo" : " is-bare"}">${esc(p.axes.label || (p.axes.combo ? "Combo" : "Bare"))}</span>` : ""}
@@ -1969,10 +2001,18 @@
       if (e.target.closest("[data-save-product]")) {
         const id = e.target.closest("[data-save-product]").dataset.saveProduct;
         const patch = state.editing.get(id) || {};
-        try { await action({ action: "updateProduct", id, patch }); state.editing.delete(id); toast("Product saved."); } catch (err) { toast(err.message); }
+        const image = state.pendingImages.get(id);
+        try {
+          await action({ action: "updateProduct", id, patch, imageUpload: image ? { type: image.type, data: image.data } : null });
+          state.editing.delete(id);
+          state.pendingImages.delete(id);
+          toast("Product saved.");
+        } catch (err) { toast(err.message); }
       }
       if (e.target.closest("[data-reset-product]")) {
-        state.editing.delete(e.target.closest("[data-reset-product]").dataset.resetProduct);
+        const id = e.target.closest("[data-reset-product]").dataset.resetProduct;
+        state.editing.delete(id);
+        state.pendingImages.delete(id);
         render();
       }
       if (e.target.closest("[data-abort-job]")) {
@@ -2109,7 +2149,18 @@
       }
     });
 
-    document.addEventListener("change", (e) => {
+    document.addEventListener("change", async (e) => {
+      if (e.target.matches("[data-product-image]")) {
+        const id = e.target.dataset.productImage;
+        try {
+          const image = await prepareThumbnail(e.target.files && e.target.files[0]);
+          state.pendingImages.set(id, image);
+          const box = e.target.closest(".product-card").querySelector(".catalog-thumb");
+          box.innerHTML = `<img src="${esc(image.preview)}" alt="Uploaded thumbnail preview">`;
+          toast("Thumbnail ready. Press Save to publish it.");
+        } catch (err) { toast(err.message); e.target.value = ""; }
+        return;
+      }
       if (e.target.id === "auto-llm-match") {
         const on = e.target.checked === true;
         action({ action: "saveMatchSettings", autoLlmMatch: on }).then((saved) => {
@@ -2231,6 +2282,7 @@
       const id = card.dataset.productId;
       const original = allProducts().find((p) => p.id === id);
       if (!original) return;
+      if (!e.target.dataset.field) return;
       const edit = state.editing.get(id) || { ...original };
       edit[e.target.dataset.field] = e.target.type === "number" ? Number(e.target.value) : e.target.value;
       state.editing.set(id, edit);

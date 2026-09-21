@@ -1036,7 +1036,7 @@
     return candidates.filter((item) => {
       // This CDN returns a hotlink-denied graphic on external websites.
       if (!item.url) return false;
-      if (!item.url || !/^(https?:\/\/|assets\/)/i.test(item.url) || seen.has(item.url)) return false;
+      if (!item.url || !/^(https?:\/\/|\/|assets\/)/i.test(item.url) || seen.has(item.url)) return false;
       seen.add(item.url);
       return true;
     });

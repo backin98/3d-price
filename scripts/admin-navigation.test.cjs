@@ -83,6 +83,7 @@ assert.match(cat, /data-offer-branch="https:\/\/www.rhino3dprinter.com\/urun\/cr
 assert.match(cat, /data-offer-move="https:\/\/www.rhino3dprinter.com\/urun\/creality-k2-plus-combo"/);
 assert.match(cat, /id="catalog-targets"/, 'one shared target list for the whole page');
 assert.match(cat, /id="catalog-refresh"/, 'and a refresh button');
+assert.match(cat, /data-product-image="qwen-k2"/, 'each catalog card has a manual thumbnail upload');
 // Grouping controls: badge the axis, propose a keeper, keep the dangerous buttons away.
 assert.match(cat, /axis-badge/, 'each row is badged with its axis');
 assert.match(cat, /Bare/, 'a bare row says Bare');

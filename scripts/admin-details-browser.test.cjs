@@ -82,6 +82,11 @@ const server = http.createServer((req, res) => {
     await page.evaluate(() => { location.hash = '#catalog'; });
     await page.waitForSelector('[data-detail-key="offers:qwen-k2"]', { timeout: 15000 });
 
+    const pixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9Zl1sAAAAASUVORK5CYII=', 'base64');
+    await page.setInputFiles('[data-product-image="qwen-k2"]', { name: 'thumbnail.png', mimeType: 'image/png', buffer: pixel });
+    await page.waitForFunction(() => window.test.state.pendingImages.has('qwen-k2'));
+    assert.match(await page.$eval('[data-product-id="qwen-k2"] .catalog-thumb img', (el) => el.src), /^data:image\/webp/, 'the upload is resized and previewed before Save');
+
     // Open the offer panel the way a person does.
     assert.equal(await page.evaluate(() => typeof window.__keepOpen), 'function', 'the inline handler is wired');
     await page.click('[data-detail-key="offers:qwen-k2"] > summary');

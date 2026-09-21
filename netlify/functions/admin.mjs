@@ -4,7 +4,7 @@ import auth from "../../lib/netlify-auth.cjs";
 import money from "../../lib/parse-money.cjs";
 import matcher from "../../lib/product-match.cjs";
 
-const { readJSON, writeJSON, deleteKey } = store;
+const { readJSON, writeJSON, writeBytes, deleteKey } = store;
 const { ownerFromHeaders, authReady } = auth;
 const { withVat, withoutVat } = money;
 
@@ -43,6 +43,14 @@ function json(status, payload) {
     status,
     headers: { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" }
   });
+}
+
+function imageType(bytes) {
+  if (!bytes || bytes.length < 12) return "";
+  if (bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) return "image/jpeg";
+  if (bytes[0] === 0x89 && bytes.slice(1, 4).toString() === "PNG") return "image/png";
+  if (bytes.slice(0, 4).toString() === "RIFF" && bytes.slice(8, 12).toString() === "WEBP") return "image/webp";
+  return "";
 }
 
 function toHeaders(req) {
@@ -1001,6 +1009,20 @@ export default async (req) => {
         const allowed = ["name", "title", "brand", "color", "polymer", "variant", "aisle", "unit", "kind", "packaging", "weight", "diameter"];
         const product = [...(catalog.products || []), ...(catalog.filaments || [])].find((p) => p.id === id);
         if (!product) throw new Error("Product not found");
+        if (body.imageUpload) {
+          const type = String(body.imageUpload.type || "");
+          const encoded = String(body.imageUpload.data || "");
+          if (!/^image\/(?:jpeg|png|webp)$/.test(type) || !/^[a-z0-9+/]+={0,2}$/i.test(encoded)) throw new Error("Use a JPG, PNG or WebP image");
+          const bytes = Buffer.from(encoded, "base64");
+          if (!bytes.length || bytes.length > 1024 * 1024) throw new Error("Thumbnail must be smaller than 1 MB");
+          if (imageType(bytes) !== type) throw new Error("The uploaded file is not a valid image");
+          const safeId = id.toLowerCase().replace(/[^a-z0-9._-]+/g, "-").slice(0, 80) || "product";
+          const imageKey = safeId + "-" + Date.now();
+          await writeBytes("product-images/" + imageKey, bytes);
+          product.image = "/api/product-image?key=" + encodeURIComponent(imageKey);
+          // ponytail: old manual thumbnails stay immutable so catalog backups retain their images;
+          // add garbage collection only if this small manual-upload store becomes material.
+        }
         for (const key of allowed) {
           if (key in patch) product[key] = patch[key];
         }
