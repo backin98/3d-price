@@ -194,6 +194,43 @@ realistically is step 2's work.
 - I said the guard fixes 85% of errors. Wrong arithmetic: 5 false merges vs 49 false splits means it
   fixed 5 of 54, about 9%. Splits are the dominant problem, not merges.
 
+### Step 1 FINAL: guard narrowed, suite green, false-merge 0
+
+The first version of the guard was too aggressive and broke three tests. The failure named the reason:
+`"Bambu Lab P1S AMS 2 Pro Combo 3D Yazici Cift Nozul"` - **Cift Nozul (dual nozzle) is a FEATURE of
+the printer**, and matching a bare `nozul` blocked a genuine merge and turned gray-band reviews into
+hard creates (gemma-guide, vision-match, vision-place all failed).
+
+Narrowed rule now in `lib/product-match.cjs`:
+```
+STRONG words (tarzi|benzer|muadil|alternatif|replacement for|for use with)  -> disqualify
+PART_NOUN (nozzle|nozul|hotend|extruder|plaka|plate|enclosure|tabla|...)
+  AND SPARE_MARKER (yedek|spare|icin|for)                                   -> disqualify
+otherwise                                                                   -> no opinion
+```
+Verified: `Cift Nozul` no longer blocks, `A1 nozzle uyumlu yedek parca` still does.
+
+```
+accuracy    85.3% -> 86.7%
+false-merge  5/192 -> 0/192
+knockoff 2/2, accessory 4/4, combo-vs-bare 2/2, laser-watt 2/2, cross-identity 180/180
+suite: 33 pass / 0 fail
+```
+
+### ROOT CAUSE of the recurring backspace bug (found at last)
+
+Three separate times, regexes written into this repo contained literal 0x08 bytes where `` was
+meant. The mechanism: the tool call's JSON `\b` arrives at the shell as ``, and **Python then
+interprets `` as an escape and writes a backspace character**. It is not an editor or a copy-paste
+problem - it is the escaping chain.
+
+Rule from now on: never write a word-boundary regex through a Python heredoc. Write it in JS, or fix
+it at byte level, and ALWAYS verify:
+```
+node -e 'const s=require("fs").readFileSync(F,"utf8"); console.log((s.match(//g)||[]).length)'
+```
+must print 0. Both instances in `lib/product-match.cjs` are currently 0.
+
 ### Next
 Fine-tune (freeze the encoder, train the decision head) on labeled pairs, or train a small
 classifier on Laya embeddings. Do not wire Laya into the gray band until it beats Magellan alone on
