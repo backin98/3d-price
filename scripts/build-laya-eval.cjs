@@ -131,7 +131,7 @@ const balanced = [
 ];
 const OUT = path.join(__dirname, "..", "docs", "laya-eval.jsonl");
 fs.mkdirSync(path.dirname(OUT), { recursive: true });
-fs.writeFileSync(OUT, clean.map((p) => JSON.stringify(p)).join("\n") + "\n");
+fs.writeFileSync(OUT, balanced.map((p) => JSON.stringify(p)).join("\n") + "\n");
 const same = balanced.filter((p) => p.label === "same").length;
 console.log("wrote", path.relative(process.cwd(), OUT));
 console.log("pairs:", balanced.length, "| same:", same, "| different:", balanced.length - same);

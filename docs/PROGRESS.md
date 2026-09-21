@@ -86,6 +86,42 @@ Two broken versions came before this one and are worth remembering:
 Both were caught by printing the label split, not by trusting the generator. The script now refuses to
 write a set that is under 200 pairs or under 100 per label.
 
+### Baseline measured — `node scripts/eval-magellan.cjs`
+
+Magellan alone, no AI, on the 375 balanced pairs:
+
+```
+accuracy      : 320/375  (85.3%)
+false-merge   :   5/192  ( 2.6%)   <- the expensive error
+false-split   :  50/183  (27.3%)
+
+knockoff         0/2      both merged the clone into the genuine printer
+accessory        1/4      nozzle and plate spare parts merged into the printer
+word-order       1/2      the H2C pair split: "create: different technology"
+surface         131/180   49 same-identity variants split
+cross-identity  180/180   combo-vs-bare, laser-watt, model, variant, fold all correct
+```
+
+**Every false merge is a knockoff or a spare part.** Combo/AMS/watts/model never merged wrongly
+- the deterministic axes do their job. The two fixable gaps are both "this listing is not that
+product" cases, and neither is a similarity problem:
+
+1. `decidePair` in `lib/product-match.cjs` has no compatibility/accessory guard. The guard exists
+   (`COMPATIBILITY_STRONG/WEAK` in `lib/compare-to-baseline.js`) but only the baseline layer calls it,
+   so the matcher still merges `A1 tarzi` and `A1 muadil` into the real A1. Porting that guard into
+   `decidePair` should take false-merge from 5 to ~0.
+2. The 49 surface splits are the real accuracy work: they are all same-identity pairs, so each one is
+   a duplicate card for the user. Needs looking at actual examples before changing anything.
+
+### Bugs found in my own tooling (both caught by printing numbers, not by trusting it)
+
+- The eval generator defined a balanced sample but its write line still wrote the unbalanced list:
+  it printed "pairs: 375" while the file held 4776. The first measurement (96.4% accuracy) was taken
+  on that unbalanced file and was meaningless. Fixed by line number; the file and the print now agree
+  at 375 (asserted with `wc -l`).
+- An earlier patch's search string had the wrong escaping and silently no-opped, which is how the
+  above got through. Patches now assert on the replacement count.
+
 ### Next
 Fine-tune (freeze the encoder, train the decision head) on labeled pairs, or train a small
 classifier on Laya embeddings. Do not wire Laya into the gray band until it beats Magellan alone on
