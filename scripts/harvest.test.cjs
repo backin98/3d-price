@@ -44,6 +44,23 @@ const KEEP = new Set(RHINO.slice(7));
   assert.equal(isLikelyProductUrl("https://store.metatechtr.com/3d-yazicilar?ps=14", "printer"), false);
   assert.equal(readStockFromHtml("<div>Stoktan Teslim</div><button>Sepete Ekle</button>").status, "in_stock");
   assert.equal(readStockFromHtml("<div>Tükendi</div>").status, "out_of_stock");
+  assert.equal(readStockFromHtml("<div>Ön Sipariş</div><button>Sepete Ekle</button>").status, "preorder");
+  const preorderCard = await harvestCategory({
+    categoryUrl: "https://store.metatechtr.com/3d-yazicilar",
+    kind: "printers",
+    inStockOnly: true,
+    html: `<div class="mb-2 product-item"><a href="/foo-on-siparis-yazici" class="product-title">Foo Ön Sipariş 3D Yazıcı</a><div class="sale-price">10.000,00 TL</div><span class="badge">Ön Sipariş</span><button>Sepete Ekle</button></div>`
+  });
+  assert.equal(preorderCard.inScope.length, 1);
+  assert.equal(preorderCard.inScope[0].stock, "preorder");
+  const deadCard = await harvestCategory({
+    categoryUrl: "https://store.metatechtr.com/3d-yazicilar",
+    kind: "printers",
+    inStockOnly: true,
+    html: `<div class="mb-2 product-item"><a href="/dead-yazici" class="product-title">Dead 3D Yazıcı</a><div class="sale-price">10.000,00 TL</div><span class="badge">Tükendi</span></div>`
+  });
+  assert.equal(deadCard.inScope.length, 0);
+  assert.ok(deadCard.rejected.some((r) => r.reason === "out_of_stock"));
   assert.equal(isJunkAmount(1, "placeholder"), true);
   assert.equal(isJunkAmount(2500, "2.500 TL ÜZERİ ALIŞVERİŞTE KARGO ÜCRETSİZ"), true);
   assert.equal(isJunkAmount(37051, "Photon P1 Combo"), false);

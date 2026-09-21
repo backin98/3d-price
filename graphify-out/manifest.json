@@ -6,10 +6,10 @@
     "semantic_hash": "576330fa647a0db6eff5e90b8ba6b29a"
   },
   "api/hunt.js": {
-    "mtime": 1788999019.7582352,
-    "seen": 1789939978.1959777,
-    "ast_hash": "ea17a56a4892dddf3df1553507e2c27a",
-    "semantic_hash": "ea17a56a4892dddf3df1553507e2c27a"
+    "mtime": 1789990683.901378,
+    "seen": 1790004274.9389856,
+    "ast_hash": "9afd222d0a07294cc5fc62d515a2687d",
+    "semantic_hash": "9afd222d0a07294cc5fc62d515a2687d"
   },
   "api/match-products.js": {
     "mtime": 1788168152.160939,
@@ -18,10 +18,10 @@
     "semantic_hash": "0368ebd990f898eaeac984a16c654fd7"
   },
   "api/metatech.js": {
-    "mtime": 1789762072.810202,
-    "seen": 1789939978.1959798,
-    "ast_hash": "56553165805da174e01f9a9fe826f3b9",
-    "semantic_hash": "56553165805da174e01f9a9fe826f3b9"
+    "mtime": 1789950260.987227,
+    "seen": 1790004274.9389925,
+    "ast_hash": "f4d9e6d646a6ce6167ab6db5a23094e7",
+    "semantic_hash": "f4d9e6d646a6ce6167ab6db5a23094e7"
   },
   "api/product-images.js": {
     "mtime": 1788188263.462482,
@@ -30,28 +30,28 @@
     "semantic_hash": "39eae08ceb68ac10defc8f96b6a03b0d"
   },
   "api/robolink.js": {
-    "mtime": 1788999019.7582352,
-    "seen": 1789939978.195981,
-    "ast_hash": "e4f98e8ddd91cc6354d87bc5e94ca054",
-    "semantic_hash": "e4f98e8ddd91cc6354d87bc5e94ca054"
+    "mtime": 1789950260.987227,
+    "seen": 1790004274.9389963,
+    "ast_hash": "64af491bf9316e494436531585dc1e74",
+    "semantic_hash": "64af491bf9316e494436531585dc1e74"
   },
   "api/teknomarket.js": {
-    "mtime": 1788165260.9022095,
-    "seen": 1789939978.1959817,
-    "ast_hash": "36a300db466b5d2eeb6f7588503cb59b",
-    "semantic_hash": "36a300db466b5d2eeb6f7588503cb59b"
+    "mtime": 1789950260.9882226,
+    "seen": 1790004274.9389977,
+    "ast_hash": "a516f8a45e0112f62e4eb69e2a4cab89",
+    "semantic_hash": "a516f8a45e0112f62e4eb69e2a4cab89"
   },
   "lib/ai-scraper.cjs": {
-    "mtime": 1789752022.421713,
-    "seen": 1789939978.1959822,
-    "ast_hash": "f37b7f6c8291b19710c2a9d78501f666",
-    "semantic_hash": "f37b7f6c8291b19710c2a9d78501f666"
+    "mtime": 1789950260.9892201,
+    "seen": 1790004274.9390025,
+    "ast_hash": "2784801546fa141d4f5bbdc08ab8d4ac",
+    "semantic_hash": "2784801546fa141d4f5bbdc08ab8d4ac"
   },
   "lib/catalog-index.cjs": {
-    "mtime": 1789937065.338133,
-    "seen": 1789939978.195983,
-    "ast_hash": "b5a63ca5a9fe47a4f5f516eaef86f1b9",
-    "semantic_hash": "b5a63ca5a9fe47a4f5f516eaef86f1b9"
+    "mtime": 1789951348.3825727,
+    "seen": 1790004274.9390051,
+    "ast_hash": "fd5a5679623ce4cf55350405570b7629",
+    "semantic_hash": "fd5a5679623ce4cf55350405570b7629"
   },
   "lib/catalog-union.cjs": {
     "mtime": 1789770360.945533,
@@ -66,22 +66,22 @@
     "semantic_hash": "cfa94cc2ac62e37ae9fd0683efed5c63"
   },
   "lib/guide-gemma.cjs": {
-    "mtime": 1789937008.0405781,
-    "seen": 1789939978.1959846,
-    "ast_hash": "1f83a1ac90e9c2acf56c3f2f80a98782",
-    "semantic_hash": "1f83a1ac90e9c2acf56c3f2f80a98782"
+    "mtime": 1789951348.3835602,
+    "seen": 1790004274.9390113,
+    "ast_hash": "f9704b3d6b37aa8cc0133dc182163367",
+    "semantic_hash": "f9704b3d6b37aa8cc0133dc182163367"
   },
   "lib/harvest-guards.cjs": {
-    "mtime": 1789751415.8132262,
-    "seen": 1789939978.1959853,
-    "ast_hash": "6509cd69c430231b603ccfc783dc2eaf",
-    "semantic_hash": "6509cd69c430231b603ccfc783dc2eaf"
+    "mtime": 1789950260.9892201,
+    "seen": 1790004274.9390125,
+    "ast_hash": "ef9fb5b5dcbc121379e5f7a5710e7aa4",
+    "semantic_hash": "ef9fb5b5dcbc121379e5f7a5710e7aa4"
   },
   "lib/harvest.js": {
-    "mtime": 1789940597.4918916,
-    "seen": 1789943175.2965164,
-    "ast_hash": "c988056b408c0bc5733f22ee452f45d7",
-    "semantic_hash": "c988056b408c0bc5733f22ee452f45d7"
+    "mtime": 1789997635.5209706,
+    "seen": 1790004274.939014,
+    "ast_hash": "614d5e0559fb6fa9aa45cb8188baae26",
+    "semantic_hash": "614d5e0559fb6fa9aa45cb8188baae26"
   },
   "lib/image-match.cjs": {
     "mtime": 1789766889.119983,
@@ -96,16 +96,16 @@
     "semantic_hash": "b099a108c7a5b8cbbd723768612cd40f"
   },
   "lib/netlify-store.cjs": {
-    "mtime": 1789838796.727511,
-    "seen": 1789939978.1959875,
-    "ast_hash": "fe28f51b4f2990aac8a37ceb2ca4ae26",
-    "semantic_hash": "fe28f51b4f2990aac8a37ceb2ca4ae26"
+    "mtime": 1790001514.1071339,
+    "seen": 1790004274.9390185,
+    "ast_hash": "e5a27568c65667cd92cc102f456b6acb",
+    "semantic_hash": "e5a27568c65667cd92cc102f456b6acb"
   },
   "lib/parse-money.cjs": {
-    "mtime": 1789940588.3323376,
-    "seen": 1789943175.2965207,
-    "ast_hash": "294e170e04308320cfa98406b66db3f9",
-    "semantic_hash": "294e170e04308320cfa98406b66db3f9"
+    "mtime": 1789950260.9902172,
+    "seen": 1790004274.9390194,
+    "ast_hash": "d93801aac35e593ef33b916f36932398",
+    "semantic_hash": "d93801aac35e593ef33b916f36932398"
   },
   "lib/price-history.cjs": {
     "mtime": 1789680011.5570865,
@@ -114,52 +114,52 @@
     "semantic_hash": "6439dc04a3c5b5beff8a12768237c6ed"
   },
   "lib/product-match.cjs": {
-    "mtime": 1789937043.9424603,
-    "seen": 1789939978.1959891,
-    "ast_hash": "69d5f3cfb88b07f7ac9abe05c9fca523",
-    "semantic_hash": "69d5f3cfb88b07f7ac9abe05c9fca523"
+    "mtime": 1789990683.9023745,
+    "seen": 1790004274.939022,
+    "ast_hash": "d334b1e65462b531c7e96f2395d94303",
+    "semantic_hash": "d334b1e65462b531c7e96f2395d94303"
   },
   "lib/qwen-place.cjs": {
-    "mtime": 1789941457.2238297,
-    "seen": 1789943175.2965233,
-    "ast_hash": "7aa141d0e287b9d93975ef3f7124624d",
-    "semantic_hash": "7aa141d0e287b9d93975ef3f7124624d"
+    "mtime": 1789990683.903371,
+    "seen": 1790004274.939023,
+    "ast_hash": "cbcee6abce55f57e73f40f9669210210",
+    "semantic_hash": "cbcee6abce55f57e73f40f9669210210"
   },
   "lib/qwen-website-job.cjs": {
-    "mtime": 1789769231.9051437,
-    "seen": 1789939978.1959906,
+    "mtime": 1789950260.9922104,
+    "seen": 1790004274.9390244,
     "ast_hash": "6ce114e1ee4bef7b02703352ddb61680",
     "semantic_hash": "6ce114e1ee4bef7b02703352ddb61680"
   },
   "lib/resolve-product-image.cjs": {
-    "mtime": 1789759693.5363805,
-    "seen": 1789939978.1959913,
-    "ast_hash": "fbd7f66859f45426cc6d96623569baa9",
-    "semantic_hash": "fbd7f66859f45426cc6d96623569baa9"
+    "mtime": 1789992580.9031727,
+    "seen": 1790004274.9390256,
+    "ast_hash": "3fce1e4569969da520a94ec93bca900c",
+    "semantic_hash": "3fce1e4569969da520a94ec93bca900c"
   },
   "lib/search-match.cjs": {
-    "mtime": 1789849546.6989331,
-    "seen": 1789939978.1959918,
-    "ast_hash": "582ca8f92b9c70f77aba5f0476830cf9",
-    "semantic_hash": "582ca8f92b9c70f77aba5f0476830cf9"
+    "mtime": 1789990683.903371,
+    "seen": 1790004274.9390266,
+    "ast_hash": "524b5fe0e0bf514b292fbc3650b67ee6",
+    "semantic_hash": "524b5fe0e0bf514b292fbc3650b67ee6"
   },
   "lib/stock-refresh.cjs": {
-    "mtime": 1789934735.996111,
-    "seen": 1789939978.1959922,
-    "ast_hash": "376b11d1d539bae19545685178b932a2",
-    "semantic_hash": "376b11d1d539bae19545685178b932a2"
+    "mtime": 1789997635.5209706,
+    "seen": 1790004274.939028,
+    "ast_hash": "807eabf873b4bf96bd03e7040e96d86a",
+    "semantic_hash": "807eabf873b4bf96bd03e7040e96d86a"
   },
   "lib/tr-lexicon.cjs": {
-    "mtime": 1789751415.8241894,
-    "seen": 1789939978.1959932,
-    "ast_hash": "14262a8cc63f09eab1b6a375a05a9781",
-    "semantic_hash": "14262a8cc63f09eab1b6a375a05a9781"
+    "mtime": 1789950260.9922104,
+    "seen": 1790004274.9390304,
+    "ast_hash": "73abbb4e2688d3157f4263f6c4e7c457",
+    "semantic_hash": "73abbb4e2688d3157f4263f6c4e7c457"
   },
   "netlify/functions/admin.mjs": {
-    "mtime": 1789934788.3569052,
-    "seen": 1789939978.1959937,
-    "ast_hash": "a3044ad28b0503d6e9c01effd095b89d",
-    "semantic_hash": "a3044ad28b0503d6e9c01effd095b89d"
+    "mtime": 1790001528.4733033,
+    "seen": 1790004274.9390318,
+    "ast_hash": "8725a611ae0f40d372368f664c564df8",
+    "semantic_hash": "8725a611ae0f40d372368f664c564df8"
   },
   "netlify/functions/auth.mjs": {
     "mtime": 1788985631.0323627,
@@ -192,10 +192,10 @@
     "semantic_hash": "351307c56c53dda5ddae789dd74b0b3a"
   },
   "public/admin/admin.js": {
-    "mtime": 1789942184.131827,
-    "seen": 1789943175.2965324,
-    "ast_hash": "8a95103aff3749b7ba1a0627ed5e41de",
-    "semantic_hash": "8a95103aff3749b7ba1a0627ed5e41de"
+    "mtime": 1790001565.814505,
+    "seen": 1790004274.9390423,
+    "ast_hash": "ca7237341f2a325f87e7d8417e463ef4",
+    "semantic_hash": "ca7237341f2a325f87e7d8417e463ef4"
   },
   "public/content/site-content.js": {
     "mtime": 1788167285.2187648,
@@ -204,10 +204,10 @@
     "semantic_hash": "0acd520260ab5e5f65d786dd334f95e5"
   },
   "public/js/app.js": {
-    "mtime": 1789849557.7090514,
-    "seen": 1789939978.195998,
-    "ast_hash": "2f063fa0f24b1ad12fec44d8f57d04ce",
-    "semantic_hash": "2f063fa0f24b1ad12fec44d8f57d04ce"
+    "mtime": 1790001516.3706212,
+    "seen": 1790004274.939046,
+    "ast_hash": "1c2c62a3ee88f769f507375722a4e383",
+    "semantic_hash": "1c2c62a3ee88f769f507375722a4e383"
   },
   "scripts/abort.test.cjs": {
     "mtime": 1789766983.7200139,
@@ -240,16 +240,16 @@
     "semantic_hash": "1ea05a997c7f2d133b6e693671d3052d"
   },
   "scripts/admin-details-browser.test.cjs": {
-    "mtime": 1789837429.404258,
-    "seen": 1789939978.1960015,
-    "ast_hash": "41bb760854fc964a88d8f453ff2a7675",
-    "semantic_hash": "41bb760854fc964a88d8f453ff2a7675"
+    "mtime": 1790001630.8989582,
+    "seen": 1790004274.9390535,
+    "ast_hash": "822004e10304f55f41d5e403aec77d52",
+    "semantic_hash": "822004e10304f55f41d5e403aec77d52"
   },
   "scripts/admin-navigation.test.cjs": {
-    "mtime": 1789837485.5271707,
-    "seen": 1789939978.196002,
-    "ast_hash": "dc9dd6a5e4efabfd109dc2daebbc2cae",
-    "semantic_hash": "dc9dd6a5e4efabfd109dc2daebbc2cae"
+    "mtime": 1790001599.4515185,
+    "seen": 1790004274.939056,
+    "ast_hash": "5ffa26d9c4796129abc519fac7a1954f",
+    "semantic_hash": "5ffa26d9c4796129abc519fac7a1954f"
   },
   "scripts/admin-purge.test.cjs": {
     "mtime": 1789832071.6171007,
@@ -276,16 +276,16 @@
     "semantic_hash": "da6f92087b1e0873b7197b0389d027ff"
   },
   "scripts/gemma-guide.test.cjs": {
-    "mtime": 1789937162.7470791,
-    "seen": 1789939978.1960053,
-    "ast_hash": "b37737f06bc9c393e461ab39aa5696be",
-    "semantic_hash": "b37737f06bc9c393e461ab39aa5696be"
+    "mtime": 1789952627.7314506,
+    "seen": 1790004274.9390707,
+    "ast_hash": "49fad112f773c09c42193c169828a752",
+    "semantic_hash": "49fad112f773c09c42193c169828a752"
   },
   "scripts/harvest.test.cjs": {
-    "mtime": 1789752041.374043,
-    "seen": 1789939978.1960058,
-    "ast_hash": "3b67da575dcb5f096ad05907212c3d4c",
-    "semantic_hash": "3b67da575dcb5f096ad05907212c3d4c"
+    "mtime": 1789997635.522963,
+    "seen": 1790004274.9390717,
+    "ast_hash": "79c3bb8da6ce4f674e6f61d308d3bd67",
+    "semantic_hash": "79c3bb8da6ce4f674e6f61d308d3bd67"
   },
   "scripts/image-match.test.cjs": {
     "mtime": 1789766880.732735,
@@ -318,10 +318,10 @@
     "semantic_hash": "413ef83b439647fa2fe505bc143de909"
   },
   "scripts/place-listings.test.cjs": {
-    "mtime": 1789772118.9936104,
-    "seen": 1789939978.1960092,
-    "ast_hash": "491df2c546f7521f76b180c8a3699cb5",
-    "semantic_hash": "491df2c546f7521f76b180c8a3699cb5"
+    "mtime": 1789990683.9063604,
+    "seen": 1790004274.9390857,
+    "ast_hash": "4014f632e9030dc00417ab7c659e3b2a",
+    "semantic_hash": "4014f632e9030dc00417ab7c659e3b2a"
   },
   "scripts/place-score.test.cjs": {
     "mtime": 1788997866.5948718,
@@ -330,10 +330,10 @@
     "semantic_hash": "66fb1e2d0c6d3089311466a3b6575925"
   },
   "scripts/price-parse.test.cjs": {
-    "mtime": 1789940680.2313242,
-    "seen": 1789943175.2965515,
-    "ast_hash": "f69b8af4c1ce3829d9f3dfdaa2478be3",
-    "semantic_hash": "f69b8af4c1ce3829d9f3dfdaa2478be3"
+    "mtime": 1789950260.9961967,
+    "seen": 1790004274.9390883,
+    "ast_hash": "d52bcd207fddd90843892869594d643d",
+    "semantic_hash": "d52bcd207fddd90843892869594d643d"
   },
   "scripts/product-discovery.test.cjs": {
     "mtime": 1789771236.1430664,
@@ -342,28 +342,28 @@
     "semantic_hash": "9378643549b4783e20948aed673df3a3"
   },
   "scripts/product-match.test.cjs": {
-    "mtime": 1789936743.209017,
-    "seen": 1789939978.1960115,
-    "ast_hash": "7b82615dd2450a757ff052f81ea76665",
-    "semantic_hash": "7b82615dd2450a757ff052f81ea76665"
+    "mtime": 1789990683.9063604,
+    "seen": 1790004274.939091,
+    "ast_hash": "fa79def7391b025c78df6b0f3a8aa101",
+    "semantic_hash": "fa79def7391b025c78df6b0f3a8aa101"
   },
   "scripts/rematch.test.cjs": {
-    "mtime": 1789936978.9622276,
-    "seen": 1789939978.1960123,
-    "ast_hash": "128df821e2e4dd57f1f939748d8f264b",
-    "semantic_hash": "128df821e2e4dd57f1f939748d8f264b"
+    "mtime": 1789954932.9281757,
+    "seen": 1790004274.939092,
+    "ast_hash": "6b2cc15dfda66fa594caeeb963454a9c",
+    "semantic_hash": "6b2cc15dfda66fa594caeeb963454a9c"
   },
   "scripts/resolve-product-image.test.cjs": {
-    "mtime": 1789759693.5363805,
-    "seen": 1789939978.1960127,
-    "ast_hash": "62827edf1db0360246b7956feb9ff51f",
-    "semantic_hash": "62827edf1db0360246b7956feb9ff51f"
+    "mtime": 1789992581.6616611,
+    "seen": 1790004274.9390934,
+    "ast_hash": "b7140653b589e38dad5241d4b7588887",
+    "semantic_hash": "b7140653b589e38dad5241d4b7588887"
   },
   "scripts/review-board.test.cjs": {
-    "mtime": 1789941683.034644,
-    "seen": 1789943175.2965555,
-    "ast_hash": "5cb9011a16d4089464ee18b2e8937bdd",
-    "semantic_hash": "5cb9011a16d4089464ee18b2e8937bdd"
+    "mtime": 1789950260.9971933,
+    "seen": 1790004274.9390945,
+    "ast_hash": "d0d808d83dafea6cf15ea988536b3531",
+    "semantic_hash": "d0d808d83dafea6cf15ea988536b3531"
   },
   "scripts/scraper.cjs": {
     "mtime": 1789680011.554096,
@@ -372,16 +372,16 @@
     "semantic_hash": "287064977c7c502a77ec0b562b8667fb"
   },
   "scripts/search-bar-browser.test.cjs": {
-    "mtime": 1789849568.1232932,
-    "seen": 1789939978.1960146,
-    "ast_hash": "9fa515864b690705ce80abd720572a43",
-    "semantic_hash": "9fa515864b690705ce80abd720572a43"
+    "mtime": 1789997635.522963,
+    "seen": 1790004274.9390972,
+    "ast_hash": "2be86458fc5d99fb3578925e512f9d6f",
+    "semantic_hash": "2be86458fc5d99fb3578925e512f9d6f"
   },
   "scripts/search-match.test.cjs": {
-    "mtime": 1789849562.5953698,
-    "seen": 1789939978.1960151,
-    "ast_hash": "f00eb7eaee452449e2f57de1e3a23785",
-    "semantic_hash": "f00eb7eaee452449e2f57de1e3a23785"
+    "mtime": 1789992714.7168343,
+    "seen": 1790004274.9390981,
+    "ast_hash": "5060a9d2ea0a7e378c2f48a558ecf5c1",
+    "semantic_hash": "5060a9d2ea0a7e378c2f48a558ecf5c1"
   },
   "scripts/served-price.test.cjs": {
     "mtime": 1789770371.4301958,
@@ -390,10 +390,10 @@
     "semantic_hash": "c295165d4c0a580faa377bb400d0ec58"
   },
   "scripts/stock-and-images.test.cjs": {
-    "mtime": 1789934837.0796125,
-    "seen": 1789939978.196016,
-    "ast_hash": "b66c082135325cc1b8a30682aa43517c",
-    "semantic_hash": "b66c082135325cc1b8a30682aa43517c"
+    "mtime": 1789997635.5239594,
+    "seen": 1790004274.9391005,
+    "ast_hash": "69fce3adf98ec837e73a2ec883955a1a",
+    "semantic_hash": "69fce3adf98ec837e73a2ec883955a1a"
   },
   "scripts/storefront-stale-search-browser.test.cjs": {
     "mtime": 1789848723.4945145,
@@ -402,16 +402,16 @@
     "semantic_hash": "7630a3b344d5e23e853a0af39b9d477f"
   },
   "scripts/vision-match.test.cjs": {
-    "mtime": 1789936793.0965493,
-    "seen": 1789939978.1960175,
-    "ast_hash": "e046a6fcc71288f212ca6a586f31abfc",
-    "semantic_hash": "e046a6fcc71288f212ca6a586f31abfc"
+    "mtime": 1789951348.3865504,
+    "seen": 1790004274.939103,
+    "ast_hash": "907320febcb2ac59c3927a6035986e8e",
+    "semantic_hash": "907320febcb2ac59c3927a6035986e8e"
   },
   "scripts/vision-place.test.cjs": {
-    "mtime": 1789936689.0337355,
-    "seen": 1789939978.196018,
-    "ast_hash": "2f527df03cb95c9a9dfc1c4963ba3b39",
-    "semantic_hash": "2f527df03cb95c9a9dfc1c4963ba3b39"
+    "mtime": 1789951348.3875477,
+    "seen": 1790004274.939104,
+    "ast_hash": "6fef44cfbab3f94f7866eccbcb0252a7",
+    "semantic_hash": "6fef44cfbab3f94f7866eccbcb0252a7"
   },
   "scripts/worker-http.test.cjs": {
     "mtime": 1789766963.2600977,
@@ -426,9 +426,189 @@
     "semantic_hash": "11d530751e19e3647fb8d96abe40ff9a"
   },
   "worker/online-worker.cjs": {
-    "mtime": 1789941402.05205,
-    "seen": 1789943175.2965643,
-    "ast_hash": "66668fa0f1116ca085bb83050b08f53a",
-    "semantic_hash": "66668fa0f1116ca085bb83050b08f53a"
+    "mtime": 1789956001.7421775,
+    "seen": 1790004274.9391148,
+    "ast_hash": "65a1da41e1e918693de8e6d97df781ef",
+    "semantic_hash": "65a1da41e1e918693de8e6d97df781ef"
+  },
+  "data/baseline-catalog.json": {
+    "mtime": 1789953122.2254612,
+    "seen": 1790004274.9389994,
+    "ast_hash": "8eb901012b9b5feea5a2abcbdccf58de",
+    "semantic_hash": "8eb901012b9b5feea5a2abcbdccf58de"
+  },
+  "data/online-catalog.json": {
+    "mtime": 1790000791.130236,
+    "seen": 1790004274.939001,
+    "ast_hash": "7a560a583c4e12f2559a9f4e09ce7a66",
+    "semantic_hash": "7a560a583c4e12f2559a9f4e09ce7a66"
+  },
+  "lib/baseline-catalog.js": {
+    "mtime": 1789986717.4302354,
+    "seen": 1790004274.9390037,
+    "ast_hash": "fe2cff1ed6cf98c7416b28c6bba047ad",
+    "semantic_hash": "fe2cff1ed6cf98c7416b28c6bba047ad"
+  },
+  "lib/compare-to-baseline.js": {
+    "mtime": 1789955298.7661262,
+    "seen": 1790004274.93901,
+    "ast_hash": "7d6ddbbfde4e72fec01571d85c7ff0e2",
+    "semantic_hash": "7d6ddbbfde4e72fec01571d85c7ff0e2"
+  },
+  "lib/title-normalize.js": {
+    "mtime": 1789951717.5831113,
+    "seen": 1790004274.939029,
+    "ast_hash": "eb2c11baa8a48a559d71ee02ba188911",
+    "semantic_hash": "eb2c11baa8a48a559d71ee02ba188911"
+  },
+  "netlify/functions/product-image.mjs": {
+    "mtime": 1790001514.857316,
+    "seen": 1790004274.9390357,
+    "ast_hash": "8fc788b3511bf76bfb148778d91f5b67",
+    "semantic_hash": "8fc788b3511bf76bfb148778d91f5b67"
+  },
+  "netlify/functions/stock-preview.mjs": {
+    "mtime": 1789992794.0250847,
+    "seen": 1790004274.9390368,
+    "ast_hash": "cf08f546cc6f6908f2dd32fcd737f37f",
+    "semantic_hash": "cf08f546cc6f6908f2dd32fcd737f37f"
+  },
+  "public/assets/robolink/manifest.json": {
+    "mtime": 1790002212.1345494,
+    "seen": 1790004274.9390433,
+    "ast_hash": "1a6c23e2dc17477d9f281486a78035ef",
+    "semantic_hash": "1a6c23e2dc17477d9f281486a78035ef"
+  },
+  "scripts/admin-image-upload.test.cjs": {
+    "mtime": 1790001598.7015166,
+    "seen": 1790004274.939055,
+    "ast_hash": "61ab871cdfc8b34a928aa1481c8723ae",
+    "semantic_hash": "61ab871cdfc8b34a928aa1481c8723ae"
+  },
+  "scripts/baseline-axes.test.cjs": {
+    "mtime": 1789986717.431233,
+    "seen": 1790004274.939061,
+    "ast_hash": "af6ce03cbcc8ceea5dcc260301c60c6d",
+    "semantic_hash": "af6ce03cbcc8ceea5dcc260301c60c6d"
+  },
+  "scripts/baseline-catalog.test.cjs": {
+    "mtime": 1789951734.6690724,
+    "seen": 1790004274.939062,
+    "ast_hash": "bb5399a8eda854313968d9e6ea0dbd63",
+    "semantic_hash": "bb5399a8eda854313968d9e6ea0dbd63"
+  },
+  "scripts/build-baseline-catalog.cjs": {
+    "mtime": 1789952790.2229965,
+    "seen": 1790004274.939063,
+    "ast_hash": "bbb9520fac956377f89bc998aa71a1a7",
+    "semantic_hash": "bbb9520fac956377f89bc998aa71a1a7"
+  },
+  "scripts/build-laya-eval.cjs": {
+    "mtime": 1789980613.2288435,
+    "seen": 1790004274.9390643,
+    "ast_hash": "b5abc96bef2b3c6ef5c871d9772482b7",
+    "semantic_hash": "b5abc96bef2b3c6ef5c871d9772482b7"
+  },
+  "scripts/check-consistency.cjs": {
+    "mtime": 1789955736.8665519,
+    "seen": 1790004274.9390666,
+    "ast_hash": "676347580a27b0de947eb13e9bb71b80",
+    "semantic_hash": "676347580a27b0de947eb13e9bb71b80"
+  },
+  "scripts/eval-magellan.cjs": {
+    "mtime": 1789979933.8480766,
+    "seen": 1790004274.9390695,
+    "ast_hash": "73e19757d8cb1f961a595e9c6e0635f6",
+    "semantic_hash": "73e19757d8cb1f961a595e9c6e0635f6"
+  },
+  "scripts/laser-wattage.test.cjs": {
+    "mtime": 1789981800.4599028,
+    "seen": 1790004274.9390755,
+    "ast_hash": "ec8883d7f4754ab09efe0e1bc59505c8",
+    "semantic_hash": "ec8883d7f4754ab09efe0e1bc59505c8"
+  },
+  "scripts/laya-smoke.py": {
+    "mtime": 1789979539.4981809,
+    "seen": 1790004274.939077,
+    "ast_hash": "26271f96fbc5e7881959257d3257eb86",
+    "semantic_hash": "26271f96fbc5e7881959257d3257eb86"
+  },
+  "scripts/magnet-merge.test.cjs": {
+    "mtime": 1789990683.9053638,
+    "seen": 1790004274.9390812,
+    "ast_hash": "489eab42963b22b6abace09655d3a69c",
+    "semantic_hash": "489eab42963b22b6abace09655d3a69c"
+  },
+  "scripts/mine-listings.cjs": {
+    "mtime": 1789982822.0987039,
+    "seen": 1790004274.9390824,
+    "ast_hash": "6396c8476980f054c027cbe94d894fb9",
+    "semantic_hash": "6396c8476980f054c027cbe94d894fb9"
+  },
+  "scripts/modifier-order.test.cjs": {
+    "mtime": 1789981674.008252,
+    "seen": 1790004274.9390833,
+    "ast_hash": "8e93e48cc8228b70d0889f5b7ba01762",
+    "semantic_hash": "8e93e48cc8228b70d0889f5b7ba01762"
+  },
+  "scripts/worker-setup.sh": {
+    "mtime": 1789955733.0860589,
+    "seen": 1790004274.9391062,
+    "ast_hash": "dacc28c209b34e45834a3aae607756d6",
+    "semantic_hash": "dacc28c209b34e45834a3aae607756d6"
+  },
+  "scripts/worker-supervise.cjs": {
+    "mtime": 1789956021.7441752,
+    "seen": 1790004274.9391074,
+    "ast_hash": "b9ade7b8b3459056384f2e0f5fba0850",
+    "semantic_hash": "b9ade7b8b3459056384f2e0f5fba0850"
+  },
+  "work/abort-jobs.json": {
+    "mtime": 1788987943.8662498,
+    "seen": 1790004274.9391096,
+    "ast_hash": "744f4549d80052dfaacbbb2d59eb9ed4",
+    "semantic_hash": "744f4549d80052dfaacbbb2d59eb9ed4"
+  },
+  "work/live-cat.json": {
+    "mtime": 1789981800.4599028,
+    "seen": 1790004274.9391108,
+    "ast_hash": "21c58acdc2cde9429ec806f8b819a3c0",
+    "semantic_hash": "21c58acdc2cde9429ec806f8b819a3c0"
+  },
+  "work/match-catalog.json": {
+    "mtime": 1788988250.5308607,
+    "seen": 1790004274.9391117,
+    "ast_hash": "d7aab29d0afc02110f17cf46c143d33a",
+    "semantic_hash": "d7aab29d0afc02110f17cf46c143d33a"
+  },
+  "work/patch-run-all-v3.cjs": {
+    "mtime": 1789998982.3055265,
+    "seen": 1790004274.9391127,
+    "ast_hash": "4dd27d9a7650ba0c344a65f55fad3aeb",
+    "semantic_hash": "4dd27d9a7650ba0c344a65f55fad3aeb"
+  },
+  "work/patch-run-all.cjs": {
+    "mtime": 1789998811.343636,
+    "seen": 1790004274.9391134,
+    "ast_hash": "193a3012af0063a53e607926ff78c19a",
+    "semantic_hash": "193a3012af0063a53e607926ff78c19a"
+  },
+  "README.md": {
+    "mtime": 1789985782.9784708,
+    "seen": 1790004274.9391158,
+    "ast_hash": "f24dc8cadc86b80daef81ed12ac17aeb",
+    "semantic_hash": "f24dc8cadc86b80daef81ed12ac17aeb"
+  },
+  "docs/PROGRESS.md": {
+    "mtime": 1789988472.684585,
+    "seen": 1790004274.9391167,
+    "ast_hash": "493ec6ccd40a7b754375e3e110453770",
+    "semantic_hash": "493ec6ccd40a7b754375e3e110453770"
+  },
+  "sources/websites.txt": {
+    "mtime": 1788157152.601887,
+    "seen": 1790004274.939118,
+    "ast_hash": "0058895df7988eab96248763214d563e",
+    "semantic_hash": "0058895df7988eab96248763214d563e"
   }
 }
