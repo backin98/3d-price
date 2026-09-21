@@ -9,7 +9,10 @@ const path = require('node:path');
 const ADMIN = path.join(__dirname, '..', 'public'); // the site root, as Netlify serves it
 const payload = {
   configured: true,
-  desk: { shops: [], banners: [], promoted: [] },
+  desk: { shops: [
+    { id: 'alpha.example', name: 'Alpha', url: 'https://alpha.example', enabled: true, categories: [{ id: 'a-printers', name: '3D Printers', url: 'https://alpha.example/printers' }] },
+    { id: 'beta.example', name: 'Beta', url: 'https://beta.example', enabled: true, categories: [{ id: 'b-printers', name: '3D Printers', url: 'https://beta.example/printers' }] }
+  ], banners: [], promoted: [] },
   candidate: { products: [], filaments: [] },
   jobs: [],
   heartbeat: null,
@@ -59,7 +62,24 @@ const server = http.createServer((req, res) => {
     const page = await browser.newPage();
     const errors = [];
     page.on('pageerror', (e) => errors.push(String(e)));
-    await page.goto('http://127.0.0.1:' + port + '/#catalog', { waitUntil: 'domcontentloaded' });
+    await page.goto('http://127.0.0.1:' + port + '/#runs', { waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#add-shop-row', { timeout: 15000 });
+
+    await page.selectOption('#run-shop', 'alpha.example');
+    await page.selectOption('#run-cat', { label: '3D Printers' });
+    await page.click('#add-shop-row');
+    assert.equal(await page.locator('#run-rows .run-row').count(), 2, 'plus adds a second run menu');
+    assert.equal(await page.locator('#run-rows .run-shop').nth(1).inputValue(), '', 'the new menu asks the user to choose a shop');
+    await page.locator('#run-rows .run-shop').nth(1).selectOption('beta.example');
+    await page.locator('#run-rows .run-cat').nth(1).selectOption({ label: '3D Printers' });
+    await page.locator('#run-rows .run-row').nth(1).locator('[data-move-run="up"]').click();
+    assert.equal(await page.locator('#run-rows .run-shop').nth(0).inputValue(), 'beta.example', 'up arrow changes the execution order');
+    let review = '';
+    page.once('dialog', async (dialog) => { review = dialog.message(); await dialog.dismiss(); });
+    await page.click('#run-all');
+    assert.match(review, /1\. Beta[\s\S]*2\. Alpha/, 'Run all reviews the chosen order before starting');
+
+    await page.evaluate(() => { location.hash = '#catalog'; });
     await page.waitForSelector('[data-detail-key="offers:qwen-k2"]', { timeout: 15000 });
 
     // Open the offer panel the way a person does.

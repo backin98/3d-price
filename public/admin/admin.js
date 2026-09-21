@@ -6,7 +6,7 @@
 
   const state = {
     data: null,
-    runExtra: [], // extra shop rows in the run panel; rendered from state so the 5s repaint keeps them
+    runRows: null,
     tab: "overview",
     catalogQuery: "",
     catalogLimit: 40,
@@ -264,19 +264,11 @@
             const ae = document.activeElement;
             const typing = ae && (ae.tagName === "SELECT" || (ae.tagName === "INPUT" && ae.type !== "checkbox"));
             if (typing && $("#tab-runs")?.contains(ae)) return;
-            const url = $("#shop-url")?.value, max = $("#shop-max")?.value, cat = $("#run-cat")?.value, shop = $("#run-shop")?.value, llm = $("#run-llm")?.checked;
+            rememberRunRows();
+            const max = $("#shop-max")?.value, llm = $("#run-llm")?.checked;
             paint("#tab-runs", runsHtml(data));
-            if ($("#shop-url")) { $("#shop-url").value = url; $("#shop-max").value = max; }
+            if ($("#shop-max")) $("#shop-max").value = max;
             if ($("#run-llm") && llm !== undefined) $("#run-llm").checked = llm;
-            if ($("#run-shop") && shop) $("#run-shop").value = shop;
-            fillRunCategories(shop || $("#run-shop")?.value, cat);
-            // Restore the added rows' inputs across the repaint (the timer guards focus, this covers
-            // the case where the repaint happens between keystrokes).
-            (state.runExtra || []).forEach((r, i) => {
-              const row = document.querySelector("#run-rows .run-row[data-extra=\"" + i + "\"]");
-              if (!row) return;
-              const u = row.querySelector(".run-url"); if (u && r.url) u.value = r.url;
-            });
           }
         }).catch(() => {});
       }
@@ -561,26 +553,56 @@
     ).join("");
   }
 
-  function applyRunCategoryUrl(shopId, name) {
-    const urlBox = $("#shop-url");
-    if (!urlBox) return "";
-    const shop = shopById(state.data, shopId);
-    if (!shop || !name) {
-      if (shop && urlBox.value && urlHostOf(urlBox.value) !== shopHostOf(shop)) urlBox.value = "";
-      return urlBox.value;
-    }
-    urlBox.value = categoryUrlForShop(shop, name) || "";
-    return urlBox.value;
+  function runRowsFromDom() {
+    return $$("#run-rows .run-row").map((row) => ({
+      shop: (row.querySelector(".run-shop") || {}).value || "",
+      cat: (row.querySelector(".run-cat") || {}).value || "",
+      url: ((row.querySelector(".run-url") || {}).value || "").trim()
+    }));
   }
 
-  function fillRunCategories(shopId, selectedName) {
-    const sel = $("#run-cat");
-    if (!sel) return;
-    const names = categoryNames(state.data);
-    const keep = selectedName || sel.value;
-    sel.innerHTML = nameOptionsHtml(names, keep);
-    if (keep && names.some((n) => foldCatName(n) === foldCatName(keep))) sel.value = names.find((n) => foldCatName(n) === foldCatName(keep));
-    applyRunCategoryUrl(shopId, sel.value);
+  function rememberRunRows() {
+    const rows = runRowsFromDom();
+    if (rows.length) state.runRows = rows;
+    return rows;
+  }
+
+  function collectRunRows(isQuick) {
+    if (isQuick) return [{ shop: null, cat: "", url: ((($("#run-url") || {}).value) || "").trim() }];
+    return runRowsFromDom().map((r) => ({ ...r, shop: shopById(state.data, r.shop) }))
+      .filter((r) => r.url || (r.shop && r.shop.id));
+  }
+
+  function kindForCategory(cat) {
+    const c = String(cat || "").toLowerCase();
+    if (c.includes("filament")) return "filament";
+    if (c.includes("printer") || c.includes("yaz")) return "printer";
+    return "both";
+  }
+
+  function runRowProblem(r) {
+    if (!String(r.url || "").toLowerCase().startsWith("https://")) return "Use an HTTPS shop URL on every filled row.";
+    if (!r.shop) return "Pick a shop on every filled row.";
+    if (r.cat && !categoryUrlForShop(r.shop, r.cat)) return "Add the category URL for " + r.cat + " under Shops first. Do not reuse another shop link.";
+    if (urlHostOf(r.url) !== shopHostOf(r.shop)) return "That category URL is not on " + (r.shop.name || r.shop.id) + ".";
+    return "";
+  }
+
+  function waitForRunJob(id) {
+    return new Promise((resolve) => {
+      let waited = 0;
+      const tick = async () => {
+        try {
+          const d = await api("/api/admin");
+          const j = (d.jobs || []).find((x) => x.id === id);
+          if (!j || ["complete", "failed", "aborted"].includes(j.status)) return resolve(j || null);
+        } catch (_) { /* keep waiting */ }
+        waited += 4000;
+        if (waited > 3600000) return resolve(null);
+        setTimeout(tick, 4000);
+      };
+      setTimeout(tick, 4000);
+    });
   }
 
   function runsHtml(d) {
@@ -591,6 +613,9 @@
     const selectedShop = inferred;
     const selectedName = job && job.url ? categoryNameForUrl(d, job.url) : "";
     const names = categoryNames(d);
+    const runRows = state.runRows && state.runRows.length ? state.runRows : [{
+      shop: selectedShop ? selectedShop.id : "", cat: selectedName, url: (job && job.url) || ""
+    }];
     const llmOn = (job && job.autoLlmMatch !== undefined ? job.autoLlmMatch === true : (d.desk && d.desk.autoLlmMatch) === true);
     return `
       <div class="panel">
@@ -598,21 +623,17 @@
         <p class="muted">Category names are shared (Filament, Printers). The URL is unique to the shop you pick — Robolink never crawls Rhino’s link.</p>
         <form class="form-row" id="run-form">
           <div id="run-rows" style="flex:1 0 100%;display:flex;flex-direction:column;gap:8px;border:1px solid #c7d2fe;border-radius:10px;padding:12px;background:#f8faff">
-            <div class="run-row" data-row="1" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
-              <div class="field"><label for="run-shop">Shop 1</label><select id="run-shop" class="run-shop"><option value="">Choose a shop</option>${shops.map((s) => `<option value="${esc(s.id)}"${selectedShop && selectedShop.id === s.id ? " selected" : ""}>${esc(s.name || s.id)}</option>`).join("")}</select></div>
-              <div class="field" style="flex:2"><label for="run-cat">Category</label><select id="run-cat" class="run-cat">${nameOptionsHtml(names, selectedName)}</select></div>
-              <div class="field" style="flex:2"><label for="shop-url">Category URL</label><input id="shop-url" class="run-url" type="text" required placeholder="https://www.shop.com/kategori/filament" value="${esc((job && job.url) || "")}"></div>
-              <button class="ghost" type="button" id="add-shop-row" title="Add another shop to this run" style="width:36px;height:36px;border-radius:50%;font-size:20px;line-height:1;padding:0;flex:0 0 auto">+</button>
-            </div>
-            ${(state.runExtra || []).map((r, i) => `
-              <div class="run-row" data-extra="${i}" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
-                <div class="field"><label>Shop ${i + 2}</label><select class="run-shop">${shops.map((s) => `<option value="${esc(s.id)}"${r.shop === s.id ? " selected" : ""}>${esc(s.name || s.id)}</option>`).join("")}</select></div>
-                <div class="field" style="flex:2"><label>Category</label><select class="run-cat">${nameOptionsHtml(names, r.cat)}</select></div>
-                <div class="field" style="flex:2"><label>Category URL</label><input class="run-url" type="text" placeholder="https://www.shop.com/kategori/filament" value="${esc(r.url || "")}"></div>
-                <button class="ghost danger remove-shop-row" type="button" data-extra="${i}">Remove</button>
+            ${runRows.map((r, i) => `
+              <div class="run-row" data-run-index="${i}" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+                <div class="field"><label${i === 0 ? ' for="run-shop"' : ""}>Shop ${i + 1}</label><select${i === 0 ? ' id="run-shop"' : ""} class="run-shop"><option value="">Choose a shop</option>${shops.map((s) => `<option value="${esc(s.id)}"${r.shop === s.id ? " selected" : ""}>${esc(s.name || s.id)}</option>`).join("")}</select></div>
+                <div class="field" style="flex:2"><label${i === 0 ? ' for="run-cat"' : ""}>Category</label><select${i === 0 ? ' id="run-cat"' : ""} class="run-cat">${nameOptionsHtml(names, r.cat)}</select></div>
+                <div class="field" style="flex:2"><label${i === 0 ? ' for="shop-url"' : ""}>Category URL</label><input${i === 0 ? ' id="shop-url"' : ""} class="run-url" type="text" required placeholder="https://www.shop.com/kategori/filament" value="${esc(r.url || "")}"></div>
+                <div class="run-order"><button class="ghost" type="button" data-move-run="up" aria-label="Move shop ${i + 1} up" ${i === 0 ? "disabled" : ""}>↑</button><button class="ghost" type="button" data-move-run="down" aria-label="Move shop ${i + 1} down" ${i === runRows.length - 1 ? "disabled" : ""}>↓</button></div>
+                ${runRows.length > 1 ? `<button class="ghost danger remove-shop-row" type="button">Remove</button>` : ""}
               </div>`).join("")}
+            <button class="ghost" type="button" id="add-shop-row">+ Add another shop run</button>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-top:1px dashed #c7d2fe;padding-top:8px">
-              <button class="primary" type="button" id="run-all" title="Queue every shop above, one after another">Run all</button>
+              <button class="primary" type="button" id="run-all" title="Review every shop above, then run them one after another">Review &amp; run all</button>
               <span class="muted" style="font-size:12px">Runs them top to bottom, one at a time, so each shop is matched against the ones already run.</span>
             </div>
           </div>
@@ -980,22 +1001,6 @@
     `;
   }
 
-  function rerenderRuns() {
-    const d = state.data;
-    if (!d || state.tab !== "runs") return;
-    const url = $("#shop-url") ? $("#shop-url").value : "";
-    const kind = $("#shop-kind") ? $("#shop-kind").value : "";
-    const max = $("#shop-max") ? $("#shop-max").value : "";
-    const cat = $("#run-cat") ? $("#run-cat").value : "";
-    const shop = $("#run-shop") ? $("#run-shop").value : "";
-    const llm = $("#run-llm") ? $("#run-llm").checked : undefined;
-    $("#tab-runs").innerHTML = runsHtml(d);
-    if ($("#shop-url")) { $("#shop-url").value = url; $("#shop-max").value = max; }
-    if ($("#run-llm") && llm !== undefined) $("#run-llm").checked = llm;
-    if ($("#run-shop") && shop) $("#run-shop").value = shop;
-    fillRunCategories(shop || $("#run-shop")?.value, cat);
-  }
-
   function updateReviewToolbar() {
     const pub = $("#publish-selected");
     if (pub) {
@@ -1347,6 +1352,59 @@
 
   function bindAppEvents() {
     document.addEventListener("click", async (e) => {
+      if (e.target.closest("#add-shop-row")) {
+        const rows = rememberRunRows();
+        state.runRows = [...rows, { shop: "", cat: "", url: "" }];
+        painted.delete("#tab-runs");
+        paint("#tab-runs", runsHtml(state.data));
+        return;
+      }
+      if (e.target.closest("[data-move-run]")) {
+        const btn = e.target.closest("[data-move-run]");
+        const row = btn.closest(".run-row");
+        const rows = rememberRunRows();
+        const from = Number(row && row.dataset.runIndex);
+        const to = from + (btn.dataset.moveRun === "up" ? -1 : 1);
+        if (from >= 0 && to >= 0 && to < rows.length) [rows[from], rows[to]] = [rows[to], rows[from]];
+        state.runRows = rows;
+        painted.delete("#tab-runs");
+        paint("#tab-runs", runsHtml(state.data));
+        return;
+      }
+      if (e.target.closest(".remove-shop-row")) {
+        const row = e.target.closest(".run-row");
+        const rows = rememberRunRows();
+        const index = Number(row && row.dataset.runIndex);
+        if (rows.length > 1 && index >= 0) rows.splice(index, 1);
+        state.runRows = rows;
+        painted.delete("#tab-runs");
+        paint("#tab-runs", runsHtml(state.data));
+        return;
+      }
+      if (e.target.closest("#run-all")) {
+        const rows = collectRunRows(false);
+        if (!rows.length) { toast("Pick a shop and its category URL first."); return; }
+        const problem = rows.map(runRowProblem).find(Boolean);
+        if (problem) { toast(problem); return; }
+        const order = rows.map((r, i) => (i + 1) + ". " + (r.shop.name || r.shop.id) + " — " + (r.cat || r.url)).join("\n");
+        if (!confirm("Run these shops from top to bottom?\n\n" + order)) return;
+        const btn = e.target.closest("#run-all");
+        const maxProducts = Number(($("#shop-max") || {}).value || 200);
+        const llmValue = $("#run-llm") ? $("#run-llm").checked : undefined;
+        btn.disabled = true;
+        for (let i = 0; i < rows.length; i += 1) {
+          const r = rows[i];
+          const who = r.shop.name || r.shop.id;
+          btn.textContent = "Running " + (i + 1) + "/" + rows.length + " — " + who;
+          try {
+            const created = await action({ action: "createJob", type: "shop", url: r.url, kind: kindForCategory(r.cat), maxProducts, autoLlmMatch: llmValue });
+            try { await notifyWorker(created.job); } catch (kickErr) { console.warn(kickErr); }
+            await waitForRunJob(created.job.id);
+          } catch (err) { toast(who + ": " + err.message); }
+        }
+        toast("Run all finished — " + rows.length + " shop(s).");
+        return;
+      }
       if (e.target.closest("#ai-detect")) {
         const btn = e.target.closest("#ai-detect");
         btn.disabled = true;
@@ -1956,109 +2014,12 @@
         }
         finally { state.loading = false; btn.disabled = false; }
       }
-      // ---- multi-shop run form: helpers shared by Queue run and Run all ----
-      function isHttps(u) {
-        // Deliberately not a regex: this code is generated, and a generated regex escaped wrong once
-        // already and took the whole admin down. A prefix compare cannot be escaped wrong.
-        return String(u || "").slice(0, 8).toLowerCase() === "https://";
-      }
-      // The category already says what the shop sells, so Kind was a second way to say the same thing.
-      // Filament -> filament, anything with "printer" -> printer, otherwise both.
-      function kindForCategory(cat) {
-        const c = String(cat || "").toLowerCase();
-        if (c.indexOf("filament") >= 0) return "filament";
-        if (c.indexOf("printer") >= 0 || c.indexOf("yaz") >= 0) return "printer";
-        return "both";
-      }
-      function collectRunRows(isQuick) {
-        if (isQuick) return [{ shop: null, cat: "", url: ((($("#run-url") || {}).value) || "").trim() }];
-        return Array.from(document.querySelectorAll("#run-rows .run-row")).map((el) => {
-          const sEl = el.querySelector(".run-shop");
-          const cEl = el.querySelector(".run-cat");
-          const uEl = el.querySelector(".run-url");
-          return { shop: shopById(state.data, sEl ? sEl.value : ""), cat: cEl ? cEl.value : "", url: uEl ? uEl.value.trim() : "" };
-        }).filter((r) => r.url || (r.shop && r.shop.id));
-      }
-      function runRowProblem(r) {
-        if (!isHttps(r.url)) return "Use an HTTPS shop URL on every filled row.";
-        if (!r.shop) return "Pick a shop on every filled row.";
-        if (r.cat && !categoryUrlForShop(r.shop, r.cat)) return "Add the category URL for " + r.cat + " under Shops first. Do not reuse another shop link.";
-        if (urlHostOf(r.url) !== shopHostOf(r.shop)) return "That category URL is not on " + (r.shop.name || r.shop.id) + ".";
-        return "";
-      }
-      function waitForRunJob(id) {
-        // Poll until the job is terminal. Run all depends on this: the next shop must not start until
-        // this one has published, or order stops deciding which card an offer joins.
-        return new Promise((resolve) => {
-          let waited = 0;
-          const tick = async () => {
-            try {
-              const d = await api("/api/admin");
-              const j = (d.jobs || []).find((x) => x.id === id);
-              if (!j || j.status === "complete" || j.status === "failed" || j.status === "aborted") return resolve(j || null);
-            } catch (_) { /* keep waiting */ }
-            waited += 4000;
-            if (waited > 3600000) return resolve(null);
-            setTimeout(tick, 4000);
-          };
-          setTimeout(tick, 4000);
-        });
-      }
-
-      if (e.target.id === "add-shop-row") {
-        e.preventDefault();
-        // State, not DOM: the panel is repainted from runsHtml every 5s, which would wipe a cloned row.
-        state.runExtra = state.runExtra || [];
-        state.runExtra.push({ shop: "", cat: "", url: "" });
-        painted.delete("#tab-runs");
-        paint("#tab-runs", runsHtml(state.data));
-        return;
-      }
-      if (e.target.classList && e.target.classList.contains("remove-shop-row")) {
-        const idx = Number(e.target.getAttribute("data-extra"));
-        state.runExtra = state.runExtra || [];
-        if (Number.isFinite(idx) && idx >= 0) state.runExtra.splice(idx, 1);
-        painted.delete("#tab-runs");
-        paint("#tab-runs", runsHtml(state.data));
-        return;
-      }
-
-      if (e.target.id === "run-all") {
-        e.preventDefault();
-        const rows = collectRunRows(false);
-        if (!rows.length) { toast("Pick a shop and its category URL first."); return; }
-        const kind = kindForCategory(rows[0] && rows[0].cat);
-        const maxProducts = Number(($("#shop-max") || {}).value || 200);
-        const llmValue = $("#run-llm") ? $("#run-llm").checked : undefined;
-        const btn = e.target;
-        const original = btn.textContent;
-        btn.disabled = true;
-        (async () => {
-          for (let i = 0; i < rows.length; i += 1) {
-            const r = rows[i];
-            const who = r.shop ? (r.shop.name || r.shop.id) : "shop";
-            btn.textContent = "Running " + (i + 1) + "/" + rows.length + " - " + who;
-            const problem = runRowProblem(r);
-            if (problem) { toast(problem); continue; }
-            try {
-              const created = await action({ action: "createJob", type: "shop", url: r.url, kind, maxProducts, autoLlmMatch: llmValue });
-              try { await notifyWorker(created.job); } catch (kickErr) { console.warn(kickErr); }
-              await waitForRunJob(created.job.id);
-            } catch (err) { toast(who + ": " + err.message); }
-          }
-          btn.textContent = original;
-          btn.disabled = false;
-          toast("Run all finished - " + rows.length + " shop(s).");
-        })();
-        return;
-      }
-
       if (e.target.id === "quick-run" || e.target.id === "run-form") {
         e.preventDefault();
         const isQuick = e.target.id === "quick-run";
         const rows = collectRunRows(isQuick);
         if (!rows.length) { toast("Pick a shop and its category URL."); return; }
-        const kind = isQuick ? (($("#run-kind") || {}).value || "both") : kindForCategory(rows[0] && rows[0].cat);
+        const quickKind = ($("#run-kind") || {}).value || "both";
         const maxProducts = Number(($("#shop-max") || {}).value || 200);
         const llmValue = $("#run-llm") ? $("#run-llm").checked : undefined;
         const problems = [];
@@ -2067,7 +2028,7 @@
           const problem = isQuick ? "" : runRowProblem(r);
           if (problem) { problems.push(problem); continue; }
           try {
-            const created = await action({ action: "createJob", type: "shop", url: r.url, kind, maxProducts, autoLlmMatch: llmValue });
+            const created = await action({ action: "createJob", type: "shop", url: r.url, kind: isQuick ? quickKind : kindForCategory(r.cat), maxProducts, autoLlmMatch: llmValue });
             queued += 1;
             try { await notifyWorker(created.job); } catch (kickErr) { console.warn(kickErr); }
           } catch (err) { problems.push(err.message); }
@@ -2157,14 +2118,30 @@
         }).catch((err) => toast(err.message));
         return;
       }
-      if (e.target.id === "run-shop") {
-        fillRunCategories(e.target.value, $("#run-cat") && $("#run-cat").value);
+      if (e.target.classList.contains("run-shop")) {
+        const row = e.target.closest(".run-row");
+        const cat = row.querySelector(".run-cat");
+        const url = row.querySelector(".run-url");
+        const keep = cat.value;
+        cat.innerHTML = nameOptionsHtml(categoryNames(state.data), keep);
+        if (keep) cat.value = keep;
+        url.value = categoryUrlForShop(shopById(state.data, e.target.value), cat.value) || "";
+        rememberRunRows();
         return;
       }
-      if (e.target.id === "run-cat") {
-        const shopId = $("#run-shop") && $("#run-shop").value;
-        const url = applyRunCategoryUrl(shopId, e.target.value);
+      if (e.target.classList.contains("run-cat")) {
+        const row = e.target.closest(".run-row");
+        const shopId = row.querySelector(".run-shop").value;
+        const urlBox = row.querySelector(".run-url");
+        const shop = shopById(state.data, shopId);
+        const url = categoryUrlForShop(shop, e.target.value);
+        urlBox.value = url || "";
+        rememberRunRows();
         if (e.target.value && shopId && !url) toast("Add " + e.target.value + "’s URL on this shop. Names are shared; URLs are unique.");
+        return;
+      }
+      if (e.target.classList.contains("run-url")) {
+        rememberRunRows();
         return;
       }
       if (e.target.dataset.shopCatName != null) {
