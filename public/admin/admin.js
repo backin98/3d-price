@@ -6,6 +6,7 @@
 
   const state = {
     data: null,
+    runExtra: [], // extra shop rows in the run panel; rendered from state so the 5s repaint keeps them
     tab: "overview",
     catalogQuery: "",
     catalogLimit: 40,
@@ -269,6 +270,13 @@
             if ($("#run-llm") && llm !== undefined) $("#run-llm").checked = llm;
             if ($("#run-shop") && shop) $("#run-shop").value = shop;
             fillRunCategories(shop || $("#run-shop")?.value, cat);
+            // Restore the added rows' inputs across the repaint (the timer guards focus, this covers
+            // the case where the repaint happens between keystrokes).
+            (state.runExtra || []).forEach((r, i) => {
+              const row = document.querySelector("#run-rows .run-row[data-extra=\"" + i + "\"]");
+              if (!row) return;
+              const u = row.querySelector(".run-url"); if (u && r.url) u.value = r.url;
+            });
           }
         }).catch(() => {});
       }
@@ -596,6 +604,13 @@
               <div class="field" style="flex:2"><label for="shop-url">Category URL</label><input id="shop-url" class="run-url" type="text" required placeholder="https://www.shop.com/kategori/filament" value="${esc((job && job.url) || "")}"></div>
               <button class="ghost" type="button" id="add-shop-row" title="Add another shop to this run" style="width:36px;height:36px;border-radius:50%;font-size:20px;line-height:1;padding:0;flex:0 0 auto">+</button>
             </div>
+            ${(state.runExtra || []).map((r, i) => `
+              <div class="run-row" data-extra="${i}" style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+                <div class="field"><label>Shop ${i + 2}</label><select class="run-shop">${shops.map((s) => `<option value="${esc(s.id)}"${r.shop === s.id ? " selected" : ""}>${esc(s.name || s.id)}</option>`).join("")}</select></div>
+                <div class="field" style="flex:2"><label>Category</label><select class="run-cat">${nameOptionsHtml(names, r.cat)}</select></div>
+                <div class="field" style="flex:2"><label>Category URL</label><input class="run-url" type="text" placeholder="https://www.shop.com/kategori/filament" value="${esc(r.url || "")}"></div>
+                <button class="ghost danger remove-shop-row" type="button" data-extra="${i}">Remove</button>
+              </div>`).join("")}
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-top:1px dashed #c7d2fe;padding-top:8px">
               <button class="primary" type="button" id="run-all" title="Queue every shop above, one after another">Run all</button>
               <span class="muted" style="font-size:12px">Runs them top to bottom, one at a time, so each shop is matched against the ones already run.</span>
@@ -1985,29 +2000,19 @@
 
       if (e.target.id === "add-shop-row") {
         e.preventDefault();
-        const container = $("#run-rows");
-        const first = container && container.querySelector(".run-row");
-        if (!first) return;
-        const row = first.cloneNode(true);
-        row.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
-        row.querySelectorAll("label").forEach((el) => el.removeAttribute("for"));
-        row.querySelectorAll("input").forEach((el) => { el.value = ""; });
-        row.querySelectorAll("select").forEach((el) => { el.selectedIndex = 0; });
-        row.querySelectorAll("button").forEach((el) => el.remove());
-        const n = container.querySelectorAll(".run-row").length + 1;
-        const lab = row.querySelector("label");
-        if (lab) lab.textContent = "Shop " + n;
-        const rm = document.createElement("button");
-        rm.type = "button";
-        rm.className = "ghost remove-shop-row";
-        rm.textContent = "Remove";
-        row.appendChild(rm);
-        container.insertBefore(row, container.lastElementChild);
+        // State, not DOM: the panel is repainted from runsHtml every 5s, which would wipe a cloned row.
+        state.runExtra = state.runExtra || [];
+        state.runExtra.push({ shop: "", cat: "", url: "" });
+        painted.delete("#tab-runs");
+        paint("#tab-runs", runsHtml(state.data));
         return;
       }
       if (e.target.classList && e.target.classList.contains("remove-shop-row")) {
-        const row = e.target.closest(".run-row");
-        if (row) row.remove();
+        const idx = Number(e.target.getAttribute("data-extra"));
+        state.runExtra = state.runExtra || [];
+        if (Number.isFinite(idx) && idx >= 0) state.runExtra.splice(idx, 1);
+        painted.delete("#tab-runs");
+        paint("#tab-runs", runsHtml(state.data));
         return;
       }
 
