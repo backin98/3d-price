@@ -51,6 +51,20 @@ const { unionCatalog } = require('../lib/catalog-union.cjs');
     assert.equal(merged.run.created, 0);
     assert.equal(merged.run.held, 0);
 
+    const wrongModel = await placeListings({
+      listings: [{
+        name: 'Bambu Lab',
+        brand: 'Bambu Lab',
+        kind: 'printer',
+        price: 22000,
+        url: 'https://store.example/bambu-lab-h2s'
+      }],
+      site: 'example',
+      catalogFile,
+      apply: false
+    });
+    assert.equal(wrongModel.run.merged, 0, 'placement cannot bypass URL-derived model conflicts');
+
     const created = await placeListings({
       listings: [{
         name: 'Bambu Lab A1 Combo 3D Yazıcı',

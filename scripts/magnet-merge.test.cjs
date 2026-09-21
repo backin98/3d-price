@@ -6,10 +6,7 @@
 // conflict for printers. That check previously required BOTH sides to be populated, which is the whole
 // reason a brand-only title sailed through to the `titleSubset` merge.
 //
-// NOT YET DONE: identifying the listing from its URL slug. Metatech serves
-// ".../bambu-lab-a1-3d-printer" while the page text says only "Bambu Lab". Today that listing is now
-// safely refused a merge, but it still creates as an *unnamed* card instead of being identified as A1.
-// The assertion for it is kept below, marked as the known gap, so the next pass starts here.
+// A weak title is also enriched from a URL slug when the shared model table recognizes it.
 const assert = require('node:assert/strict');
 const { decidePair, axesOf } = require('../lib/product-match.cjs');
 
@@ -30,7 +27,7 @@ for (const [a, b, why] of MUST_NOT_MERGE) {
   assert.equal(d.action, 'create', 'must not merge (' + why + '): ' + a + '  vs  ' + b + '  -> ' + d.action + ' | ' + d.reason);
 }
 
-// --- the URL-slug listing no longer welds, even though it is not yet identified ----------------
+// --- the URL-slug listing is identified and still cannot weld onto another model ----------------
 const metatech = {
   kind: 'printer',
   name: 'Bambu Lab',
@@ -41,14 +38,10 @@ assert.equal(
   'create',
   'a brand-only title must not weld into H2S'
 );
-// KNOWN GAP, deliberately asserted as current behaviour so it cannot be forgotten:
-// `axesOf(metatech).modelCore` is still '' - the slug ".../bambu-lab-a1-3d-printer" is not read, so the
-// listing creates as unnamed instead of becoming an A1 card. When that is implemented this line
-// becomes assert.equal(axesOf(metatech).modelCore, 'a1') and the comment above is deleted.
 assert.equal(
   axesOf(metatech).modelCore,
-  '',
-  'slug->modelCore is NOT implemented yet; if this fails, it has been implemented - update this test'
+  'a1',
+  'a known product slug supplies the missing model core'
 );
 
 // --- real same-model pairs must STILL merge (no over-correction) ------------------------------
@@ -62,4 +55,4 @@ for (const [a, b] of MUST_MERGE) {
 }
 
 console.log('PASS: brand-only and packaging-only printer titles never merge, and genuine same-model');
-console.log('      pairs still merge. KNOWN GAP: a URL slug does not yet supply the missing model core.');
+console.log('      pairs still merge, while known URL slugs supply a missing model core.');

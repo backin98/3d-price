@@ -133,4 +133,41 @@ assert.deepEqual(conflicts(identity(k2('Creality K2 Plus Combo')), identity(k2('
 // ...but the same variant worded differently is still one product.
 assert.equal(decidePair(k2('Creality K2 Plus Combo 3D Yazici'), { id: 'p', ...k2('Creality K2 Plus Combo 3D Printer') }).action, 'merge');
 assert.equal(decidePair(k2('Bambu Lab H2S Combo 3D Yazici'), { id: 'h', name: 'Bambu Lab H2S Combo Yazici', brand: 'Bambu Lab', kind: 'printer' }).action, 'merge', 'no variant word, no new split');
+
+for (const [brand, model] of [['Bambu Lab', 'A1'], ['Creality', 'K2'], ['Anycubic', 'Kobra 3']]) {
+  assert.equal(decidePair(
+    { name: brand, brand, kind: 'printer' },
+    { id: model, name: brand + ' ' + model, brand, kind: 'printer' }
+  ).action, 'create', brand + ' brand-only identity cannot merge into a model');
+  assert.equal(decidePair(
+    { name: brand + ' Combo 3D Printer', brand, kind: 'printer' },
+    { id: model + '-combo', name: brand + ' ' + model + ' Combo 3D Printer', brand, kind: 'printer' }
+  ).action, 'create', brand + ' generic combo identity cannot merge into a model');
+}
+assert.equal(decidePair(
+  { name: 'Elegoo Neptune 4', brand: 'Elegoo', kind: 'printer' },
+  { id: 'n3', name: 'Elegoo Neptune 3', brand: 'Elegoo', kind: 'printer' }
+).action, 'create', 'distinct model cores create');
+assert.notEqual(decidePair(
+  { name: 'Bambu Lab A1 H2S', brand: 'Bambu Lab', kind: 'printer' },
+  { id: 'a1', name: 'Bambu Lab A1', brand: 'Bambu Lab', kind: 'printer' }
+).action, 'merge', 'an extra known model core blocks subset merge');
+
+const slugIdentity = identity({ name: 'Bambu Lab', brand: 'Bambu Lab', kind: 'printer', url: 'https://shop.example/products/bambu-lab-a1mini-combo' });
+assert.equal(slugIdentity.modelCore, 'a1-mini');
+assert.equal(slugIdentity.comboAxis, 'combo');
+assert.equal(slugIdentity.mini, true);
+assert.equal(decidePair(
+  { name: 'Bambu Lab', brand: 'Bambu Lab', kind: 'printer', url: 'https://shop.example/bambu-lab-a1mini-combo' },
+  { id: 'mini', name: 'Bambu Lab A1 Mini Combo', brand: 'Bambu Lab', kind: 'printer' }
+).action, 'merge', 'slug-derived model axes match the titled product');
+assert.equal(identity({ name: 'Creality', brand: 'Creality', kind: 'printer', url: 'https://shop.example/collections/all-printers' }).modelCore, '', 'category URL invents no model');
+assert.equal(decidePair(
+  { name: 'Bambu Lab', brand: 'Bambu Lab', kind: 'printer', url: 'https://shop.example/bambu-lab-a1' },
+  { id: 'a1-real', name: 'Bambu Lab A1', brand: 'Bambu Lab', kind: 'printer' }
+).action, 'merge', 'URL-derived model identity merges with the same model');
+const blackTr = { name: 'Elegoo PLA Siyah 1kg', brand: 'Elegoo', kind: 'filament', polymer: 'pla' };
+const blackEn = { id: 'black', name: 'Elegoo PLA Black 1kg', brand: 'Elegoo', kind: 'filament', polymer: 'pla' };
+assert.equal(identity(blackTr).modelCore, '');
+assert.equal(decidePair(blackTr, blackEn).action, 'merge', 'filament still merges without a model core');
 console.log('PASS: Magellan merges typos/synonyms, splits combo and color, classifies polymer/variant.');

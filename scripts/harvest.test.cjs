@@ -149,6 +149,24 @@ const KEEP = new Set(RHINO.slice(7));
   assert.equal(page.product.image, "https://cdn.example.com/a1.jpg");
   assert.equal(page.product.kind, "printer");
 
+  const rich = extractProductPage(`
+    <script type="application/ld+json">{"@graph":[{"@type":"WebSite","name":"Example Shop"},{"@type":"Product","name":"Anycubic Kobra 3 Combo","brand":{"name":"Anycubic"},"offers":{"price":"25000"}}]}</script>
+    <meta property="og:title" content="Anycubic">
+    <h1>Breadcrumb Brand Text</h1>
+    <div class="sale-price">25.000,00 TL</div>`, "https://shop.example/products/anycubic-kobra-3-combo", "printer");
+  assert.equal(rich.product.name, "Anycubic Kobra 3 Combo", "JSON-LD Product.name wins over weaker page text");
+
+  const social = extractProductPage(`
+    <meta property="og:title" content="Example Shop">
+    <meta name="twitter:title" content="Creality K2 Plus Combo">
+    <h1>Creality</h1><div class="sale-price">30.000,00 TL</div>`, "https://example.shop/creality-k2-plus-combo", "printer");
+  assert.equal(social.product.name, "Creality K2 Plus Combo", "a product-like social title wins over the H1");
+
+  const brandOnly = extractProductPage(`
+    <script type="application/ld+json">{"@type":"Product","name":"Elegoo","brand":{"name":"Elegoo"},"offers":{"price":"20000"}}</script>
+    <div class="sale-price">20.000,00 TL</div>`, "https://shop.example/elegoo-neptune-4-pro", "printer");
+  assert.match(brandOnly.product.name, /Neptune 4 Pro/, "brand-only structured title falls back to the product slug");
+
   const plusVat = extractProductPage(`
     <h1>Creality K1 Max 3D Yazıcı</h1>
     <div class="brand">Creality</div>
