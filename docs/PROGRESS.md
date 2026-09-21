@@ -335,7 +335,48 @@ H2C pair, because `"Bambu Lab H2C 10 Watt Combo 3D Yazici"` contains no laser wo
 to be: power/heater words VETO, and absence of context still counts as the laser module. The veto list
 is the load-bearing part; requiring positive context contradicts step 1's own requirement.
 
+### Step 0 DONE: laser wattage context (branch fix/laser-wattage-context)
+
+Rule as resolved (my earlier contradiction finding was accepted, the original step 0 was wrong):
+(a) a `NN W` / `NN Watt` token is the laser module BY DEFAULT, no laser word required, so the H2C pair
+still merges; (b) VETOED when a power/heater word is within 2 tokens; (c) IGNORED outside a plausible
+range.
+
+**The range came from data, not a guess.** Mine of every title available (live catalogue + `work/*.json`
++ `data/qwen-employee/*.json`, 393 titles):
+```
+wattages present: {10: 8, 40: 4}      <- all Bambu laser modules
+baseline rows carrying laserWatts: 0   <- the baseline has no laser rows at all
+```
+So 1-80W is the range: it covers 10 and 40 with headroom for other laser modules, and excludes 350W.
+The user's guessed 1-80W was right, and now it is grounded.
+
+`laserWattsFromName` now folds Turkish, takes the number before `watt`/`w`, range-checks it, then vetoes
+if a power/heater word sits within 2 TOKENS (a token window, not characters, so a laser figure elsewhere
+in a long title survives).
+
+```
+scripts/laser-wattage.test.cjs  written FIRST, then the implementation
+suite: 35 pass / 0 fail        eval: 375/375, false-merge 0, false-split 0 (unchanged)
+backspace bytes in the edited file: 0
+```
+Tests cover both directions: bare wattage, real 10W/40W rows from the live catalogue, the H2C must-pass
+pair, `350W güç kaynağı`, `adaptör`, `ısıtıcı`, `PSU`, `power supply`, `tabla`, `heated bed`, an
+out-of-range `350W` with no power word at all, and `0W`.
+
+### Editing discipline that worked (after breaking files three times)
+
+1. `git status` clean, then a branch.
+2. Line endings checked FIRST - both files were CRLF, so they were normalised to LF in their own commit
+   (`2709333`) before any edit. Every earlier exact-string edit had silently missed because of this.
+3. One edit, via the editor's exact-string replacement, never a slice by index or brace search (that is
+   what corrupted the file and took out 21 test files).
+4. `node --check` then the full suite after the edit, with `git checkout` on failure.
+5. Diff reviewed, byte count checked, committed only green, then merged to main.
+
 ### Next
+Step 1 of the Laya decision: mine REAL hard positives - every catalogue product with 2+ shop listings,
+plus raw listings from recent scrape/hunt runs - tag them `source=real`, and report the count.
 Fine-tune (freeze the encoder, train the decision head) on labeled pairs, or train a small
 classifier on Laya embeddings. Do not wire Laya into the gray band until it beats Magellan alone on
 false-merge rate.
