@@ -477,6 +477,9 @@ function startHttp() {
   });
 }
 
+let backoffMs = Number(process.env.POLL_MS || 5000);
+let pollFails = 0;
+
 async function main() {
   startHttp();
   if (hasToken && siteUrl) console.log("Polling site " + siteUrl);
@@ -497,11 +500,21 @@ async function main() {
   while (true) {
     try {
       if (hasToken && siteUrl) await claimAndRun();
+      backoffMs = POLL_MS;
       await sleep(POLL_MS);
     } catch (err) {
-      console.warn("Poll failed:", err.message);
-      await sleep(POLL_MS * 2);
+      // Exponential backoff, capped. A failed poll used to retry at a flat 2x POLL_MS forever, so a
+      // deploy window (functions briefly 404 while Netlify swaps them) produced a wall of identical
+      // lines and kept hammering. Now each consecutive failure doubles the wait to a 60s ceiling and
+      // one line is logged per failure, including the attempt number and next delay.
+      backoffMs = Math.min(Math.max(backoffMs * 2, POLL_MS * 2), 60000);
+      pollFails += 1;
+      console.warn("Poll failed (attempt " + pollFails + ", retrying in " + Math.round(backoffMs / 1000) + "s): " + err.message);
+      await sleep(backoffMs);
+      continue;
     }
+    pollFails = 0;
+    backoffMs = POLL_MS;
   }
 }
 
