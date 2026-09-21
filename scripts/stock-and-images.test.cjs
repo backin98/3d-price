@@ -94,6 +94,7 @@ const html = (body) => '<html><head><title>t</title></head><body>' + body + '<di
   const noisy = readStockPage('<div class=buy>Sepete Ekle <span>21.999,00 TL</span></div>' + '<div>x</div>'.repeat(120) + '<div class=rec>Benzer urun TUKENDI</div>');
   assert.equal(noisy.status, 'in_stock', 'a sold-out recommendation card is not this product');
   assert.equal(readStockPage('<script type="application/ld+json">{"availability":"https://schema.org/OutOfStock"}</script><div>Sepete Ekle</div>').status, 'out_of_stock', 'structured data wins over a cart button');
+  assert.equal(readStockPage('<script type="application/ld+json">{"availability":"https://schema.org/OutOfStock"}</script><div class="buy"><span>Ön Sipariş Ürünü</span><button>Sepete Ekle</button></div>').status, 'preorder', 'an explicit preorder buy box overrides stale out-of-stock schema');
   assert.equal(readStockPage('<script type="application/ld+json">{"availability":"https://schema.org/InStock"}</script>').status, 'in_stock');
   assert.equal(readStockPage('<nav>On Siparis</nav><div>Sepete Ekle 1.234,00 TL</div>').status, 'in_stock', 'a menu mentioning pre-order proves nothing');
 

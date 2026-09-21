@@ -124,6 +124,14 @@ const KEEP = new Set(RHINO.slice(7));
   assert.match(shopify.inScope[0].url, /\/products\/bambu-lab-a1-combo-3d-yazici/);
   assert.doesNotMatch(shopify.inScope[0].url, /vendors/);
 
+  const preorderCard = await harvestCategory({
+    categoryUrl: "https://shop.example/printers",
+    kind: "printers",
+    html: `<div class="card product-card"><a href="/products/creality-k2"><h3>Creality K2 3D Printer</h3></a><div class="stock-badge">Tükendi</div><span>Ön Sipariş Ürünü</span><div class="sale-price">25.000,00 TL</div><button>Sepete Ekle</button></div>`
+  });
+  assert.equal(preorderCard.inScope.length, 1, "a preorder with Add to Cart is not rejected as sold out");
+  assert.equal(preorderCard.inScope[0].stock, "preorder");
+
   assert.equal(readStockFromHtml('<div class="out-of-stock">Tükendi</div>').status, "out_of_stock");
   assert.equal(readStockFromHtml("<div>Stokta Yok</div><button>Sepete Ekle</button>").status, "out_of_stock");
   const qty = readStockFromHtml("<div>Stok Miktarı: 4</div><button>Sepete Ekle</button>");

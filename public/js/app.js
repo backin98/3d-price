@@ -263,6 +263,7 @@
   let indexedSearch = new WeakMap();
   let rankedCatalog = null;
   let rankedQuery = "";
+  let rankedIncludeDead = false;
   let rankedProducts = null;
 
   function ensureSearchIndex() {
@@ -387,18 +388,18 @@
   }
 
   // What the storefront shows: everything that scored, best first. Related rows come last.
-  function rankProducts(list, query) {
+  function rankProducts(list, query, includeDead = false) {
     if (!query || !query.trim()) return list || [];
-    if (list === rankedCatalog && query === rankedQuery && rankedProducts) return rankedProducts;
+    if (list === rankedCatalog && query === rankedQuery && includeDead === rankedIncludeDead && rankedProducts) return rankedProducts;
     const wanted = searchTokens(query);
-    const ranked = (list || [])
-      .filter(isSellable)
+    const ranked = (includeDead ? (list || []) : (list || []).filter(isSellable))
       .map((p) => ({ p, s: searchScoreLocal(p, query, wanted) }))
       .filter(({ s }) => s.score > 0)
       .sort((a, b) => b.s.score - a.s.score || String(a.p.name || "").localeCompare(String(b.p.name || "")))
       .map(({ p }) => p);
     rankedCatalog = list;
     rankedQuery = query;
+    rankedIncludeDead = includeDead;
     rankedProducts = ranked;
     return ranked;
   }
@@ -418,7 +419,7 @@
     if (!state.query.trim() || !state.liveProducts) return;
     stockPreviewTimer = setTimeout(async () => {
       const query = state.query;
-      const products = matchingProducts().slice(0, 4);
+      const products = rankProducts(catalog(), query, true).slice(0, 4);
       const ids = products.map((p) => p.id).filter(Boolean);
       const key = query + "\n" + ids.join(",");
       if (!ids.length || key === stockPreviewKey) return;
@@ -1618,10 +1619,11 @@
     const rows = compared
       .map((o, i) => {
         const tag = i === 0 ? `<span class="off-pill">${escapeHtml(C.bestOffer)}</span>` : "";
-        const pre = o.preorder
+        const isPreorder = o.preorder || offerStatus(o) === "preorder";
+        const pre = isPreorder
           ? `<span class="off-pill pre-pill">${escapeHtml(C.live.preorder)}</span>`
           : "";
-        return `<div class="offer-row${o.preorder ? " is-preorder" : ""}">
+        return `<div class="offer-row${isPreorder ? " is-preorder" : ""}">
           <div>
             <strong>${escapeHtml(o.store)}</strong>
             ${o.bundleName ? `<div class="deal-meta">${escapeHtml(o.bundleName)}</div>` : ""}
