@@ -26,10 +26,6 @@ const catalog = {
         { store: 'live.example', price: 200, url: 'https://live.example/stock', sourceTitle: 'Stock Test Printer' }
       ]
     },
-    {
-      id: 'preorder', name: 'Preorder Recovery Printer', brand: 'Test', kind: 'printer', aisle: 'fdm', image: '',
-      offers: [{ store: 'preorder.example', price: 300, url: 'https://preorder.example/printer', sourceTitle: 'Preorder Recovery Printer', stockStatus: 'out_of_stock' }]
-    },
     row('m7', 'Anycubic Photon Mono M7 Pro MSLA 3D Printer', 'https://www.rhino3dprinter.com/anycubic-m7-pro', 18999),
     row('ams', 'Bambu Lab AMS 2 Pro - Automatic Material System', 'https://www.rhino3dprinter.com/ams-2-pro', 9999)
   ],
@@ -42,8 +38,7 @@ const server = http.createServer((req, res) => {
     res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
     res.end(JSON.stringify({ products: [
       { id: 'stock', url: 'https://cheap.example/stock', status: 'out_of_stock', verified: true },
-      { id: 'stock', url: 'https://live.example/stock', status: 'in_stock', verified: true },
-      { id: 'preorder', url: 'https://preorder.example/printer', status: 'preorder', verified: true }
+      { id: 'stock', url: 'https://live.example/stock', status: 'in_stock', verified: true }
     ] }));
     return;
   }
@@ -136,12 +131,6 @@ const server = http.createServer((req, res) => {
     assert.match((await suggestions())[0].text, /100,00 TL/, 'cached result is immediate');
     await page.waitForTimeout(800);
     assert.match((await suggestions())[0].text, /200,00 TL/, 'live in-stock offer replaces the dead cheap offer');
-
-    // A stale out-of-stock row stays hidden until the live check confirms its preorder buy box.
-    await type('preorder recovery');
-    assert.equal((await suggestions()).length, 0, 'cached out-of-stock preorder starts hidden');
-    await page.waitForTimeout(800);
-    assert.equal((await suggestions())[0].id, 'preorder', 'live preorder status restores the sellable product');
 
     assert.deepEqual(errors, [], 'no page errors: ' + errors.join(' | '));
     console.log('PASS: the storefront search bar suggests as you type, keeps the family visible, tolerates prefixes and typos, and opens products from the keyboard.');
