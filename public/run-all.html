@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Run all shops in order — 3D Price</title>
+<style>
+  :root { --line:#e5e7eb; --muted:#6b7280; --ink:#111827; --brand:#2563eb; --ok:#059669; --warn:#b45309; }
+  * { box-sizing: border-box; }
+  body { margin:0; padding:28px; font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; color:var(--ink); background:#f8fafc; }
+  .wrap { max-width: 900px; margin:0 auto; }
+  h1 { font-size:24px; margin:0 0 4px; }
+  p.sub { color:var(--muted); margin:0 0 20px; }
+  .panel { background:#fff; border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px; }
+  .row { display:flex; gap:8px; align-items:center; padding:8px; border:1px solid var(--line); border-radius:10px; margin-bottom:8px; background:#fff; }
+  .row.dragging { opacity:.45; }
+  .row.over { border-color:var(--brand); }
+  .grip { cursor:grab; color:var(--muted); font-size:18px; padding:0 4px; user-select:none; }
+  .n { width:26px; text-align:center; color:var(--muted); font-variant-numeric:tabular-nums; }
+  select, input, button { font:inherit; padding:7px 9px; border:1px solid var(--line); border-radius:8px; background:#fff; }
+  select { flex:1 1 0; min-width:0; }
+  input.url { flex:2 1 0; min-width:0; }
+  button { cursor:pointer; }
+  button.primary { background:var(--brand); color:#fff; border-color:var(--brand); font-weight:600; padding:9px 16px; }
+  button.ghost { background:#fff; }
+  button.icon { padding:5px 9px; line-height:1; }
+  button:disabled { opacity:.5; cursor:not-allowed; }
+  .bar { display:flex; gap:8px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+  .log { font:12px/1.6 ui-monospace,Menlo,Consolas,monospace; background:#0b1020; color:#c9d4ea; border-radius:10px; padding:12px; max-height:280px; overflow:auto; white-space:pre-wrap; }
+  .status { padding:6px 10px; border-radius:999px; font-size:12px; font-weight:600; }
+  .status.wait { background:#fef3c7; color:var(--warn); }
+  .status.run { background:#dbeafe; color:var(--brand); }
+  .status.done { background:#d1fae5; color:var(--ok); }
+  .status.err { background:#fee2e2; color:#b91c1c; }
+  .hint { color:var(--muted); font-size:13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Run all shops, in order</h1>
+  <p class="sub">
+    Each shop runs <strong>one at a time, top to bottom</strong>. That matters: the first run publishes its
+    rows, and every later shop is matched against what the earlier ones already put in the catalogue, so
+    order decides which card an offer lands on. Drag the ⠿ handle or use ▲ ▼ to reorder.
+  </p>
+
+  <div class="panel">
+    <div id="list"></div>
+    <div class="bar">
+      <button class="ghost" id="add">+ Add shop</button>
+      <button class="ghost" id="reset">Reset order</button>
+      <label class="hint"><input type="checkbox" id="dry"> Dry run (list what would happen, queue nothing)</label>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="bar">
+      <button class="primary" id="run">Run all</button>
+      <button class="ghost" id="stop" disabled>Stop after current shop</button>
+      <span id="state" class="status wait">idle</span>
+      <span class="hint" id="summary"></span>
+    </div>
+    <div class="bar"><label class="hint">Max products per shop <input id="max" type="number" min="1" max="400" value="200" style="width:90px"></label></div>
+    <div class="log" id="log">Ready. Make sure you are logged in to /admin/ in this browser first — this page uses the same session.</div>
+  </div>
+</div>
+
+<script>
+// Standalone "run every shop in order" page.
+//
+// Deliberately NOT part of admin.js: it adds a mechanism beside the existing admin rather than
+// changing it. It uses the same cookie session (credentials: same-origin) and the same two calls the
+// admin makes - POST /api/admin {action:"createJob"} and a kick to the worker's /run - so it needs no
+// server change, no new endpoint and no edit to any existing file.
+//
+// ORDER IS THE POINT. Runs are strictly sequential: shop N+1 is only queued once shop N's job reaches
+// a terminal state. Queuing them all at once would let the worker interleave them, and then which card
+// an offer attaches to would depend on timing instead of the order you set.
+(function () {
+  var ORDER_KEY = 'runAll.order.v1';
+  var shops = [];      // desk.shops from GET /api/admin
+  var order = [];      // [{ shopId, catName }] in run order
+  var running = false;
+  var stopFlag = false;
+
+  var $ = function (id) { return document.getElementById(id); };
+  function log(line) {
+    var el = $('log');
+    el.textContent += '\n' + line;
+    el.scrollTop = el.scrollHeight;
+  }
+  function setState(kind, text) {
+    var el = $('state');
+    el.className = 'status ' + kind;
+    el.textContent = text;
+  }
+  function sameOrigin(path, options) {
+    return fetch(path, Object.assign({ credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } }, options || {}));
+  }
+
+  // --- data ------------------------------------------------------------------------------------
+  function loadDesk() {
+    return sameOrigin('/api/admin').then(function (r) {
+      if (r.status === 401) throw new Error('Not logged in — open /admin/ in this browser and sign in first.');
+      return r.json();
+    }).then(function (d) {
+      shops = ((d.desk || {}).shops || []).slice();
+      if (!shops.length) throw new Error('No shops configured — add them on the admin Shops tab.');
+      var saved = {};
+      try { saved = JSON.parse(localStorage.getItem(ORDER_KEY) || '{}'); } catch (e) { saved = {}; }
+      // Keep the saved order, drop shops that no longer exist, append new ones at the end.
+      var known = shops.map(function (s) { return s.id; });
+      order = (saved.order || []).filter(function (e) { return known.indexOf(e.shopId) >= 0; });
+      known.forEach(function (id) {
+        if (!order.some(function (e) { return e.shopId === id; })) order.push({ shopId: id, catName: (saved.cats || {})[id] || '' });
+      });
+      var cats = {};
+      order.forEach(function (e) { cats[e.shopId] = e.catName || ''; });
+      localStorage.setItem(ORDER_KEY, JSON.stringify({ order: order, cats: cats }));
+    });
+  }
+
+  function shopById(id) {
+    for (var i = 0; i < shops.length; i++) if (shops[i].id === id) return shops[i];
+    return null;
+  }
+  function categoriesOf(shop) {
+    var c = shop && shop.categories;
+    return Array.isArray(c) ? c : [];
+  }
+  function save() {
+    var cats = {};
+    order.forEach(function (e) { cats[e.shopId] = e.catName || ''; });
+    localStorage.setItem(ORDER_KEY, JSON.stringify({ order: order, cats: cats }));
+  }
+
+  // --- render ----------------------------------------------------------------------------------
+  function render() {
+    var list = $('list');
+    list.textContent = '';
+    order.forEach(function (entry, i) {
+      var shop = shopById(entry.shopId) || {};
+      var row = document.createElement('div');
+      row.className = 'row';
+      row.draggable = true;
+      row.dataset.index = String(i);
+
+      var grip = document.createElement('span'); grip.className = 'grip'; grip.textContent = '⠿';
+      var n = document.createElement('span'); n.className = 'n'; n.textContent = String(i + 1);
+      row.appendChild(grip); row.appendChild(n);
+
+      var sel = document.createElement('select');
+      shops.forEach(function (s) {
+        var o = document.createElement('option');
+        o.value = s.id; o.textContent = s.name || s.id;
+        if (s.id === entry.shopId) o.selected = true;
+        sel.appendChild(o);
+      });
+      sel.addEventListener('change', function () { entry.shopId = sel.value; entry.catName = ''; save(); render(); });
+      row.appendChild(sel);
+
+      var cats = categoriesOf(shop);
+      var cat = document.createElement('select');
+      var none = document.createElement('option'); none.value = ''; none.textContent = cats.length ? 'Select a category' : '(no categories)';
+      cat.appendChild(none);
+      cats.forEach(function (c) {
+        var o = document.createElement('option');
+        o.value = c.name; o.textContent = c.name;
+        if (c.name === entry.catName) o.selected = true;
+        cat.appendChild(o);
+      });
+      cat.addEventListener('change', function () { entry.catName = cat.value; save(); render(); });
+      row.appendChild(cat);
+
+      var url = document.createElement('input');
+      url.className = 'url'; url.type = 'text'; url.placeholder = 'https://www.shop.com/kategori/...';
+      var match = null;
+      cats.forEach(function (c) { if (c.name === entry.catName) match = c; });
+      url.value = match ? match.url : (shop.url || '');
+      url.addEventListener('change', function () { entry.url = url.value.trim(); save(); });
+      entry.url = url.value.trim();
+      row.appendChild(url);
+
+      function mk(label, title, fn, disabled) {
+        var b = document.createElement('button');
+        b.className = 'icon ghost'; b.textContent = label; b.title = title; b.disabled = !!disabled;
+        b.addEventListener('click', fn);
+        return b;
+      }
+      row.appendChild(mk('▲', 'Move up', function () { swap(i, i - 1); }, i === 0));
+      row.appendChild(mk('▼', 'Move down', function () { swap(i, i + 1); }, i === order.length - 1));
+      row.appendChild(mk('✕', 'Remove', function () { order.splice(i, 1); save(); render(); }));
+
+      // Drag to reorder. HTML5 drag and drop, no library.
+      row.addEventListener('dragstart', function (e) { e.dataTransfer.setData('text/plain', String(i)); row.classList.add('dragging'); });
+      row.addEventListener('dragend', function () { row.classList.remove('dragging'); });
+      row.addEventListener('dragover', function (e) { e.preventDefault(); row.classList.add('over'); });
+      row.addEventListener('dragleave', function () { row.classList.remove('over'); });
+      row.addEventListener('drop', function (e) {
+        e.preventDefault(); row.classList.remove('over');
+        moveTo(parseInt(e.dataTransfer.getData('text/plain'), 10), i);
+      });
+
+      list.appendChild(row);
+    });
+    $('summary').textContent = order.length + ' shop' + (order.length === 1 ? '' : 's') + ' in order';
+  }
+
+  function swap(a, b) { if (b < 0 || b >= order.length) return; var t = order[a]; order[a] = order[b]; order[b] = t; save(); render(); }
+  function moveTo(from, to) { if (isNaN(from) || from === to) return; var t = order.splice(from, 1)[0]; order.splice(to, 0, t); save(); render(); }
+
+  // --- running ---------------------------------------------------------------------------------
+  function jobFrom(data, id) {
+    var jobs = (data && data.jobs) || [];
+    for (var i = 0; i < jobs.length; i++) if (jobs[i].id === id) return jobs[i];
+    return null;
+  }
+  function sleep(ms) { return new Promise(function (r) { setTimeout(r, ms); }); }
+
+  function waitForJob(id, done) {
+    var waited = 0;
+    (function tick() {
+      if (stopFlag) return done(new Error('stopped'));
+      sameOrigin('/api/admin').then(function (r) { return r.json(); }).then(function (d) {
+        var j = jobFrom(d, id);
+        if (!j) { if (waited > 120000) return done(new Error('job vanished')); return setTimeout(tick, 3000); }
+        if (j.status === 'complete') return done(null, j);
+        if (j.status === 'failed' || j.status === 'aborted') return done(new Error('job ' + j.status + ': ' + (j.error || '')));
+        waited += 5000;
+        if (waited % 30000 === 0) log('   … ' + id + ' ' + j.status + ' — ' + (j.progress || ''));
+        setTimeout(tick, 5000);
+      }).catch(function (e) { done(e); });
+    })();
+  }
+
+  function createJob(entry, maxProducts) {
+    var shop = shopById(entry.shopId) || {};
+    var url = entry.url;
+    if (!url) {
+      var cats = categoriesOf(shop);
+      for (var i = 0; i < cats.length; i++) if (cats[i].name === entry.catName) url = cats[i].url;
+      if (!url) url = shop.url;
+    }
+    if (!url) throw new Error((shop.name || entry.shopId) + ': no category URL — pick a category');
+    return sameOrigin('/api/admin', { method: 'POST', body: JSON.stringify({ action: 'createJob', type: 'shop', url: url, kind: 'both', maxProducts: maxProducts }) })
+      .then(function (r) { return r.json().then(function (d) { if (!r.ok) throw new Error(d.error || ('HTTP ' + r.status)); return d; }); });
+  }
+
+  function kickWorker() {
+    // Same call the admin makes. If the worker is not running this fails harmlessly; the job stays
+    // queued and the worker will pick it up when it starts.
+    return fetch('http://127.0.0.1:8788/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' })
+      .then(function () { return true; })
+      .catch(function () { return false; });
+  }
+
+  function runAll() {
+    if (running) return;
+    running = true; stopFlag = false;
+    $('run').disabled = true; $('stop').disabled = false;
+    var maxProducts = Number($('max').value || 200);
+    var dry = $('dry').checked;
+    var i = 0;
+    var t0 = Date.now();
+
+    function next() {
+      if (stopFlag) { log('Stopped by request after ' + i + ' shop(s).'); return finish(); }
+      if (i >= order.length) { log('All ' + order.length + ' shops done in ' + Math.round((Date.now() - t0) / 1000) + 's.'); return finish(); }
+      var entry = order[i];
+      var shop = shopById(entry.shopId) || {};
+      var name = shop.name || entry.shopId;
+      log((i + 1) + '/' + order.length + '  ' + name + (dry ? '   [dry run]' : ''));
+      i += 1;
+      if (dry) { setTimeout(next, 50); return; }
+      var created;
+      try { created = createJob(entry, maxProducts); } catch (e) { log('   skipped: ' + e.message); setTimeout(next, 50); return; }
+      created.then(function (d) {
+        var job = d.job || {};
+        log('   queued ' + job.id);
+        return kickWorker().then(function (kicked) {
+          if (!kicked) log('   worker not reachable — job stays queued until it starts');
+          return new Promise(function (resolve, reject) { waitForJob(job.id, function (err) { err ? reject(err) : resolve(); }); });
+        });
+      }).then(function () {
+        log('   done');
+        setTimeout(next, 800);   // small gap so the published catalogue has settled before the next shop
+      }).catch(function (e) {
+        log('   ERROR: ' + e.message);
+        setTimeout(next, 800);   // keep going: one bad shop should not abandon the rest
+      });
+    }
+    function finish() {
+      running = false; $('run').disabled = false; $('stop').disabled = true;
+      setState(stopFlag ? 'wait' : 'done', stopFlag ? 'stopped' : 'finished');
+    }
+    setState('run', 'running');
+    next();
+  }
+
+  // --- wire up ---------------------------------------------------------------------------------
+  $('run').addEventListener('click', runAll);
+  $('stop').addEventListener('click', function () { stopFlag = true; log('Will stop after the current shop finishes.'); });
+  $('add').addEventListener('click', function () {
+    var unused = null;
+    for (var i = 0; i < shops.length; i++) {
+      var id = shops[i].id;
+      if (!order.some(function (e) { return e.shopId === id; })) { unused = id; break; }
+    }
+    if (!unused) { log('Every configured shop is already in the list.'); return; }
+    order.push({ shopId: unused, catName: '' }); save(); render();
+  });
+  $('reset').addEventListener('click', function () {
+    localStorage.removeItem(ORDER_KEY);
+    order = shops.map(function (s) { return { shopId: s.id, catName: '' }; });
+    save(); render(); log('Order reset to the configured shop list.');
+  });
+
+  setState('wait', 'loading');
+  loadDesk().then(function () {
+    render();
+    setState('wait', 'idle');
+    log('Loaded ' + shops.length + ' shops. Set the order, then Run all.');
+  }).catch(function (e) {
+    setState('err', 'error');
+    log('Could not load: ' + e.message);
+  });
+})();
+</script>
+</body>
+</html>
