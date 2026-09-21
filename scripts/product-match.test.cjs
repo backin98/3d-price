@@ -161,6 +161,10 @@ assert.equal(decidePair(
   { name: 'Bambu Lab', brand: 'Bambu Lab', kind: 'printer', url: 'https://shop.example/bambu-lab-a1mini-combo' },
   { id: 'mini', name: 'Bambu Lab A1 Mini Combo', brand: 'Bambu Lab', kind: 'printer' }
 ).action, 'merge', 'slug-derived model axes match the titled product');
+assert.equal(decidePair(
+  { name: 'Bambu Lab', brand: 'Bambu Lab', kind: 'printer', url: 'https://shop.example/bambu-p1s-ams-2-pro-combo' },
+  { id: 'ams2', name: 'Bambu Lab P1S AMS 2 Pro Combo', brand: 'Bambu Lab', kind: 'printer' }
+).action, 'merge', 'slug-derived feeder axes match the titled product');
 assert.equal(identity({ name: 'Creality', brand: 'Creality', kind: 'printer', url: 'https://shop.example/collections/all-printers' }).modelCore, '', 'category URL invents no model');
 assert.equal(decidePair(
   { name: 'Bambu Lab', brand: 'Bambu Lab', kind: 'printer', url: 'https://shop.example/bambu-lab-a1' },
