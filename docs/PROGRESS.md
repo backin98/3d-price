@@ -259,6 +259,30 @@ That single miss is a normalisation problem, not a similarity problem: the same 
 and only their order differs, so the axes should be computed from a canonical modifier order rather
 than from the token sequence. That is a deterministic fix and it should be tried before any model.
 
+### CORRECTION to the line above: the 99.7% measures almost nothing
+
+`grep -c "equipment marker moved" docs/laya-eval.jsonl` returns **0**. `modifierSwap` only fires when a
+title contains both ` Lazer NW` and ` Combo`, and `laserWatts` is set on almost no baseline row, so the
+transformation never applied and **no generated pair tests word order at all**.
+
+What the 180 generated "same" pairs actually are: canonical, UPPER-cased, Turkish-folded, and
+noise-added. Three of those four are trivially matched by any normaliser, and added marketing noise
+was always easy. So:
+
+- **99.7% is not a matcher accuracy figure.** It is the score on a set with no hard positives.
+- The only meaningful signal is the **15 hand-written edges, where Magellan scores 14/15.**
+- false-merge 0/192 IS meaningful: the 192 "different" pairs include combo-vs-bare, laser-watt, model,
+  variant, knockoff, accessory and 180 cross-identity pairs, and none merged.
+
+So the honest baseline is: **Magellan never merges two different products on the realistic set (0/192),
+and misses one word-order case out of 15 hard positives.** The earlier 27.3% false-split was my
+generator; this 0.5% is my generator too, in the other direction.
+
+To make the "same" half worth anything it needs harder positives that shops actually write: TR/EN
+mixtures ("Bambu Lab H2S Combo 3D Yazici" vs "BambuLab H2S AMS'li"), model tokens split around
+modifiers ("H2C 10W Combo" vs "H2C Combo Lazer 10W"), and abbreviated model names. Until then, treat
+the hand-written 15 as the test and the generated pairs as regression cover only.
+
 ### Next
 Fine-tune (freeze the encoder, train the decision head) on labeled pairs, or train a small
 classifier on Laya embeddings. Do not wire Laya into the gray band until it beats Magellan alone on
