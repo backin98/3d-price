@@ -399,6 +399,46 @@ an empty label. Pairing needs "two different shops" to be trustworthy, so step 1
 from the URL HOST (authoritative) and keep the written label separately. No listings were dropped for
 this - the data is all there, the labels need normalising.
 
+### Item C of the GitHub fix list DONE: baseline axes argument order
+
+The GitHub report was right and I verified it against the functions before touching anything:
+
+```
+feederOf(text, "bambu")      -> null                              <- what baseline-catalog.js did
+feederOf("bambu", text)      -> {"alias":"ams 2 pro","id":"ams-2-pro"}
+technologyOf(title)          -> "fdm"      for EVERY title        <- also wrong
+technologyOf("bambu", title) -> "laser"    for laser titles
+```
+Both `feederOf` and `technologyOf` are `(brandId, title)`; both call sites had them reversed. The damage
+was silent and broad:
+
+- every baseline row lost its feeder generation, so "P1S AMS 2 Pro" read as a bare machine and feeder
+  hard-conflict checks were meaningless;
+- every laser machine was classified `fdm`, so a 10W laser and a plain printer looked like the same
+  technology.
+
+Fixed both. `scripts/baseline-axes.test.cjs` asserts the acceptance case from the report -
+`feederGen === "ams-2-pro"` - plus a bare machine keeping no feeder, real 10W/40W laser rows being
+`laser`, a plain printer staying `fdm`, and a laser H2C differing from a plain H2C.
+
+```
+suite: 36 pass / 0 fail   (35 before + scripts/baseline-axes.test.cjs)
+```
+
+### NOT DONE from the GitHub fix list
+
+A (Magellan magnet merge / titleSubset model-token blockers), B (placement skips the baseline gate on
+merge, offer axes not checked on attach, brand-only sourceTitle), D (hunt `printerMatchKey` token-sort
+merge, `.includes(q)` filter, `pickBrand` defaulting printers to RhinoLab), E (search haystack
+pollution, short anchors, glued queries), F (alias normalisation: `H2 S`->`h2s`, `K2Plus`->`k2-plus`,
+`A 1`->`a1`, `a1mini`->`a1 mini`), G (catalog repair / rematch).
+
+Item C was chosen first because it is the only one in that list with a one-line fix and an unambiguous
+acceptance test. A, D and E are the ones that cause the user-visible symptoms (H2S welding 13 offers,
+`a1` ranking wrong, glued `a1mini` returning 0) and each needs its own verification - starting one and
+running out of room would leave a half-changed matcher, which is exactly how this repo has broken
+before.
+
 ### Next
 Step 1b: canonicalise shop from the URL host, then group listings by Magellan's family key to propose
 candidate "same" pairs -> `docs/real-groups.jsonl`, flagged as Magellan-proposed (NOT ground truth).
