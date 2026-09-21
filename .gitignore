@@ -13,3 +13,8 @@ data/price-history.sqlite
 data/qwen-employee/
 *.sqlite
 data/image-phash.json
+
+# scratch output from probes/diagnostics - not repo content
+work/d.json
+work/poll.json
+work/sup.out
