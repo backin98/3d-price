@@ -42,7 +42,8 @@ assert.equal(matchesSearch(sibling, 'Creality K2 Combo'), true, 'but its own fam
 assert.equal(matchesSearch(p1s, 'with buffer'), true, 'a scraped offer title is searchable');
 assert.equal(matchesSearch(p1s, 'AMS 2 Pro'), true, '...including its variant words');
 assert.equal(matchesSearch(p1s, 'rhino3dprinter'), true, 'and the shop name');
-assert.equal(matchesSearch({ id: 'x', name: '', offers: [{ url: 'https://shop.example/urun/anycubic-kobra-2-pro' }] }, 'kobra 2 pro'), true, 'even a row with no name matches through its URL');
+assert.equal(matchesSearch({ id: 'x', name: '', offers: [{ url: 'https://shop.example/urun/anycubic-kobra-2-pro' }] }, 'kobra 2 pro'), false, 'an offer URL alone does not enter the default haystack');
+assert.equal(matchesSearch({ name: 'Bambu Lab A1 Mini', kind: 'printer' }, 'a1mini'), true, 'glued model queries match spaced model names');
 
 // --- Turkish folding -------------------------------------------------------------------
 assert.deepEqual(searchTokens('Creality K2 Plus Combo 3D Yazıcı'), ['creality', 'k2', 'plus', 'combo'], 'filler words drop out');
@@ -149,5 +150,13 @@ assert.equal(ids('bambu p1s').length, 0, 'a query with no match still returns no
 // Ranking is stable and deterministic.
 assert.deepEqual(ids('k2 pro'), ids('k2 pro'), 'same query, same order');
 assert.equal(searchScore(four[0], 'k2').score, searchScore(four[1], 'k2').score, 'equal rows score equally');
+
+const polluted = { id: 'wrong', name: 'Bambu Lab H2S', brand: 'Bambu Lab', kind: 'printer', offers: [{ sourceTitle: 'Bambu Lab', url: 'https://shop.example/bambu-lab-a1' }] };
+const real = { id: 'real', name: 'Bambu Lab A1', brand: 'Bambu Lab', kind: 'printer', offers: [] };
+assert.deepEqual(rankSearch([polluted, real], 'a1').map((p) => p.id), ['real'], 'URL-only model tokens cannot rank a polluted card');
+api.state.liveProducts = [polluted, real];
+api.state.query = 'a1';
+assert.deepEqual(Array.from(api.matchingProducts(), (p) => p.id), ['real'], 'the storefront mirror also ignores offer URL tokens');
+assert.equal(require('../api/hunt.js').pickBrand('', 'Mystery Printer', 'printer'), '', 'missing printer brand has no hardcoded fallback');
 
 console.log('PASS: family searches find branched and slug-named rows, offers are searchable, Turkish folds both ways, and siblings stay distinct.');

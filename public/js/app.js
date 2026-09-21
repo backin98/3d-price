@@ -272,16 +272,13 @@
 
   function searchHaystack(p) {
     const offers = p && p.offers ? p.offers : [];
+    const isBrandOnly = (title) => {
+      const value = foldText(title);
+      return value && (value === foldText(p && p.brand) || catalog().some((row) => value === foldText(row && row.brand)));
+    };
     return foldText([
       p && p.name,
-      displayName(p),
-      p && p.brand,
-      p && p.polymer,
-      p && p.variant,
-      p && p.color,
-      p && p.unit,
-      aisleName(p && p.aisle),
-      ...offers.flatMap((o) => [o.store, o.sourceTitle, String((o && o.url) || "").split("/").filter(Boolean).pop()])
+      ...offers.flatMap((o) => [o.store, isBrandOnly(o.sourceTitle) ? "" : o.sourceTitle])
     ].filter(Boolean).join(" "));
   }
 
@@ -311,7 +308,7 @@
     return edits + (a.length - i) + (b.length - j) <= 1;
   }
 
-  const tokenHits = (token, list) => list.some((w) => w === token || w.startsWith(token) || nearToken(w, token));
+  const tokenHits = (token, list) => list.some((w, i) => w === token || w.startsWith(token) || nearToken(w, token) || (list[i + 1] && w + list[i + 1] === token));
 
   // The model number anchors the search, variant words only refine it (mirrors
   // lib/search-match.cjs): a row missing the model is not this family, while a row missing only

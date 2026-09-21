@@ -7,6 +7,8 @@ const { huntTeknomarket } = require("./teknomarket");
 const { huntRobolink } = require("./robolink");
 const { mergeSimilar } = require("./match-products");
 const { parseMoney } = require("../lib/parse-money.cjs");
+const { rankSearch } = require("../lib/search-match.cjs");
+const catalogIndex = require("../lib/catalog-index.cjs");
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
@@ -76,14 +78,16 @@ function brandFromName(name) {
   if (/^elegoo$/i.test(hit)) return "Elegoo";
   if (/^esun$/i.test(hit)) return "eSUN";
   if (/^qidi$/i.test(hit)) return "QIDI";
-  return hit;
+  if (hit) return hit;
+  const known = catalogIndex.brandOf(name);
+  return known ? known.alias : "";
 }
 
 function pickBrand(htmlBrand, name, kind) {
   const fromName = brandFromName(name);
   if (fromName) return fromName;
   if (htmlBrand) return htmlBrand;
-  return kind === "filament" ? "Unknown" : "RhinoLab";
+  return kind === "filament" ? "Unknown" : "";
 }
 
 function parseRhinoCards(html, kind) {
@@ -368,9 +372,7 @@ async function handler(req, res) {
   }
 
   try {
-    const q = String((req.query && req.query.q) || "")
-      .trim()
-      .toLowerCase();
+    const q = String((req.query && req.query.q) || "").trim();
     const sources = readSources();
     const catalog = await loadCatalog(sources);
 
@@ -378,14 +380,8 @@ async function handler(req, res) {
     let filaments = catalog.filaments;
 
     if (q) {
-      const hit = (p) =>
-        [p.name, p.brand, p.polymer, p.variant, p.color, p.unit]
-          .filter(Boolean)
-          .join(" ")
-          .toLowerCase()
-          .includes(q);
-      products = products.filter(hit);
-      filaments = filaments.filter(hit);
+      products = rankSearch(products, q);
+      filaments = rankSearch(filaments, q);
     }
 
     res.status(200).json({
@@ -405,4 +401,5 @@ handler.maxDuration = 60;
 module.exports = handler;
 module.exports.parseRhinoCards = parseRhinoCards;
 module.exports.applyRecategorize = applyRecategorize;
+module.exports.pickBrand = pickBrand;
 module.exports.maxDuration = 60;
