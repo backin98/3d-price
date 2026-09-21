@@ -71,6 +71,21 @@ near-chance zero-shot number.
 **Consequence for thresholds:** with auto-accept at 0.90 a set threshold, NO observed answer reaches
 it - every decision would fall to admin review, so Laya as an auto-decider does nothing useful today.
 
+### Eval set — `docs/laya-eval.jsonl` (built, verified)
+
+375 pairs, **183 same / 192 different**, produced by `node scripts/build-laya-eval.cjs`
+(deterministic, offline, no model). Labels are DERIVED FROM IDENTITY, not from my opinion: "same"
+only when both titles come from one baseline row (aliases + surface variants of that row), "different"
+only when the two rows carry different identityIds. 15 hand-written hard edges are kept in full:
+word-order H2C pair, combo-vs-bare, 10W-vs-40W, tarzi/muadil knockoffs, nozzle/plate/laser-module
+accessories, variant, model, fold.
+
+Two broken versions came before this one and are worth remembering:
+- 437 same / 12 different - a model that always answered "same" scored 97%.
+- 643 same / 4133 different - one that always answered "different" scored 86%.
+Both were caught by printing the label split, not by trusting the generator. The script now refuses to
+write a set that is under 200 pairs or under 100 per label.
+
 ### Next
 Fine-tune (freeze the encoder, train the decision head) on labeled pairs, or train a small
 classifier on Laya embeddings. Do not wire Laya into the gray band until it beats Magellan alone on
