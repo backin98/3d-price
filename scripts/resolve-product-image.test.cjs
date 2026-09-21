@@ -49,5 +49,13 @@ assert.equal(clone[0].image, '');
 assert.equal(clone[3].image, 'https://cdn.example.com/other.jpg');
 
 assert.equal(resolveProductImage({ cardHtml: '<img src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">' }), '');
+assert.equal(resolveProductImage({
+  pageUrl: 'https://shop.example/list',
+  cardHtml: '<div class="product-label top-left"><img src="/dropshipping.webp"></div><a><img data-src="/actual-printer.webp"></a>'
+}), 'https://shop.example/actual-printer.webp', 'a corner overlay cannot replace the product image');
+assert.equal(resolveProductImage({
+  pageUrl: 'https://shop.example/list',
+  cardHtml: '<a><img data-src="/only-product.webp"></a>'
+}), 'https://shop.example/only-product.webp', 'ordinary single-image cards are unchanged');
 
 console.log('PASS: resolveProductImage lazy attrs, srcset, og, json-ld, junk gate.');

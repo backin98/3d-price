@@ -159,4 +159,18 @@ api.state.query = 'a1';
 assert.deepEqual(Array.from(api.matchingProducts(), (p) => p.id), ['real'], 'the storefront mirror also ignores offer URL tokens');
 assert.equal(require('../api/hunt.js').pickBrand('', 'Mystery Printer', 'printer'), '', 'missing printer brand has no hardcoded fallback');
 
+let titleReads = 0;
+const fastRows = Array.from({ length: 300 }, (_, i) => ({
+  id: 'speed-' + i,
+  name: 'Creality K2 Variant ' + i,
+  brand: 'Creality',
+  offers: [{ store: 'shop', get sourceTitle() { titleReads += 1; return 'Creality K2 Variant ' + i; } }]
+}));
+api.state.liveProducts = fastRows;
+api.state.query = 'k2';
+api.matchingProducts();
+const firstReads = titleReads;
+api.matchingProducts();
+assert.equal(titleReads, firstReads, 'repeated renders reuse the prepared search index');
+
 console.log('PASS: family searches find branched and slug-named rows, offers are searchable, Turkish folds both ways, and siblings stay distinct.');

@@ -166,9 +166,11 @@ const html = (body) => '<html><head><title>t</title></head><body>' + body + '<di
     ]
   };
   assert.equal(api.liveOffers(product).length, 2, 'the out-of-stock vendor is not in the comparison');
-  assert.equal(api.bestOffer(product).store, 'other.example', 'the cheapest LIVE vendor wins, not the cheapest dead one');
+  assert.equal(api.bestOffer(product).store, 'live.example', 'verified in-stock beats a cheaper unknown or dead offer');
   assert.equal(api.isSellable({ id: 'x', offers: [{ stockStatus: 'out_of_stock' }] }), false, 'a product with no live vendor leaves the site');
+  assert.equal(api.isSellable({ id: 'x2', offers: [{ stock: 'out_of_stock' }] }), false, 'legacy stock fields cannot leak a dead offer');
   assert.equal(api.isSellable({ id: 'y', offers: [{ stockStatus: 'unknown' }] }), true, 'unknown stays on the site');
+  assert.equal(api.bestOffer({ offers: [{ store: 'dead', price: 1, stockStatus: 'out_of_stock' }] }).store, '', 'an all-dead row has no best offer');
 
   // --- the thumbnail walker ---------------------------------------------------------
   const chain = api.productImages(product).map((i) => i.url);
@@ -215,6 +217,9 @@ const pageWith = (inner) => '<!doctype html><html><body>' + inner + '</body></ht
   const retried = await stock.checkOfferStock('https://laggy.example/p', { fetchImpl: flaky, timeoutMs: 50 });
   assert.equal(calls, 3, 'it tried three times: ' + calls);
   assert.equal(retried.status, 'in_stock', 'and used the answer once the shop woke up: ' + JSON.stringify(retried));
+  let once = 0;
+  await stock.checkOfferStock('https://once.example/p', { fetchImpl: async () => { once += 1; throw new Error('down'); }, timeoutMs: 50, retries: 0 });
+  assert.equal(once, 1, 'website previews use one bounded attempt');
 
   // Every attempt failing is "unknown", which keeps the offer on the site.
   const dead = await stock.checkOfferStock('https://down.example/p', { fetchImpl: async () => { throw new Error('ECONNRESET'); }, timeoutMs: 50 });

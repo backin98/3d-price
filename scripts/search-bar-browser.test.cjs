@@ -19,6 +19,13 @@ const catalog = {
     row('k2pro', 'Creality K2 Pro Combo 3D Yazıcı', 'https://www.rhino3dprinter.com/urun/creality-k2-pro-combo', 46236.14),
     row('k2plus', 'Creality K2 Plus Combo', 'https://www.rhino3dprinter.com/urun/creality-k2-plus-combo', 76084.79),
     row('p1s', 'Bambu Lab P1S Combo 3D Yazıcı', 'https://www.rhino3dprinter.com/bambu-lab-p1s-combo', 34986),
+    {
+      id: 'stock', name: 'Stock Test Printer', brand: 'Test', kind: 'printer', aisle: 'fdm', image: '',
+      offers: [
+        { store: 'cheap.example', price: 100, url: 'https://cheap.example/stock', sourceTitle: 'Stock Test Printer' },
+        { store: 'live.example', price: 200, url: 'https://live.example/stock', sourceTitle: 'Stock Test Printer' }
+      ]
+    },
     row('m7', 'Anycubic Photon Mono M7 Pro MSLA 3D Printer', 'https://www.rhino3dprinter.com/anycubic-m7-pro', 18999),
     row('ams', 'Bambu Lab AMS 2 Pro - Automatic Material System', 'https://www.rhino3dprinter.com/ams-2-pro', 9999)
   ],
@@ -27,6 +34,14 @@ const catalog = {
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
+  if (url.pathname === '/api/stock-preview') {
+    res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+    res.end(JSON.stringify({ products: [
+      { id: 'stock', url: 'https://cheap.example/stock', status: 'out_of_stock', verified: true },
+      { id: 'stock', url: 'https://live.example/stock', status: 'in_stock', verified: true }
+    ] }));
+    return;
+  }
   if (url.pathname.startsWith('/api/')) {
     res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
     res.end(JSON.stringify(catalog));
@@ -109,6 +124,13 @@ const server = http.createServer((req, res) => {
     await page.click('#suggest-all');
     await page.waitForTimeout(400);
     assert.equal(await page.$eval('#header-query', (el) => el.value), 'p1s', 'the query is kept');
+
+    // Results paint immediately from cached stock, then the bounded live preview corrects the
+    // best offer without blocking the search interaction.
+    await type('stock test');
+    assert.match((await suggestions())[0].text, /100,00 TL/, 'cached result is immediate');
+    await page.waitForTimeout(800);
+    assert.match((await suggestions())[0].text, /200,00 TL/, 'live in-stock offer replaces the dead cheap offer');
 
     assert.deepEqual(errors, [], 'no page errors: ' + errors.join(' | '));
     console.log('PASS: the storefront search bar suggests as you type, keeps the family visible, tolerates prefixes and typos, and opens products from the keyboard.');

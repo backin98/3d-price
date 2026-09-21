@@ -101,25 +101,31 @@
   }
 
   // Vendors out of stock do not get to be "the best price": a dead offer is not an offer.
+  const offerStatus = (offer) => String((offer && (offer.stockStatus || offer.stock)) || "unknown");
+
   function liveOffers(product) {
     const offers = (product && product.offers) || [];
     // An offer carrying no stock information stays in: unknown is not out of stock.
-    return offers.filter((o) => (o.stockStatus || "") !== "out_of_stock");
+    return offers.filter((o) => offerStatus(o) !== "out_of_stock");
   }
 
   function bestOffer(product) {
     const offers = liveOffers(product).slice();
-    if (!offers.length) return (product.offers || [])[0] || { store: "", price: 0 };
+    if (!offers.length) return { store: "", price: 0 };
     // A price we could not believe is not a price anyone can buy at: it never sets the headline.
     const believable = offers.filter((o) => !o.priceSuspect);
     const pool = believable.length ? believable : offers;
-    const notPreorder = pool.filter((o) => !o.preorder);
-    const finalPool = notPreorder.length ? notPreorder : pool;
+    // Verified stock beats a cheaper unknown/preorder offer. Unknown stays as a fallback because
+    // many shops do not expose reliable stock markup at all.
+    const verified = pool.filter((o) => offerStatus(o) === "in_stock");
+    const available = verified.length ? verified : pool;
+    const notPreorder = available.filter((o) => !o.preorder && offerStatus(o) !== "preorder");
+    const finalPool = notPreorder.length ? notPreorder : available;
     return finalPool.sort((a, b) => a.price - b.price)[0];
   }
 
   function hasPreorder(p) {
-    return !!(p && (p.preorder || (p.offers || []).some((o) => o.preorder)));
+    return !!(p && (p.preorder || (p.offers || []).some((o) => o.preorder || offerStatus(o) === "preorder")));
   }
 
   function liveAisles() {
@@ -228,11 +234,15 @@
     // The catalog is loaded once; without this, a row added or renamed in the admin stays
     // invisible in an open tab — typing searches a list that no longer matches the site.
     if (changed && catalogIsStale()) {
-      huntRhino(q, fromInput);
+      renderTabs();
+      renderAisles();
+      scheduleStockPreview();
+      huntRhino(q, fromInput, true);
       return;
     }
     renderTabs();
     renderAisles();
+    if (changed) scheduleStockPreview();
     requestAnimationFrame(() => window.scrollTo(0, keep));
   }
 
@@ -240,12 +250,36 @@
   const CATALOG_TTL_MS = 30000;
   function catalogIsStale() {
     if (!state.liveProducts && !state.liveFilaments) return false;
-    if (state.liveStatus === "loading") return false;
+    if (state.liveStatus === "loading" || state.liveStatus === "refreshing") return false;
     return Date.now() - (state.liveFetchedAt || 0) > CATALOG_TTL_MS;
   }
 
   function catalog() {
     return state.liveProducts || C.products || [];
+  }
+
+  let indexedCatalog = null;
+  let indexedBrands = new Set();
+  let indexedSearch = new WeakMap();
+  let rankedCatalog = null;
+  let rankedQuery = "";
+  let rankedProducts = null;
+
+  function ensureSearchIndex() {
+    const list = catalog();
+    if (list !== indexedCatalog) {
+      indexedCatalog = list;
+      indexedBrands = new Set(list.map((p) => foldText(p && p.brand)).filter(Boolean));
+      indexedSearch = new WeakMap();
+      rankedCatalog = null;
+      rankedProducts = null;
+    }
+    return list;
+  }
+
+  function clearRankCache() {
+    rankedCatalog = null;
+    rankedProducts = null;
   }
 
   // Mirrors lib/search-match.cjs. A family query ("Creality K2 Plus Combo 3D Yazıcı") has to
@@ -271,15 +305,25 @@
   }
 
   function searchHaystack(p) {
+    ensureSearchIndex();
+    const cached = indexedSearch.get(p);
+    if (cached) return cached.hay;
     const offers = p && p.offers ? p.offers : [];
     const isBrandOnly = (title) => {
       const value = foldText(title);
-      return value && (value === foldText(p && p.brand) || catalog().some((row) => value === foldText(row && row.brand)));
+      return value && (value === foldText(p && p.brand) || indexedBrands.has(value));
     };
-    return foldText([
+    const hay = foldText([
       p && p.name,
       ...offers.flatMap((o) => [o.store, isBrandOnly(o.sourceTitle) ? "" : o.sourceTitle])
     ].filter(Boolean).join(" "));
+    indexedSearch.set(p, {
+      hay,
+      hayWords: wordsOf(hay),
+      nameWords: wordsOf(p && p.name),
+      foldedName: foldText(p && p.name)
+    });
+    return hay;
   }
 
   function searchRelevance(p) {
@@ -316,17 +360,19 @@
   // "Pro" products and from dropping the K2 Plus.
   const isAnchorToken = (t) => /[0-9]/.test(t);
 
-  function searchScoreLocal(p, query) {
-    const wanted = searchTokens(query);
+  function searchScoreLocal(p, query, preparedTokens) {
+    const wanted = preparedTokens || searchTokens(query);
     if (!wanted.length) return { score: query && query.trim() ? 1 : 0, matched: 0, total: 0, inName: 0 };
     const anchors = wanted.filter(isAnchorToken);
-    const nameWords = wordsOf(p.name);
-    const hayWords = wordsOf(searchHaystack(p));
+    searchHaystack(p);
+    const prepared = indexedSearch.get(p);
+    const nameWords = prepared.nameWords;
+    const hayWords = prepared.hayWords;
     const inName = wanted.filter((t) => tokenHits(t, nameWords)).length;
     const anywhere = wanted.filter((t) => tokenHits(t, hayWords)).length;
     const anchorsHere = anchors.filter((t) => tokenHits(t, hayWords)).length;
     if (anchors.length && anchorsHere < anchors.length) return { score: 0, matched: anywhere, total: wanted.length, inName };
-    const foldedName = foldText(p.name);
+    const foldedName = prepared.foldedName;
     const foldedQuery = foldText(query).trim();
     if (foldedName === foldedQuery || nameWords.join(" ") === wanted.join(" ")) return { score: 100, matched: wanted.length, total: wanted.length, inName };
     if (inName === wanted.length) {
@@ -343,11 +389,18 @@
   // What the storefront shows: everything that scored, best first. Related rows come last.
   function rankProducts(list, query) {
     if (!query || !query.trim()) return list || [];
-    return (list || [])
-      .map((p) => ({ p, s: searchScoreLocal(p, query) }))
+    if (list === rankedCatalog && query === rankedQuery && rankedProducts) return rankedProducts;
+    const wanted = searchTokens(query);
+    const ranked = (list || [])
+      .filter(isSellable)
+      .map((p) => ({ p, s: searchScoreLocal(p, query, wanted) }))
       .filter(({ s }) => s.score > 0)
       .sort((a, b) => b.s.score - a.s.score || String(a.p.name || "").localeCompare(String(b.p.name || "")))
       .map(({ p }) => p);
+    rankedCatalog = list;
+    rankedQuery = query;
+    rankedProducts = ranked;
+    return ranked;
   }
 
   // ---------- the search bar ----------
@@ -356,6 +409,50 @@
   // highlighted product, Escape to close (again to clear).
   const SUGGEST_LIMIT = 6;
   let suggestTimer = null;
+  let stockPreviewTimer = null;
+  let stockPreviewRequest = null;
+  let stockPreviewKey = "";
+
+  function scheduleStockPreview() {
+    clearTimeout(stockPreviewTimer);
+    if (!state.query.trim() || !state.liveProducts) return;
+    stockPreviewTimer = setTimeout(async () => {
+      const query = state.query;
+      const products = matchingProducts().slice(0, 4);
+      const ids = products.map((p) => p.id).filter(Boolean);
+      const key = query + "\n" + ids.join(",");
+      if (!ids.length || key === stockPreviewKey) return;
+      if (stockPreviewRequest) stockPreviewRequest.abort();
+      stockPreviewRequest = new AbortController();
+      try {
+        const res = await fetch("/api/stock-preview?ids=" + encodeURIComponent(ids.join(",")), {
+          cache: "no-store",
+          signal: stockPreviewRequest.signal
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "stock preview failed");
+        const byId = new Map(products.map((p) => [String(p.id), p]));
+        for (const row of data.products || []) {
+          if (!row.verified) continue;
+          const product = byId.get(String(row.id));
+          const offer = product && (product.offers || []).find((o) => o.url === row.url);
+          if (offer) {
+            offer.stockStatus = row.status;
+            offer.stockVerified = true;
+            offer.stockCheckedAt = new Date().toISOString();
+          }
+        }
+        stockPreviewKey = key;
+        clearRankCache();
+        if (state.query === query) {
+          renderSuggest();
+          renderAisles();
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") stockPreviewKey = "";
+      }
+    }, 400);
+  }
 
   function bestPriceLabel(p) {
     const o = bestOffer(p);
@@ -710,12 +807,16 @@
     return seen.slice(0, 5);
   }
 
-  async function huntRhino(q, fromInput) {
-    state.activeAisle = null;
-    state.filPath = { polymer: null, variant: null, brand: null };
-    setQuery(q, fromInput);
-    state.liveStatus = "loading";
-    renderAisles();
+  async function huntRhino(q, fromInput, background) {
+    if (!background) {
+      state.activeAisle = null;
+      state.filPath = { polymer: null, variant: null, brand: null };
+      setQuery(q, fromInput);
+      state.liveStatus = "loading";
+      renderAisles();
+    } else {
+      state.liveStatus = "refreshing";
+    }
     try {
       const res = await fetch("/api/hunt", { cache: "no-store" });
       const data = await res.json();
@@ -727,8 +828,10 @@
       state.activeAisle = null;
       state.filPath = { polymer: null, variant: null, brand: null };
       selectSearchWorld();
+      stockPreviewKey = "";
+      scheduleStockPreview();
     } catch (err) {
-      state.liveStatus = "error";
+      state.liveStatus = background ? "ready" : "error";
     }
     renderAisles();
     renderLocationLine();
@@ -1386,7 +1489,7 @@
     const offers = p.offers || [];
     // Every vendor out of stock (or the row itself flagged) drops the product from the site.
     if (offers.length) return liveOffers(p).length > 0;
-    return (p.stockStatus || p.stock) !== "out_of_stock";
+    return offerStatus(p) !== "out_of_stock";
   }
 
   function dealCard(product) {
@@ -1643,11 +1746,11 @@
   function bind() {
     $("#header-search").addEventListener("submit", (e) => {
       e.preventDefault();
-      huntRhino($("#header-query").value, "header");
+      setQuery($("#header-query").value, "header");
     });
     $("#hunter-form").addEventListener("submit", (e) => {
       e.preventDefault();
-      huntRhino($("#hunter-query").value, "hunter");
+      setQuery($("#hunter-query").value, "hunter");
     });
     $("#header-query").addEventListener("input", (e) => {
       setQuery(e.target.value, "header");
@@ -1669,7 +1772,7 @@
     $("#header-suggest").addEventListener("click", (e) => {
       if (e.target.closest("#suggest-all")) {
         hideSuggest();
-        huntRhino(state.query, "header");
+        setQuery(state.query, "header");
         return;
       }
       // A suggestion row carries data-open-sheet, so the drawer handler opens it.
@@ -1678,7 +1781,7 @@
     $("#hunter-query").addEventListener("input", (e) => setQuery(e.target.value, "hunter"));
     // An old tab should not keep showing a catalog the admin has since changed.
     document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible" && catalogIsStale()) huntRhino(state.query || "");
+      if (document.visibilityState === "visible" && catalogIsStale()) huntRhino(state.query || "", "", true);
     });
     $("#hunter-clear").addEventListener("click", () => setQuery(""));
 
