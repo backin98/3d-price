@@ -122,6 +122,37 @@ product" cases, and neither is a similarity problem:
 - An earlier patch's search string had the wrong escaping and silently no-opped, which is how the
   above got through. Patches now assert on the replacement count.
 
+### Fine-tuning: blocked by the package's API, not by effort
+
+Inspected the installed package rather than assuming:
+```
+.venv-laya/Lib/site-packages/laya/  ->  __init__ agent common email lang presets router
+Router public API                   ->  attach load loaded predict preload route system_one unload
+agent.py functions                  ->  _fix_tokenizer_config _verify_compatibility __init__
+                                        _to_internal system_one load
+```
+There is **no trainer**, no `fit`, no loss/backward/optimizer, and **no embedding method** - so there is
+nothing to freeze, nothing to attach a head to, and no way to pull a representation out of the model
+through its public surface. The package is inference-only.
+
+Fine-tuning therefore means reimplementing the RL agent from the HF repo source
+(`rl_agent_api.py`, `rl_common.py`, `rl_agent_config.json`), which is research-scale work, not a
+session step. The alternative - a small classifier on Laya embeddings - needs the encoder's hidden
+states, reachable only by monkey-patching `laya.agent` internals, and would then be trained on a few
+hundred pairs on CPU.
+
+### But first: fine-tuning is the wrong lever right now
+
+The measurement says so. Of Magellan's 5 false merges, **every one is a knockoff or a spare part**
+(`A1 tarzi`, `A1 muadil`, a nozzle, a plate). Those are not similarity errors - they are "this listing
+is not that product" cases, and a wordlist rule already gets them right everywhere else in the
+codebase. Porting `COMPATIBILITY_STRONG/WEAK` into `decidePair` fixes all 5 deterministically, with
+no model, no latency, and no GPU.
+
+Laya zero-shot got those same cases wrong (called an A1 nozzle "same" as an H2C Combo at 0.877 with
+confidence 0.463). Training it on 375 CPU pairs to maybe match a guard that already exists would be
+effort spent in the wrong place.
+
 ### Next
 Fine-tune (freeze the encoder, train the decision head) on labeled pairs, or train a small
 classifier on Laya embeddings. Do not wire Laya into the gray band until it beats Magellan alone on
