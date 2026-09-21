@@ -13,6 +13,9 @@
     "sources/rhino-recategorize.txt",
     "public/assets/robolink/manifest.json",
     "lib/**",
+    # The confirmed catalog is DATA the gate reads at runtime. Without this it is not bundled,
+    # baselineReady() is false on the server, and the gate silently does not fire in production.
+    "data/baseline-catalog.json",
     "api/filament-classify.js"
   ]
 

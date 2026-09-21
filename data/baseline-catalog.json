@@ -1,0 +1,9753 @@
+{
+ "version": 1,
+ "generatedFrom": [
+  "lib/catalog-index.cjs (official)",
+  "prompt Part B1/B2 (trusted-tracker)"
+ ],
+ "counts": {
+  "rows": 322,
+  "official": 303,
+  "trusted-tracker": 13,
+  "brands": 23
+ },
+ "rows": [
+  {
+   "identityId": "anycubic/kobra-2-max/bare",
+   "brand": "anycubic",
+   "modelCore": "kobra-2-max",
+   "modelWords": [
+    "kobra",
+    "2",
+    "max"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra 2 max",
+    "Kobra 2 Max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-2-max/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "kobra-2-max",
+   "modelWords": [
+    "kobra",
+    "2",
+    "max"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra 2 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-2/bare",
+   "brand": "anycubic",
+   "modelCore": "kobra-2",
+   "modelWords": [
+    "kobra",
+    "2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra 2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-2/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "kobra-2",
+   "modelWords": [
+    "kobra",
+    "2"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra 2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-3-max/bare",
+   "brand": "anycubic",
+   "modelCore": "kobra-3-max",
+   "modelWords": [
+    "kobra",
+    "3",
+    "max"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra 3 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-3-max/combo",
+   "brand": "anycubic",
+   "modelCore": "kobra-3-max",
+   "modelWords": [
+    "kobra",
+    "3",
+    "max"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "Kobra 3 Max Combo"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "trusted-tracker",
+   "confidence": 0.9
+  },
+  {
+   "identityId": "anycubic/kobra-3-max/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "kobra-3-max",
+   "modelWords": [
+    "kobra",
+    "3",
+    "max"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra 3 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-3-v2/bare",
+   "brand": "anycubic",
+   "modelCore": "kobra-3-v2",
+   "modelWords": [
+    "kobra",
+    "3",
+    "v2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra 3 v2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-3-v2/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "kobra-3-v2",
+   "modelWords": [
+    "kobra",
+    "3",
+    "v2"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra 3 v2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-3/bare",
+   "brand": "anycubic",
+   "modelCore": "kobra-3",
+   "modelWords": [
+    "kobra",
+    "3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-3/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "kobra-3",
+   "modelWords": [
+    "kobra",
+    "3"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-4/bare",
+   "brand": "anycubic",
+   "modelCore": "kobra-4",
+   "modelWords": [
+    "kobra",
+    "4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra 4",
+    "Kobra 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-4/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "kobra-4",
+   "modelWords": [
+    "kobra",
+    "4"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-go/bare",
+   "brand": "anycubic",
+   "modelCore": "kobra-go",
+   "modelWords": [
+    "kobra",
+    "go"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra go"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-go/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "kobra-go",
+   "modelWords": [
+    "kobra",
+    "go"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra go"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-s1-max/bare",
+   "brand": "anycubic",
+   "modelCore": "kobra-s1-max",
+   "modelWords": [
+    "kobra",
+    "s1",
+    "max"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra s1 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-s1-max/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "kobra-s1-max",
+   "modelWords": [
+    "kobra",
+    "s1",
+    "max"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra s1 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-s1/bare",
+   "brand": "anycubic",
+   "modelCore": "kobra-s1",
+   "modelWords": [
+    "kobra",
+    "s1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra s1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-s1/combo",
+   "brand": "anycubic",
+   "modelCore": "kobra-s1",
+   "modelWords": [
+    "kobra",
+    "s1"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "Kobra S1 Combo"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "trusted-tracker",
+   "confidence": 0.9
+  },
+  {
+   "identityId": "anycubic/kobra-s1/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "kobra-s1",
+   "modelWords": [
+    "kobra",
+    "s1"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra s1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-x/bare",
+   "brand": "anycubic",
+   "modelCore": "kobra-x",
+   "modelWords": [
+    "kobra",
+    "x"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra x",
+    "Kobra X"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/kobra-x/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "kobra-x",
+   "modelWords": [
+    "kobra",
+    "x"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kobra x"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/photon-mono-4-ultra/bare",
+   "brand": "anycubic",
+   "modelCore": "photon-mono-4-ultra",
+   "modelWords": [
+    "photon",
+    "mono",
+    "4",
+    "ultra"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "photon mono 4 ultra"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/photon-mono-4-ultra/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "photon-mono-4-ultra",
+   "modelWords": [
+    "photon",
+    "mono",
+    "4",
+    "ultra"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "photon mono 4 ultra"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/photon-mono-4/bare",
+   "brand": "anycubic",
+   "modelCore": "photon-mono-4",
+   "modelWords": [
+    "photon",
+    "mono",
+    "4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "photon mono 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/photon-mono-4/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "photon-mono-4",
+   "modelWords": [
+    "photon",
+    "mono",
+    "4"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "photon mono 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/photon-mono-m7-pro/bare",
+   "brand": "anycubic",
+   "modelCore": "photon-mono-m7-pro",
+   "modelWords": [
+    "photon",
+    "mono",
+    "m7",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "photon mono m7 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/photon-mono-m7-pro/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "photon-mono-m7-pro",
+   "modelWords": [
+    "photon",
+    "mono",
+    "m7",
+    "pro"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "photon mono m7 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/photon-mono-m7/bare",
+   "brand": "anycubic",
+   "modelCore": "photon-mono-m7",
+   "modelWords": [
+    "photon",
+    "mono",
+    "m7"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "photon mono m7"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/photon-mono-m7/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "photon-mono-m7",
+   "modelWords": [
+    "photon",
+    "mono",
+    "m7"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "photon mono m7"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/photon-p1-max/bare",
+   "brand": "anycubic",
+   "modelCore": "photon-p1-max",
+   "modelWords": [
+    "photon",
+    "p1",
+    "max"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "photon p1 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/photon-p1-max/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "photon-p1-max",
+   "modelWords": [
+    "photon",
+    "p1",
+    "max"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "photon p1 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/photon-p1/bare",
+   "brand": "anycubic",
+   "modelCore": "photon-p1",
+   "modelWords": [
+    "photon",
+    "p1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "photon p1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/photon-p1/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "photon-p1",
+   "modelWords": [
+    "photon",
+    "p1"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "photon p1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/vyper/bare",
+   "brand": "anycubic",
+   "modelCore": "vyper",
+   "modelWords": [
+    "vyper"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "vyper"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/vyper/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "vyper",
+   "modelWords": [
+    "vyper"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "vyper"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/wash-cure-3-max/bare",
+   "brand": "anycubic",
+   "modelCore": "wash-cure-3-max",
+   "modelWords": [
+    "wash",
+    "cure",
+    "3",
+    "max"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "wash cure 3 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/wash-cure-3-max/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "wash-cure-3-max",
+   "modelWords": [
+    "wash",
+    "cure",
+    "3",
+    "max"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "wash cure 3 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/wash-cure-3-plus/bare",
+   "brand": "anycubic",
+   "modelCore": "wash-cure-3-plus",
+   "modelWords": [
+    "wash",
+    "cure",
+    "3",
+    "plus"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "wash cure 3 plus"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/wash-cure-3-plus/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "wash-cure-3-plus",
+   "modelWords": [
+    "wash",
+    "cure",
+    "3",
+    "plus"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "wash cure 3 plus"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/wash-cure-3/bare",
+   "brand": "anycubic",
+   "modelCore": "wash-cure-3",
+   "modelWords": [
+    "wash",
+    "cure",
+    "3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "wash cure 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "anycubic/wash-cure-3/combo/ace-pro",
+   "brand": "anycubic",
+   "modelCore": "wash-cure-3",
+   "modelWords": [
+    "wash",
+    "cure",
+    "3"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ace-pro",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "wash cure 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "artillery/genius/bare",
+   "brand": "artillery",
+   "modelCore": "genius",
+   "modelWords": [
+    "genius"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "genius"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "artillery/m1-pro-s1/bare",
+   "brand": "artillery",
+   "modelCore": "m1-pro-s1",
+   "modelWords": [
+    "m1",
+    "pro",
+    "s1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "m1 pro s1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "artillery/m1-pro/bare",
+   "brand": "artillery",
+   "modelCore": "m1-pro",
+   "modelWords": [
+    "m1",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "m1 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "artillery/m1/bare",
+   "brand": "artillery",
+   "modelCore": "m1",
+   "modelWords": [
+    "m1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "m1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "artillery/sidewinder-x2/bare",
+   "brand": "artillery",
+   "modelCore": "sidewinder-x2",
+   "modelWords": [
+    "sidewinder"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sidewinder"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "artillery/sidewinder-x4-plus/bare",
+   "brand": "artillery",
+   "modelCore": "sidewinder-x4-plus",
+   "modelWords": [
+    "sidewinder",
+    "x4",
+    "plus"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sidewinder x4 plus"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "artillery/sidewinder-x4-pro/bare",
+   "brand": "artillery",
+   "modelCore": "sidewinder-x4-pro",
+   "modelWords": [
+    "sidewinder",
+    "x4",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sidewinder x4 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "artillery/sidewinder-x4/bare",
+   "brand": "artillery",
+   "modelCore": "sidewinder-x4",
+   "modelWords": [
+    "sidewinder",
+    "x4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sidewinder x4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "atomstack/a20-pro/bare",
+   "brand": "atomstack",
+   "modelCore": "a20-pro",
+   "modelWords": [
+    "a20",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "a20 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "atomstack/a40-pro/bare",
+   "brand": "atomstack",
+   "modelCore": "a40-pro",
+   "modelWords": [
+    "a40",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "a40 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "atomstack/s20-pro/bare",
+   "brand": "atomstack",
+   "modelCore": "s20-pro",
+   "modelWords": [
+    "s20",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "s20 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "atomstack/x20-pro/bare",
+   "brand": "atomstack",
+   "modelCore": "x20-pro",
+   "modelWords": [
+    "x20",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "x20 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "atomstack/x30-pro/bare",
+   "brand": "atomstack",
+   "modelCore": "x30-pro",
+   "modelWords": [
+    "x30",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "x30 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/a1-mini/bare",
+   "brand": "bambu",
+   "modelCore": "a1-mini",
+   "modelWords": [
+    "a1",
+    "mini"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "a1 mini",
+    "a1mini",
+    "A1 Mini",
+    "A1 Mini AMS Lite"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/a1-mini/combo/ams",
+   "brand": "bambu",
+   "modelCore": "a1-mini",
+   "modelWords": [
+    "a1",
+    "mini"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ams",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "a1 mini",
+    "a1mini"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/a1/bare",
+   "brand": "bambu",
+   "modelCore": "a1",
+   "modelWords": [
+    "a1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "a1",
+    "A1",
+    "A1 AMS Lite"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "channel-uncertain",
+   "confidence": 0.6
+  },
+  {
+   "identityId": "bambu/a1/combo/ams",
+   "brand": "bambu",
+   "modelCore": "a1",
+   "modelWords": [
+    "a1"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ams",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "a1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "channel-uncertain",
+   "confidence": 0.6
+  },
+  {
+   "identityId": "bambu/a2l/bare",
+   "brand": "bambu",
+   "modelCore": "a2l",
+   "modelWords": [
+    "a2l"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "a2l",
+    "A2L"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/a2l/combo/ams",
+   "brand": "bambu",
+   "modelCore": "a2l",
+   "modelWords": [
+    "a2l"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ams",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "a2l"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/h2c/bare",
+   "brand": "bambu",
+   "modelCore": "h2c",
+   "modelWords": [
+    "h2c"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "h2c",
+    "H2C AMS"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/h2c/combo/ams",
+   "brand": "bambu",
+   "modelCore": "h2c",
+   "modelWords": [
+    "h2c"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ams",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "h2c"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/h2d/bare",
+   "brand": "bambu",
+   "modelCore": "h2d",
+   "modelWords": [
+    "h2d"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "h2d",
+    "H2D AMS"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/h2d/combo/ams",
+   "brand": "bambu",
+   "modelCore": "h2d",
+   "modelWords": [
+    "h2d"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ams",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "h2d"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/h2s/bare",
+   "brand": "bambu",
+   "modelCore": "h2s",
+   "modelWords": [
+    "h2s"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "h2s",
+    "H2S AMS"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/h2s/combo/ams",
+   "brand": "bambu",
+   "modelCore": "h2s",
+   "modelWords": [
+    "h2s"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ams",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "h2s"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/p1p/bare",
+   "brand": "bambu",
+   "modelCore": "p1p",
+   "modelWords": [
+    "p1p"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "p1p"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/p1p/combo/ams",
+   "brand": "bambu",
+   "modelCore": "p1p",
+   "modelWords": [
+    "p1p"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ams",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "p1p"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/p1s/bare",
+   "brand": "bambu",
+   "modelCore": "p1s",
+   "modelWords": [
+    "p1s",
+    "carbon"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "p1s carbon",
+    "p1s",
+    "P1S AMS"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/p1s/combo/ams",
+   "brand": "bambu",
+   "modelCore": "p1s",
+   "modelWords": [
+    "p1s",
+    "carbon"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ams",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "p1s carbon",
+    "p1s"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/p2s/bare",
+   "brand": "bambu",
+   "modelCore": "p2s",
+   "modelWords": [
+    "p2s"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "p2s",
+    "P2S",
+    "P2S AMS"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/p2s/combo/ams",
+   "brand": "bambu",
+   "modelCore": "p2s",
+   "modelWords": [
+    "p2s"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ams",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "p2s"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/x1/bare",
+   "brand": "bambu",
+   "modelCore": "x1",
+   "modelWords": [
+    "x1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "x1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/x1/combo/ams",
+   "brand": "bambu",
+   "modelCore": "x1",
+   "modelWords": [
+    "x1"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ams",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "x1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/x1c/bare",
+   "brand": "bambu",
+   "modelCore": "x1c",
+   "modelWords": [
+    "x1",
+    "carbon"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "x1 carbon",
+    "x1c"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/x1c/combo/ams",
+   "brand": "bambu",
+   "modelCore": "x1c",
+   "modelWords": [
+    "x1",
+    "carbon"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ams",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "x1 carbon",
+    "x1c"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/x2d/bare",
+   "brand": "bambu",
+   "modelCore": "x2d",
+   "modelWords": [
+    "x2d"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "x2d",
+    "X2D AMS"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bambu/x2d/combo/ams",
+   "brand": "bambu",
+   "modelCore": "x2d",
+   "modelWords": [
+    "x2d"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ams",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "x2d"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bcn3d/epsilon-w27/bare",
+   "brand": "bcn3d",
+   "modelCore": "epsilon-w27",
+   "modelWords": [
+    "epsilon",
+    "w27"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "epsilon w27"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bcn3d/epsilon-w50/bare",
+   "brand": "bcn3d",
+   "modelCore": "epsilon-w50",
+   "modelWords": [
+    "epsilon",
+    "w50"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "epsilon w50"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bcn3d/omega-i60/bare",
+   "brand": "bcn3d",
+   "modelCore": "omega-i60",
+   "modelWords": [
+    "omega",
+    "i60"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "omega i60"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "bcn3d/sigma-d25/bare",
+   "brand": "bcn3d",
+   "modelCore": "sigma-d25",
+   "modelWords": [
+    "sigma",
+    "d25"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sigma d25"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/cr-10/bare",
+   "brand": "creality",
+   "modelCore": "cr-10",
+   "modelWords": [
+    "cr",
+    "10"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "cr 10"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/cr-10/combo/cfs",
+   "brand": "creality",
+   "modelCore": "cr-10",
+   "modelWords": [
+    "cr",
+    "10"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "cr 10"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/ender-3-v3-se/bare",
+   "brand": "creality",
+   "modelCore": "ender-3-v3-se",
+   "modelWords": [
+    "ender",
+    "3",
+    "v3",
+    "se"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ender 3 v3 se",
+    "Ender-3 V3 SE"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/ender-3-v3-se/combo/cfs",
+   "brand": "creality",
+   "modelCore": "ender-3-v3-se",
+   "modelWords": [
+    "ender",
+    "3",
+    "v3",
+    "se"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ender 3 v3 se"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/ender-3-v3/bare",
+   "brand": "creality",
+   "modelCore": "ender-3-v3",
+   "modelWords": [
+    "ender",
+    "3",
+    "v3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ender 3 v3",
+    "Ender-3 V3 KE",
+    "Ender-3 V3 PLUS"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/ender-3-v3/combo/cfs",
+   "brand": "creality",
+   "modelCore": "ender-3-v3",
+   "modelWords": [
+    "ender",
+    "3",
+    "v3"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ender 3 v3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/ender-3/bare",
+   "brand": "creality",
+   "modelCore": "ender-3",
+   "modelWords": [
+    "ender",
+    "3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ender 3",
+    "Ender-3 V4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "channel-uncertain",
+   "confidence": 0.6
+  },
+  {
+   "identityId": "creality/ender-3/combo/cfs",
+   "brand": "creality",
+   "modelCore": "ender-3",
+   "modelWords": [
+    "ender",
+    "3"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ender 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "channel-uncertain",
+   "confidence": 0.6
+  },
+  {
+   "identityId": "creality/ender-5-max/bare",
+   "brand": "creality",
+   "modelCore": "ender-5-max",
+   "modelWords": [
+    "ender",
+    "5",
+    "max"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ender 5 max",
+    "Ender-5 Max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/ender-5-max/combo/cfs",
+   "brand": "creality",
+   "modelCore": "ender-5-max",
+   "modelWords": [
+    "ender",
+    "5",
+    "max"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ender 5 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon-a1-pro/bare",
+   "brand": "creality",
+   "modelCore": "falcon-a1-pro",
+   "modelWords": [
+    "falcon",
+    "a1",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon a1 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon-a1-pro/combo/cfs",
+   "brand": "creality",
+   "modelCore": "falcon-a1-pro",
+   "modelWords": [
+    "falcon",
+    "a1",
+    "pro"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon a1 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon-a1/bare",
+   "brand": "creality",
+   "modelCore": "falcon-a1",
+   "modelWords": [
+    "falcon",
+    "a1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon a1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon-a1/combo/cfs",
+   "brand": "creality",
+   "modelCore": "falcon-a1",
+   "modelWords": [
+    "falcon",
+    "a1"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon a1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon-a1c/bare",
+   "brand": "creality",
+   "modelCore": "falcon-a1c",
+   "modelWords": [
+    "falcon",
+    "a1c"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon a1c"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon-a1c/combo/cfs",
+   "brand": "creality",
+   "modelCore": "falcon-a1c",
+   "modelWords": [
+    "falcon",
+    "a1c"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon a1c"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon-t1/bare",
+   "brand": "creality",
+   "modelCore": "falcon-t1",
+   "modelWords": [
+    "falcon",
+    "t1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon t1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon-t1/combo/cfs",
+   "brand": "creality",
+   "modelCore": "falcon-t1",
+   "modelWords": [
+    "falcon",
+    "t1"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon t1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon2-pro-s/bare",
+   "brand": "creality",
+   "modelCore": "falcon2-pro-s",
+   "modelWords": [
+    "falcon2",
+    "pro",
+    "s"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon2 pro s"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon2-pro-s/combo/cfs",
+   "brand": "creality",
+   "modelCore": "falcon2-pro-s",
+   "modelWords": [
+    "falcon2",
+    "pro",
+    "s"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon2 pro s"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon2-pro/bare",
+   "brand": "creality",
+   "modelCore": "falcon2-pro",
+   "modelWords": [
+    "falcon2",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon2 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon2-pro/combo/cfs",
+   "brand": "creality",
+   "modelCore": "falcon2-pro",
+   "modelWords": [
+    "falcon2",
+    "pro"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon2 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon2/bare",
+   "brand": "creality",
+   "modelCore": "falcon2",
+   "modelWords": [
+    "falcon2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/falcon2/combo/cfs",
+   "brand": "creality",
+   "modelCore": "falcon2",
+   "modelWords": [
+    "falcon2"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "falcon2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/hi/bare",
+   "brand": "creality",
+   "modelCore": "hi",
+   "modelWords": [
+    "hi",
+    "combo"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "hi combo",
+    "hi"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/hi/combo",
+   "brand": "creality",
+   "modelCore": "hi",
+   "modelWords": [
+    "hi",
+    "combo"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "HI Combo"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "trusted-tracker",
+   "confidence": 0.9
+  },
+  {
+   "identityId": "creality/hi/combo/cfs",
+   "brand": "creality",
+   "modelCore": "hi",
+   "modelWords": [
+    "hi",
+    "combo"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "hi combo",
+    "hi"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k1-max/bare",
+   "brand": "creality",
+   "modelCore": "k1-max",
+   "modelWords": [
+    "k1",
+    "max"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k1 max",
+    "K1 Max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k1-max/combo/cfs",
+   "brand": "creality",
+   "modelCore": "k1-max",
+   "modelWords": [
+    "k1",
+    "max"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k1 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k1-se/bare",
+   "brand": "creality",
+   "modelCore": "k1-se",
+   "modelWords": [
+    "k1",
+    "se"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k1 se"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k1-se/combo/cfs",
+   "brand": "creality",
+   "modelCore": "k1-se",
+   "modelWords": [
+    "k1",
+    "se"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k1 se"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k1/bare",
+   "brand": "creality",
+   "modelCore": "k1",
+   "modelWords": [
+    "k1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k1",
+    "K1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k1/combo/cfs",
+   "brand": "creality",
+   "modelCore": "k1",
+   "modelWords": [
+    "k1"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k1c/bare",
+   "brand": "creality",
+   "modelCore": "k1c",
+   "modelWords": [
+    "k1c",
+    "2025"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k1c 2025",
+    "k1c",
+    "K1C"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k1c/combo/cfs",
+   "brand": "creality",
+   "modelCore": "k1c",
+   "modelWords": [
+    "k1c",
+    "2025"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k1c 2025",
+    "k1c"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k2-plus/bare",
+   "brand": "creality",
+   "modelCore": "k2-plus",
+   "modelWords": [
+    "k2",
+    "plus"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k2 plus",
+    "K2 PLUS"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k2-plus/combo/cfs",
+   "brand": "creality",
+   "modelCore": "k2-plus",
+   "modelWords": [
+    "k2",
+    "plus"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k2 plus"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k2-pro/bare",
+   "brand": "creality",
+   "modelCore": "k2-pro",
+   "modelWords": [
+    "k2",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k2 pro",
+    "K2 Pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k2-pro/combo/cfs",
+   "brand": "creality",
+   "modelCore": "k2-pro",
+   "modelWords": [
+    "k2",
+    "pro"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k2 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k2-se/bare",
+   "brand": "creality",
+   "modelCore": "k2-se",
+   "modelWords": [
+    "k2",
+    "se"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k2 se"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k2-se/combo/cfs",
+   "brand": "creality",
+   "modelCore": "k2-se",
+   "modelWords": [
+    "k2",
+    "se"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k2 se"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/k2/bare",
+   "brand": "creality",
+   "modelCore": "k2",
+   "modelWords": [
+    "k2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "channel-uncertain",
+   "confidence": 0.6
+  },
+  {
+   "identityId": "creality/k2/combo/cfs",
+   "brand": "creality",
+   "modelCore": "k2",
+   "modelWords": [
+    "k2"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "k2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "channel-uncertain",
+   "confidence": 0.6
+  },
+  {
+   "identityId": "creality/sparkx-i7/bare",
+   "brand": "creality",
+   "modelCore": "sparkx-i7",
+   "modelWords": [
+    "sparkx",
+    "i7"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sparkx i7",
+    "SPARKX i7"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "creality/sparkx-i7/combo/cfs",
+   "brand": "creality",
+   "modelCore": "sparkx-i7",
+   "modelWords": [
+    "sparkx",
+    "i7"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "cfs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sparkx i7"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/centauri-2/bare",
+   "brand": "elegoo",
+   "modelCore": "centauri-2",
+   "modelWords": [
+    "centauri",
+    "2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "centauri 2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/centauri-2/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "centauri-2",
+   "modelWords": [
+    "centauri",
+    "2"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "centauri 2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/centauri-carbon-2/bare",
+   "brand": "elegoo",
+   "modelCore": "centauri-carbon-2",
+   "modelWords": [
+    "centauri",
+    "carbon",
+    "2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "centauri carbon 2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/centauri-carbon-2/combo",
+   "brand": "elegoo",
+   "modelCore": "centauri-carbon-2",
+   "modelWords": [
+    "centauri",
+    "carbon",
+    "2"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "Centauri Carbon 2 Combo"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "trusted-tracker",
+   "confidence": 0.9
+  },
+  {
+   "identityId": "elegoo/centauri-carbon-2/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "centauri-carbon-2",
+   "modelWords": [
+    "centauri",
+    "carbon",
+    "2"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "centauri carbon 2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/centauri-carbon/bare",
+   "brand": "elegoo",
+   "modelCore": "centauri-carbon",
+   "modelWords": [
+    "centauri",
+    "carbon"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "centauri carbon",
+    "Centauri Carbon"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/centauri-carbon/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "centauri-carbon",
+   "modelWords": [
+    "centauri",
+    "carbon"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "centauri carbon"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/jupiter-2/bare",
+   "brand": "elegoo",
+   "modelCore": "jupiter-2",
+   "modelWords": [
+    "jupiter",
+    "2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "jupiter 2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/jupiter-2/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "jupiter-2",
+   "modelWords": [
+    "jupiter",
+    "2"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "jupiter 2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/mars-4-ultra/bare",
+   "brand": "elegoo",
+   "modelCore": "mars-4-ultra",
+   "modelWords": [
+    "mars",
+    "4",
+    "ultra"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mars 4 ultra"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/mars-4-ultra/bare/resin",
+   "brand": "elegoo",
+   "modelCore": "mars-4-ultra",
+   "modelWords": [
+    "mars",
+    "4",
+    "ultra"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "resin",
+   "aliases": [
+    "Mars 4 Ultra 9K"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "trusted-tracker",
+   "confidence": 0.9
+  },
+  {
+   "identityId": "elegoo/mars-4-ultra/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "mars-4-ultra",
+   "modelWords": [
+    "mars",
+    "4",
+    "ultra"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mars 4 ultra"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/mars-4/bare",
+   "brand": "elegoo",
+   "modelCore": "mars-4",
+   "modelWords": [
+    "mars",
+    "4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mars 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/mars-4/bare/resin",
+   "brand": "elegoo",
+   "modelCore": "mars-4",
+   "modelWords": [
+    "mars",
+    "4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "resin",
+   "aliases": [
+    "Mars 4 9K",
+    "Mars 4 DLP"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "trusted-tracker",
+   "confidence": 0.9
+  },
+  {
+   "identityId": "elegoo/mars-4/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "mars-4",
+   "modelWords": [
+    "mars",
+    "4"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mars 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/mars-5-ultra/bare",
+   "brand": "elegoo",
+   "modelCore": "mars-5-ultra",
+   "modelWords": [
+    "mars",
+    "5",
+    "ultra"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mars 5 ultra"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/mars-5-ultra/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "mars-5-ultra",
+   "modelWords": [
+    "mars",
+    "5",
+    "ultra"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mars 5 ultra"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/mars-5/bare",
+   "brand": "elegoo",
+   "modelCore": "mars-5",
+   "modelWords": [
+    "mars",
+    "5"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mars 5"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/mars-5/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "mars-5",
+   "modelWords": [
+    "mars",
+    "5"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mars 5"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/mercury-plus/bare",
+   "brand": "elegoo",
+   "modelCore": "mercury-plus",
+   "modelWords": [
+    "mercury",
+    "plus"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mercury plus"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/mercury-plus/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "mercury-plus",
+   "modelWords": [
+    "mercury",
+    "plus"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mercury plus"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/mercury-xs/bare",
+   "brand": "elegoo",
+   "modelCore": "mercury-xs",
+   "modelWords": [
+    "mercury",
+    "xs"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mercury xs"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/mercury-xs/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "mercury-xs",
+   "modelWords": [
+    "mercury",
+    "xs"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mercury xs"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/neptune-3-pro/bare",
+   "brand": "elegoo",
+   "modelCore": "neptune-3-pro",
+   "modelWords": [
+    "neptune",
+    "3",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "neptune 3 pro",
+    "Neptune 3 Pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/neptune-3-pro/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "neptune-3-pro",
+   "modelWords": [
+    "neptune",
+    "3",
+    "pro"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "neptune 3 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/neptune-3/bare",
+   "brand": "elegoo",
+   "modelCore": "neptune-3",
+   "modelWords": [
+    "neptune",
+    "3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "neptune 3",
+    "Neptune 3 Max",
+    "Neptune 3 Plus"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/neptune-3/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "neptune-3",
+   "modelWords": [
+    "neptune",
+    "3"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "neptune 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/neptune-4-max/bare",
+   "brand": "elegoo",
+   "modelCore": "neptune-4-max",
+   "modelWords": [
+    "neptune",
+    "4",
+    "max"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "neptune 4 max",
+    "Neptune 4 Max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/neptune-4-max/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "neptune-4-max",
+   "modelWords": [
+    "neptune",
+    "4",
+    "max"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "neptune 4 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/neptune-4-plus/bare",
+   "brand": "elegoo",
+   "modelCore": "neptune-4-plus",
+   "modelWords": [
+    "neptune",
+    "4",
+    "plus"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "neptune 4 plus",
+    "Neptune 4 Plus"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/neptune-4-plus/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "neptune-4-plus",
+   "modelWords": [
+    "neptune",
+    "4",
+    "plus"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "neptune 4 plus"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/neptune-4-pro/bare",
+   "brand": "elegoo",
+   "modelCore": "neptune-4-pro",
+   "modelWords": [
+    "neptune",
+    "4",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "neptune 4 pro",
+    "Neptune 4 Pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/neptune-4-pro/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "neptune-4-pro",
+   "modelWords": [
+    "neptune",
+    "4",
+    "pro"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "neptune 4 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/neptune-4/bare",
+   "brand": "elegoo",
+   "modelCore": "neptune-4",
+   "modelWords": [
+    "neptune",
+    "4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "neptune 4",
+    "Neptune 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/neptune-4/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "neptune-4",
+   "modelWords": [
+    "neptune",
+    "4"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "neptune 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/orangestorm-giga/bare",
+   "brand": "elegoo",
+   "modelCore": "orangestorm-giga",
+   "modelWords": [
+    "orangestorm"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "orangestorm",
+    "OrangeStorm Giga"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/orangestorm-giga/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "orangestorm-giga",
+   "modelWords": [
+    "orangestorm"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "orangestorm"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/saturn-3-ultra/bare",
+   "brand": "elegoo",
+   "modelCore": "saturn-3-ultra",
+   "modelWords": [
+    "saturn",
+    "3",
+    "ultra"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "saturn 3 ultra"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/saturn-3-ultra/bare/resin",
+   "brand": "elegoo",
+   "modelCore": "saturn-3-ultra",
+   "modelWords": [
+    "saturn",
+    "3",
+    "ultra"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "resin",
+   "aliases": [
+    "Saturn 3 Ultra 12K"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "trusted-tracker",
+   "confidence": 0.9
+  },
+  {
+   "identityId": "elegoo/saturn-3-ultra/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "saturn-3-ultra",
+   "modelWords": [
+    "saturn",
+    "3",
+    "ultra"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "saturn 3 ultra"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/saturn-3/bare",
+   "brand": "elegoo",
+   "modelCore": "saturn-3",
+   "modelWords": [
+    "saturn",
+    "3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "saturn 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/saturn-3/bare/resin",
+   "brand": "elegoo",
+   "modelCore": "saturn-3",
+   "modelWords": [
+    "saturn",
+    "3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "resin",
+   "aliases": [
+    "Saturn 3 12K"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "trusted-tracker",
+   "confidence": 0.9
+  },
+  {
+   "identityId": "elegoo/saturn-3/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "saturn-3",
+   "modelWords": [
+    "saturn",
+    "3"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "saturn 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/saturn-4-ultra-16k/bare",
+   "brand": "elegoo",
+   "modelCore": "saturn-4-ultra-16k",
+   "modelWords": [
+    "saturn",
+    "4",
+    "ultra",
+    "16k"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "saturn 4 ultra 16k"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/saturn-4-ultra-16k/bare/resin",
+   "brand": "elegoo",
+   "modelCore": "saturn-4-ultra-16k",
+   "modelWords": [
+    "saturn",
+    "4",
+    "ultra",
+    "16k"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "resin",
+   "aliases": [
+    "Saturn 4 Ultra 16K"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "trusted-tracker",
+   "confidence": 0.9
+  },
+  {
+   "identityId": "elegoo/saturn-4-ultra-16k/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "saturn-4-ultra-16k",
+   "modelWords": [
+    "saturn",
+    "4",
+    "ultra",
+    "16k"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "saturn 4 ultra 16k"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/saturn-4-ultra/bare",
+   "brand": "elegoo",
+   "modelCore": "saturn-4-ultra",
+   "modelWords": [
+    "saturn",
+    "4",
+    "ultra"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "saturn 4 ultra"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/saturn-4-ultra/bare/resin",
+   "brand": "elegoo",
+   "modelCore": "saturn-4-ultra",
+   "modelWords": [
+    "saturn",
+    "4",
+    "ultra"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "resin",
+   "aliases": [
+    "Saturn 4 Ultra"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "trusted-tracker",
+   "confidence": 0.9
+  },
+  {
+   "identityId": "elegoo/saturn-4-ultra/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "saturn-4-ultra",
+   "modelWords": [
+    "saturn",
+    "4",
+    "ultra"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "saturn 4 ultra"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/saturn-4/bare",
+   "brand": "elegoo",
+   "modelCore": "saturn-4",
+   "modelWords": [
+    "saturn",
+    "4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "saturn 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "elegoo/saturn-4/combo/canvas",
+   "brand": "elegoo",
+   "modelCore": "saturn-4",
+   "modelWords": [
+    "saturn",
+    "4"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "canvas",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "saturn 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/ad5x/bare",
+   "brand": "flashforge",
+   "modelCore": "ad5x",
+   "modelWords": [
+    "ad5x"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ad5x",
+    "AD5X"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/ad5x/combo/ifs",
+   "brand": "flashforge",
+   "modelCore": "ad5x",
+   "modelWords": [
+    "ad5x"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ifs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ad5x"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/adventurer-3/bare",
+   "brand": "flashforge",
+   "modelCore": "adventurer-3",
+   "modelWords": [
+    "adventurer",
+    "3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "adventurer 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/adventurer-3/combo/ifs",
+   "brand": "flashforge",
+   "modelCore": "adventurer-3",
+   "modelWords": [
+    "adventurer",
+    "3"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ifs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "adventurer 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/adventurer-4/bare",
+   "brand": "flashforge",
+   "modelCore": "adventurer-4",
+   "modelWords": [
+    "adventurer",
+    "4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "adventurer 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/adventurer-4/combo/ifs",
+   "brand": "flashforge",
+   "modelCore": "adventurer-4",
+   "modelWords": [
+    "adventurer",
+    "4"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ifs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "adventurer 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/adventurer-5m-pro/bare",
+   "brand": "flashforge",
+   "modelCore": "adventurer-5m-pro",
+   "modelWords": [
+    "adventurer",
+    "5m",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "adventurer 5m pro",
+    "Adventurer 5M Pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/adventurer-5m-pro/combo/ifs",
+   "brand": "flashforge",
+   "modelCore": "adventurer-5m-pro",
+   "modelWords": [
+    "adventurer",
+    "5m",
+    "pro"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ifs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "adventurer 5m pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/adventurer-5m/bare",
+   "brand": "flashforge",
+   "modelCore": "adventurer-5m",
+   "modelWords": [
+    "adventurer",
+    "5m"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "adventurer 5m",
+    "Adventurer 5M"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/adventurer-5m/combo/ifs",
+   "brand": "flashforge",
+   "modelCore": "adventurer-5m",
+   "modelWords": [
+    "adventurer",
+    "5m"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ifs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "adventurer 5m"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/adventurer-5x/bare",
+   "brand": "flashforge",
+   "modelCore": "adventurer-5x",
+   "modelWords": [
+    "adventurer",
+    "5x"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "adventurer 5x",
+    "adventurer 5x combo"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/adventurer-5x/combo/ifs",
+   "brand": "flashforge",
+   "modelCore": "adventurer-5x",
+   "modelWords": [
+    "adventurer",
+    "5x"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ifs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "adventurer 5x",
+    "adventurer 5x combo"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/creator-4/bare",
+   "brand": "flashforge",
+   "modelCore": "creator-4",
+   "modelWords": [
+    "creator",
+    "4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "creator 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/creator-4/combo/ifs",
+   "brand": "flashforge",
+   "modelCore": "creator-4",
+   "modelWords": [
+    "creator",
+    "4"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ifs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "creator 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/creator-5-pro/bare",
+   "brand": "flashforge",
+   "modelCore": "creator-5-pro",
+   "modelWords": [
+    "creator",
+    "5",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "creator 5 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/creator-5-pro/combo/ifs",
+   "brand": "flashforge",
+   "modelCore": "creator-5-pro",
+   "modelWords": [
+    "creator",
+    "5",
+    "pro"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ifs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "creator 5 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/creator-5/bare",
+   "brand": "flashforge",
+   "modelCore": "creator-5",
+   "modelWords": [
+    "creator",
+    "5"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "creator 5",
+    "Creator 5"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/creator-5/combo/ifs",
+   "brand": "flashforge",
+   "modelCore": "creator-5",
+   "modelWords": [
+    "creator",
+    "5"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ifs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "creator 5"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/creator-pro-2/bare",
+   "brand": "flashforge",
+   "modelCore": "creator-pro-2",
+   "modelWords": [
+    "creator",
+    "pro",
+    "2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "creator pro 2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/creator-pro-2/combo/ifs",
+   "brand": "flashforge",
+   "modelCore": "creator-pro-2",
+   "modelWords": [
+    "creator",
+    "pro",
+    "2"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ifs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "creator pro 2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/guider/bare",
+   "brand": "flashforge",
+   "modelCore": "guider",
+   "modelWords": [
+    "guider"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "guider"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flashforge/guider/combo/ifs",
+   "brand": "flashforge",
+   "modelCore": "guider",
+   "modelWords": [
+    "guider"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "ifs",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "guider"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flsun/s1-pro/bare",
+   "brand": "flsun",
+   "modelCore": "s1-pro",
+   "modelWords": [
+    "s1",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "s1 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flsun/s1/bare",
+   "brand": "flsun",
+   "modelCore": "s1",
+   "modelWords": [
+    "s1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "s1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flsun/t1-max/bare",
+   "brand": "flsun",
+   "modelCore": "t1-max",
+   "modelWords": [
+    "t1",
+    "max"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "t1 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flsun/t1-pro/bare",
+   "brand": "flsun",
+   "modelCore": "t1-pro",
+   "modelWords": [
+    "t1",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "t1 pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flsun/t1/bare",
+   "brand": "flsun",
+   "modelCore": "t1",
+   "modelWords": [
+    "t1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "t1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flsun/v400-max/bare",
+   "brand": "flsun",
+   "modelCore": "v400-max",
+   "modelWords": [
+    "v400",
+    "max"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "v400 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "flsun/v400/bare",
+   "brand": "flsun",
+   "modelCore": "v400",
+   "modelWords": [
+    "v400"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "v400"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "formlabs/form-3/bare",
+   "brand": "formlabs",
+   "modelCore": "form-3",
+   "modelWords": [
+    "form",
+    "3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "form 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "formlabs/form-3b/bare",
+   "brand": "formlabs",
+   "modelCore": "form-3b",
+   "modelWords": [
+    "form",
+    "3b"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "form 3b"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "formlabs/form-3bl/bare",
+   "brand": "formlabs",
+   "modelCore": "form-3bl",
+   "modelWords": [
+    "form",
+    "3bl"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "form 3bl"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "formlabs/form-3l/bare",
+   "brand": "formlabs",
+   "modelCore": "form-3l",
+   "modelWords": [
+    "form",
+    "3l"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "form 3l"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "formlabs/form-4/bare",
+   "brand": "formlabs",
+   "modelCore": "form-4",
+   "modelWords": [
+    "form",
+    "4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "form 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "formlabs/form-4b/bare",
+   "brand": "formlabs",
+   "modelCore": "form-4b",
+   "modelWords": [
+    "form",
+    "4b"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "form 4b"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "formlabs/form-4bl/bare",
+   "brand": "formlabs",
+   "modelCore": "form-4bl",
+   "modelWords": [
+    "form",
+    "4bl"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "form 4bl"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "formlabs/form-4l/bare",
+   "brand": "formlabs",
+   "modelCore": "form-4l",
+   "modelWords": [
+    "form",
+    "4l"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "form 4l"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "formlabs/fuse-1/bare",
+   "brand": "formlabs",
+   "modelCore": "fuse-1",
+   "modelWords": [
+    "fuse",
+    "1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "fuse 1",
+    "fuse"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "iemai/fast-jet-1500/bare",
+   "brand": "iemai",
+   "modelCore": "fast-jet-1500",
+   "modelWords": [
+    "fast",
+    "jet",
+    "1500"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "fast jet 1500"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "iemai/magic-ht-max/bare",
+   "brand": "iemai",
+   "modelCore": "magic-ht-max",
+   "modelWords": [
+    "magic",
+    "ht",
+    "max"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "magic ht max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "iemai/ym-nt-1000/bare",
+   "brand": "iemai",
+   "modelCore": "ym-nt-1000",
+   "modelWords": [
+    "ym",
+    "nt",
+    "1000"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ym nt 1000"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "iemai/ym-nt-1200/bare",
+   "brand": "iemai",
+   "modelCore": "ym-nt-1200",
+   "modelWords": [
+    "ym",
+    "nt",
+    "1200"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ym nt 1200"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "iemai/ym-nt-750/bare",
+   "brand": "iemai",
+   "modelCore": "ym-nt-750",
+   "modelWords": [
+    "ym",
+    "nt",
+    "750"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ym nt 750"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "kingroon/klp1/bare",
+   "brand": "kingroon",
+   "modelCore": "klp1",
+   "modelWords": [
+    "klp1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "klp1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "kingroon/kp3s-pro-v2/bare",
+   "brand": "kingroon",
+   "modelCore": "kp3s-pro-v2",
+   "modelWords": [
+    "kp3s",
+    "pro",
+    "v2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kp3s pro v2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "kingroon/kp3s-pro/bare",
+   "brand": "kingroon",
+   "modelCore": "kp3s-pro",
+   "modelWords": [
+    "kp3s",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kp3s pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "kingroon/kp3s/bare",
+   "brand": "kingroon",
+   "modelCore": "kp3s",
+   "modelWords": [
+    "kp3s"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "kp3s"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "phrozen/arco/bare",
+   "brand": "phrozen",
+   "modelCore": "arco",
+   "modelWords": [
+    "arco"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "arco"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "phrozen/sonic-mega-8k-v2/bare",
+   "brand": "phrozen",
+   "modelCore": "sonic-mega-8k-v2",
+   "modelWords": [
+    "sonic",
+    "mega",
+    "8k",
+    "v2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sonic mega 8k v2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "phrozen/sonic-mega-8k/bare",
+   "brand": "phrozen",
+   "modelCore": "sonic-mega-8k",
+   "modelWords": [
+    "sonic",
+    "mega",
+    "8k"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sonic mega 8k"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "phrozen/sonic-mighty-revo/bare",
+   "brand": "phrozen",
+   "modelCore": "sonic-mighty-revo",
+   "modelWords": [
+    "sonic",
+    "mighty",
+    "revo"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sonic mighty revo"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "phrozen/sonic-mini-8k/bare",
+   "brand": "phrozen",
+   "modelCore": "sonic-mini-8k",
+   "modelWords": [
+    "sonic",
+    "mini",
+    "8k"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sonic mini 8k"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/core-one-l/bare",
+   "brand": "prusa",
+   "modelCore": "core-one-l",
+   "modelWords": [
+    "core",
+    "one",
+    "l"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "core one l"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/core-one-l/bare/assembled",
+   "brand": "prusa",
+   "modelCore": "core-one-l",
+   "modelWords": [
+    "core",
+    "one",
+    "l"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "assembled",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "Core One L Assembled"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "trusted-tracker",
+   "confidence": 0.9
+  },
+  {
+   "identityId": "prusa/core-one-l/combo/mmu3",
+   "brand": "prusa",
+   "modelCore": "core-one-l",
+   "modelWords": [
+    "core",
+    "one",
+    "l"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "mmu3",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "core one l"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/core-one/bare",
+   "brand": "prusa",
+   "modelCore": "core-one",
+   "modelWords": [
+    "core",
+    "one"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "core one",
+    "Core One Kit"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/core-one/bare/assembled",
+   "brand": "prusa",
+   "modelCore": "core-one",
+   "modelWords": [
+    "core",
+    "one"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "assembled",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "Core One Assembled"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "trusted-tracker",
+   "confidence": 0.9
+  },
+  {
+   "identityId": "prusa/core-one/combo/mmu3",
+   "brand": "prusa",
+   "modelCore": "core-one",
+   "modelWords": [
+    "core",
+    "one"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "mmu3",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "core one"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/ht90/bare",
+   "brand": "prusa",
+   "modelCore": "ht90",
+   "modelWords": [
+    "ht90"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ht90"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/ht90/combo/mmu3",
+   "brand": "prusa",
+   "modelCore": "ht90",
+   "modelWords": [
+    "ht90"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "mmu3",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ht90"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/mini/bare",
+   "brand": "prusa",
+   "modelCore": "mini",
+   "modelWords": [
+    "mini"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mini",
+    "Mini Plus Enclosure Bundle"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/mini/combo/mmu3",
+   "brand": "prusa",
+   "modelCore": "mini",
+   "modelWords": [
+    "mini"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "mmu3",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mini"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/mk3s/bare",
+   "brand": "prusa",
+   "modelCore": "mk3s",
+   "modelWords": [
+    "mk3s"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mk3s"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/mk3s/combo/mmu3",
+   "brand": "prusa",
+   "modelCore": "mk3s",
+   "modelWords": [
+    "mk3s"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "mmu3",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mk3s"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/mk4s/bare",
+   "brand": "prusa",
+   "modelCore": "mk4s",
+   "modelWords": [
+    "mk4s"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mk4s",
+    "MK4S Kit"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/mk4s/bare/assembled",
+   "brand": "prusa",
+   "modelCore": "mk4s",
+   "modelWords": [
+    "mk4s"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "assembled",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "MK4S Assembled"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "trusted-tracker",
+   "confidence": 0.9
+  },
+  {
+   "identityId": "prusa/mk4s/combo/mmu3",
+   "brand": "prusa",
+   "modelCore": "mk4s",
+   "modelWords": [
+    "mk4s"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "mmu3",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "mk4s"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/sl1s/bare",
+   "brand": "prusa",
+   "modelCore": "sl1s",
+   "modelWords": [
+    "sl1s"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sl1s"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/sl1s/combo/mmu3",
+   "brand": "prusa",
+   "modelCore": "sl1s",
+   "modelWords": [
+    "sl1s"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "mmu3",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sl1s"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/xl/bare",
+   "brand": "prusa",
+   "modelCore": "xl",
+   "modelWords": [
+    "xl"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "xl",
+    "XL"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "prusa/xl/combo/mmu3",
+   "brand": "prusa",
+   "modelCore": "xl",
+   "modelWords": [
+    "xl"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "mmu3",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "xl"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/max4/bare",
+   "brand": "qidi",
+   "modelCore": "max4",
+   "modelWords": [
+    "max4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "max4",
+    "MAX4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/max4/combo/qidi-box",
+   "brand": "qidi",
+   "modelCore": "max4",
+   "modelWords": [
+    "max4"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "qidi-box",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "max4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/plus4/bare",
+   "brand": "qidi",
+   "modelCore": "plus4",
+   "modelWords": [
+    "plus4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "plus4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/plus4/combo/qidi-box",
+   "brand": "qidi",
+   "modelCore": "plus4",
+   "modelWords": [
+    "plus4"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "qidi-box",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "plus4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/plus5/bare",
+   "brand": "qidi",
+   "modelCore": "plus5",
+   "modelWords": [
+    "plus5"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "plus5"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/plus5/combo/qidi-box",
+   "brand": "qidi",
+   "modelCore": "plus5",
+   "modelWords": [
+    "plus5"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "qidi-box",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "plus5"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/q2/bare",
+   "brand": "qidi",
+   "modelCore": "q2",
+   "modelWords": [
+    "q2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "q2",
+    "Q2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/q2/combo/qidi-box",
+   "brand": "qidi",
+   "modelCore": "q2",
+   "modelWords": [
+    "q2"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "qidi-box",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "q2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/q2c/bare",
+   "brand": "qidi",
+   "modelCore": "q2c",
+   "modelWords": [
+    "q2c"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "q2c",
+    "Q2C"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/q2c/combo/qidi-box",
+   "brand": "qidi",
+   "modelCore": "q2c",
+   "modelWords": [
+    "q2c"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "qidi-box",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "q2c"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/x-max-3/bare",
+   "brand": "qidi",
+   "modelCore": "x-max-3",
+   "modelWords": [
+    "x",
+    "max",
+    "3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "x max 3",
+    "X-MAX-3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/x-max-3/combo/qidi-box",
+   "brand": "qidi",
+   "modelCore": "x-max-3",
+   "modelWords": [
+    "x",
+    "max",
+    "3"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "qidi-box",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "x max 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/x-plus-3/bare",
+   "brand": "qidi",
+   "modelCore": "x-plus-3",
+   "modelWords": [
+    "x",
+    "plus",
+    "3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "x plus 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "qidi/x-plus-3/combo/qidi-box",
+   "brand": "qidi",
+   "modelCore": "x-plus-3",
+   "modelWords": [
+    "x",
+    "plus",
+    "3"
+   ],
+   "comboAxis": "combo",
+   "feederGen": "qidi-box",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "x plus 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "raise3d/df2-plus/bare",
+   "brand": "raise3d",
+   "modelCore": "df2-plus",
+   "modelWords": [
+    "df2",
+    "plus"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "df2 plus"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "raise3d/df2/bare",
+   "brand": "raise3d",
+   "modelCore": "df2",
+   "modelWords": [
+    "df2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "df2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "raise3d/e3/bare",
+   "brand": "raise3d",
+   "modelCore": "e3",
+   "modelWords": [
+    "e3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "e3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "raise3d/pro3-hs/bare",
+   "brand": "raise3d",
+   "modelCore": "pro3-hs",
+   "modelWords": [
+    "pro3",
+    "hs"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "pro3 hs"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "raise3d/pro3/bare",
+   "brand": "raise3d",
+   "modelCore": "pro3",
+   "modelWords": [
+    "pro3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "pro3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "raise3d/rmf500/bare",
+   "brand": "raise3d",
+   "modelCore": "rmf500",
+   "modelWords": [
+    "rmf500"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "rmf500"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "raise3d/rms220/bare",
+   "brand": "raise3d",
+   "modelCore": "rms220",
+   "modelWords": [
+    "rms220"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "rms220"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "snapmaker/artisan/bare",
+   "brand": "snapmaker",
+   "modelCore": "artisan",
+   "modelWords": [
+    "artisan"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "artisan"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "snapmaker/j1/bare",
+   "brand": "snapmaker",
+   "modelCore": "j1",
+   "modelWords": [
+    "j1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "j1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "snapmaker/j1s/bare",
+   "brand": "snapmaker",
+   "modelCore": "j1s",
+   "modelWords": [
+    "j1s"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "j1s",
+    "J1S"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "snapmaker/ray/bare",
+   "brand": "snapmaker",
+   "modelCore": "ray",
+   "modelWords": [
+    "ray"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ray"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "snapmaker/snapmaker-2-a150/bare",
+   "brand": "snapmaker",
+   "modelCore": "snapmaker-2-a150",
+   "modelWords": [
+    "snapmaker",
+    "2",
+    "0",
+    "a150"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "snapmaker 2 0 a150",
+    "a150"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "snapmaker/snapmaker-2-a250/bare",
+   "brand": "snapmaker",
+   "modelCore": "snapmaker-2-a250",
+   "modelWords": [
+    "snapmaker",
+    "2",
+    "0",
+    "a250"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "snapmaker 2 0 a250",
+    "a250"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "snapmaker/snapmaker-2-a350/bare",
+   "brand": "snapmaker",
+   "modelCore": "snapmaker-2-a350",
+   "modelWords": [
+    "snapmaker",
+    "2",
+    "0",
+    "a350"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "snapmaker 2 0 a350",
+    "a350"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "snapmaker/u1/bare",
+   "brand": "snapmaker",
+   "modelCore": "u1",
+   "modelWords": [
+    "u1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "u1",
+    "U1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "sovol/sv04/bare",
+   "brand": "sovol",
+   "modelCore": "sv04",
+   "modelWords": [
+    "sv04"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sv04"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "sovol/sv06-ace/bare",
+   "brand": "sovol",
+   "modelCore": "sv06-ace",
+   "modelWords": [
+    "sv06",
+    "ace"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sv06 ace",
+    "SV06 Ace"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "sovol/sv06-plus-ace/bare",
+   "brand": "sovol",
+   "modelCore": "sv06-plus-ace",
+   "modelWords": [
+    "sv06",
+    "plus",
+    "ace"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sv06 plus ace",
+    "SV06 Plus Ace"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "sovol/sv06-plus/bare",
+   "brand": "sovol",
+   "modelCore": "sv06-plus",
+   "modelWords": [
+    "sv06",
+    "plus"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sv06 plus"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "sovol/sv06/bare",
+   "brand": "sovol",
+   "modelCore": "sv06",
+   "modelWords": [
+    "sv06"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sv06",
+    "SV06"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "sovol/sv07-plus/bare",
+   "brand": "sovol",
+   "modelCore": "sv07-plus",
+   "modelWords": [
+    "sv07",
+    "plus"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sv07 plus"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "sovol/sv07/bare",
+   "brand": "sovol",
+   "modelCore": "sv07",
+   "modelWords": [
+    "sv07"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sv07"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "sovol/sv08-max/bare",
+   "brand": "sovol",
+   "modelCore": "sv08-max",
+   "modelWords": [
+    "sv08",
+    "max"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sv08 max"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "sovol/sv08/bare",
+   "brand": "sovol",
+   "modelCore": "sv08",
+   "modelWords": [
+    "sv08"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sv08",
+    "SV08"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "sovol/zero/bare",
+   "brand": "sovol",
+   "modelCore": "zero",
+   "modelWords": [
+    "zero"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "zero",
+    "Zero"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "twotrees/blu-3/bare",
+   "brand": "twotrees",
+   "modelCore": "blu-3",
+   "modelWords": [
+    "blu",
+    "3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "blu 3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "twotrees/blu-5/bare",
+   "brand": "twotrees",
+   "modelCore": "blu-5",
+   "modelWords": [
+    "blu",
+    "5"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "blu 5"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "twotrees/bluer/bare",
+   "brand": "twotrees",
+   "modelCore": "bluer",
+   "modelWords": [
+    "bluer"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "bluer"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "twotrees/sapphire-plus/bare",
+   "brand": "twotrees",
+   "modelCore": "sapphire-plus",
+   "modelWords": [
+    "sapphire",
+    "plus"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sapphire plus"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "twotrees/sapphire-pro/bare",
+   "brand": "twotrees",
+   "modelCore": "sapphire-pro",
+   "modelWords": [
+    "sapphire",
+    "pro"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sapphire pro"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "twotrees/sk1/bare",
+   "brand": "twotrees",
+   "modelCore": "sk1",
+   "modelWords": [
+    "sk1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sk1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "twotrees/sp-5/bare",
+   "brand": "twotrees",
+   "modelCore": "sp-5",
+   "modelWords": [
+    "sp",
+    "5"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "sp 5"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "twotrees/ttc3018/bare",
+   "brand": "twotrees",
+   "modelCore": "ttc3018",
+   "modelWords": [
+    "ttc3018"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ttc3018"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "twotrees/ttc450/bare",
+   "brand": "twotrees",
+   "modelCore": "ttc450",
+   "modelWords": [
+    "ttc450"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ttc450"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "twotrees/ttc6050/bare",
+   "brand": "twotrees",
+   "modelCore": "ttc6050",
+   "modelWords": [
+    "ttc6050"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "ttc6050"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "ultimaker/factor-4/bare",
+   "brand": "ultimaker",
+   "modelCore": "factor-4",
+   "modelWords": [
+    "factor",
+    "4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "factor 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "ultimaker/method-x/bare",
+   "brand": "ultimaker",
+   "modelCore": "method-x",
+   "modelWords": [
+    "method",
+    "x"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "method x"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "ultimaker/method-xl/bare",
+   "brand": "ultimaker",
+   "modelCore": "method-xl",
+   "modelWords": [
+    "method",
+    "xl"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "method xl"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "ultimaker/method/bare",
+   "brand": "ultimaker",
+   "modelCore": "method",
+   "modelWords": [
+    "method"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "method"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "ultimaker/s7/bare",
+   "brand": "ultimaker",
+   "modelCore": "s7",
+   "modelWords": [
+    "s7"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "s7"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "ultimaker/s8/bare",
+   "brand": "ultimaker",
+   "modelCore": "s8",
+   "modelWords": [
+    "s8"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "s8"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "voron/0-2/bare",
+   "brand": "voron",
+   "modelCore": "0-2",
+   "modelWords": [
+    "0",
+    "2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "0 2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "voron/2-4/bare",
+   "brand": "voron",
+   "modelCore": "2-4",
+   "modelWords": [
+    "2",
+    "4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "2 4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "voron/switchwire/bare",
+   "brand": "voron",
+   "modelCore": "switchwire",
+   "modelWords": [
+    "switchwire"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "switchwire"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "voron/trident/bare",
+   "brand": "voron",
+   "modelCore": "trident",
+   "modelWords": [
+    "trident"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "trident"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "xtool/f1-ultra/bare",
+   "brand": "xtool",
+   "modelCore": "f1-ultra",
+   "modelWords": [
+    "f1",
+    "ultra"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "f1 ultra"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "xtool/f1/bare",
+   "brand": "xtool",
+   "modelCore": "f1",
+   "modelWords": [
+    "f1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "f1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "xtool/m1-ultra/bare",
+   "brand": "xtool",
+   "modelCore": "m1-ultra",
+   "modelWords": [
+    "m1",
+    "ultra"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "m1 ultra"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "xtool/m1/bare",
+   "brand": "xtool",
+   "modelCore": "m1",
+   "modelWords": [
+    "m1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "m1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "xtool/p2/bare",
+   "brand": "xtool",
+   "modelCore": "p2",
+   "modelWords": [
+    "p2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "p2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "xtool/p2s/bare",
+   "brand": "xtool",
+   "modelCore": "p2s",
+   "modelWords": [
+    "p2s"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "p2s"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "xtool/p3/bare",
+   "brand": "xtool",
+   "modelCore": "p3",
+   "modelWords": [
+    "p3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "p3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "xtool/s1/bare",
+   "brand": "xtool",
+   "modelCore": "s1",
+   "modelWords": [
+    "s1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "s1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "zaxe/x4/bare",
+   "brand": "zaxe",
+   "modelCore": "x4",
+   "modelWords": [
+    "x4"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "x4"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "zaxe/z1/bare",
+   "brand": "zaxe",
+   "modelCore": "z1",
+   "modelWords": [
+    "z1"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "z1"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "zaxe/z2/bare",
+   "brand": "zaxe",
+   "modelCore": "z2",
+   "modelWords": [
+    "z2"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "z2"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "zaxe/z3/bare",
+   "brand": "zaxe",
+   "modelCore": "z3",
+   "modelWords": [
+    "z3"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "z3"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  },
+  {
+   "identityId": "zaxe/z3s/bare",
+   "brand": "zaxe",
+   "modelCore": "z3s",
+   "modelWords": [
+    "z3s"
+   ],
+   "comboAxis": "bare",
+   "feederGen": "",
+   "kitForm": "",
+   "laserWatts": "",
+   "sizeTier": "",
+   "technology": "fdm",
+   "aliases": [
+    "z3s"
+   ],
+   "noise": [],
+   "hardConflicts": [
+    "model",
+    "combo",
+    "feeder",
+    "kit",
+    "laser",
+    "size",
+    "technology"
+   ],
+   "source": "official",
+   "confidence": 0.95
+  }
+ ]
+}

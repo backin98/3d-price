@@ -65,8 +65,16 @@ const { unionCatalog } = require('../lib/catalog-union.cjs');
       apply: false
     });
     assert.equal(modelCalls, 0);
-    assert.equal(created.run.created, 1);
-    assert.equal(created.run.merged, 0);
+    // The policy, not the incidental outcome. A1 is a generic core, so it is a channel-uncertain
+    // confirmed row: it may merge onto the row that holds that identity, or create one carrying the
+    // confirmed identity. What it must never do is produce a silent, unnamed new row — that is the
+    // behaviour this test was written to pin down, and pinning the exact branch instead made it
+    // flip every time the baseline learned a model.
+    assert.equal(created.run.held, 0, 'a confirmed identity does not wait for permission');
+    assert.ok(
+      created.run.merged === 1 || (created.run.created === 1 && !!created.audit[0].baselineIdentityId),
+      'A1 Combo merges onto the confirmed row, or is created carrying the confirmed identity: ' + JSON.stringify(created.run)
+    );
 
     const held = await placeListings({
       listings: [{

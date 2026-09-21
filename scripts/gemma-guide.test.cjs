@@ -148,12 +148,16 @@ const writeCatalog = () => fs.writeFileSync(catalogFile, JSON.stringify({ produc
   assert.equal(off.audit[0].action, 'held', 'the same configuration holds instead of creating: ' + off.audit[0].reason);
   assert.equal(off.run.created, 0, 'and no duplicate row is invented');
 
-  // A model the catalog has never seen is still created, toggle or no toggle.
+  // A model the confirmed catalog has never seen is NOT invented any more. It is held with
+  // needsPermission so a human is asked before a row exists — the policy is "merge when confirmed,
+  // ask when new", and an unknown model is exactly what the ask is for.
   const fresh = await placeListings({
     listings: [listing('Acme Zeta 900 3D Yazıcı', 'https://shop.example/zeta-900')],
     site: 'shop', catalogFile, apply: false, autoLlmMatch: false, visualMatch: false, runDir: dir
   });
-  assert.equal(fresh.audit[0].action, 'create', 'a genuinely new model is created: ' + JSON.stringify(fresh.audit[0].reason));
+  assert.equal(fresh.audit[0].action, 'held', 'an unknown model waits for permission: ' + JSON.stringify(fresh.audit[0].reason));
+  assert.equal(fresh.audit[0].needsPermission, true, 'and is flagged so the board can frame it');
+  assert.equal(fresh.run.created, 0, 'no row is invented before a human says yes');
 
   // A model that times out or answers garbage holds the listing; it never breaks the run.
   writeCatalog();
