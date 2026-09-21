@@ -264,9 +264,9 @@
             const ae = document.activeElement;
             const typing = ae && (ae.tagName === "SELECT" || (ae.tagName === "INPUT" && ae.type !== "checkbox"));
             if (typing && $("#tab-runs")?.contains(ae)) return;
-            const url = $("#shop-url")?.value, kind = $("#shop-kind")?.value, max = $("#shop-max")?.value, cat = $("#run-cat")?.value, shop = $("#run-shop")?.value, llm = $("#run-llm")?.checked;
+            const url = $("#shop-url")?.value, max = $("#shop-max")?.value, cat = $("#run-cat")?.value, shop = $("#run-shop")?.value, llm = $("#run-llm")?.checked;
             paint("#tab-runs", runsHtml(data));
-            if ($("#shop-url")) { $("#shop-url").value = url; $("#shop-kind").value = kind; $("#shop-max").value = max; }
+            if ($("#shop-url")) { $("#shop-url").value = url; $("#shop-max").value = max; }
             if ($("#run-llm") && llm !== undefined) $("#run-llm").checked = llm;
             if ($("#run-shop") && shop) $("#run-shop").value = shop;
             fillRunCategories(shop || $("#run-shop")?.value, cat);
@@ -616,8 +616,7 @@
               <span class="muted" style="font-size:12px">Runs them top to bottom, one at a time, so each shop is matched against the ones already run.</span>
             </div>
           </div>
-          <div class="field"><label for="shop-kind">Kind</label><select id="shop-kind"><option value="both" ${(job && job.kind) === "both" ? "selected" : ""}>Both</option><option value="printer" ${(job && job.kind) === "printer" ? "selected" : ""}>Printers</option><option value="filament" ${(job && job.kind) === "filament" ? "selected" : ""}>Filament</option></select></div>
-          <div class="field"><label for="shop-max">Max products</label><input id="shop-max" type="number" min="1" max="400" value="${(job && job.maxProducts) || 200}"></div>
+                    <div class="field"><label for="shop-max">Max products</label><input id="shop-max" type="number" min="1" max="400" value="${(job && job.maxProducts) || 200}"></div>
           <label class="muted" style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="run-llm" ${llmOn ? "checked" : ""}> AI help on very close matches</label>
           <button class="primary" type="submit" ${job ? "disabled" : ""}>Queue run</button>
           ${job ? `<button class="ghost danger" type="button" id="abort-active">Abort ${job.id}</button><button class="ghost danger" type="button" id="delete-run">Delete run</button>` : ""}
@@ -991,7 +990,7 @@
     const shop = $("#run-shop") ? $("#run-shop").value : "";
     const llm = $("#run-llm") ? $("#run-llm").checked : undefined;
     $("#tab-runs").innerHTML = runsHtml(d);
-    if ($("#shop-url")) { $("#shop-url").value = url; $("#shop-kind").value = kind; $("#shop-max").value = max; }
+    if ($("#shop-url")) { $("#shop-url").value = url; $("#shop-max").value = max; }
     if ($("#run-llm") && llm !== undefined) $("#run-llm").checked = llm;
     if ($("#run-shop") && shop) $("#run-shop").value = shop;
     fillRunCategories(shop || $("#run-shop")?.value, cat);
@@ -1963,6 +1962,14 @@
         // already and took the whole admin down. A prefix compare cannot be escaped wrong.
         return String(u || "").slice(0, 8).toLowerCase() === "https://";
       }
+      // The category already says what the shop sells, so Kind was a second way to say the same thing.
+      // Filament -> filament, anything with "printer" -> printer, otherwise both.
+      function kindForCategory(cat) {
+        const c = String(cat || "").toLowerCase();
+        if (c.indexOf("filament") >= 0) return "filament";
+        if (c.indexOf("printer") >= 0 || c.indexOf("yaz") >= 0) return "printer";
+        return "both";
+      }
       function collectRunRows(isQuick) {
         if (isQuick) return [{ shop: null, cat: "", url: ((($("#run-url") || {}).value) || "").trim() }];
         return Array.from(document.querySelectorAll("#run-rows .run-row")).map((el) => {
@@ -2020,7 +2027,7 @@
         e.preventDefault();
         const rows = collectRunRows(false);
         if (!rows.length) { toast("Pick a shop and its category URL first."); return; }
-        const kind = ($("#shop-kind") || {}).value || "both";
+        const kind = kindForCategory(rows[0] && rows[0].cat);
         const maxProducts = Number(($("#shop-max") || {}).value || 200);
         const llmValue = $("#run-llm") ? $("#run-llm").checked : undefined;
         const btn = e.target;
@@ -2051,7 +2058,7 @@
         const isQuick = e.target.id === "quick-run";
         const rows = collectRunRows(isQuick);
         if (!rows.length) { toast("Pick a shop and its category URL."); return; }
-        const kind = ($(isQuick ? "#run-kind" : "#shop-kind") || {}).value || "both";
+        const kind = isQuick ? (($("#run-kind") || {}).value || "both") : kindForCategory(rows[0] && rows[0].cat);
         const maxProducts = Number(($("#shop-max") || {}).value || 200);
         const llmValue = $("#run-llm") ? $("#run-llm").checked : undefined;
         const problems = [];
