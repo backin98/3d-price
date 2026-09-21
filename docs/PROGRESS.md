@@ -283,6 +283,32 @@ mixtures ("Bambu Lab H2S Combo 3D Yazici" vs "BambuLab H2S AMS'li"), model token
 modifiers ("H2C 10W Combo" vs "H2C Combo Lazer 10W"), and abbreviated model names. Until then, treat
 the hand-written 15 as the test and the generated pairs as regression cover only.
 
+### Step 1 of the Laya decision — order sensitivity FIXED
+
+Two separate causes, found by printing the axes rather than guessing:
+
+1. `identity()` derived `technology` from the literal word "Laser", so `"H2C 10 Watt Combo"` (no such
+   word) was `fdm` while `"H2C Combo Laser 10 Watt"` was `laser` - a hard conflict, two rows for one
+   printer. Fixed: a wattage figure implies a laser (`isLaserWattage`).
+2. `laserW` required the **English** word `laser` via `/(...)/ && /laser/`, so every Turkish title
+   ("Lazer 10W", "10 Watt") extracted **no wattage at all**, and 10W vs 40W fell into the gray band
+   instead of hard-splitting. Fixed: `laserWattsFromName()` reads the number before `w`/`watt`
+   whatever the language and whatever the word order.
+
+```
+eval: 375/375 (100%)   false-merge 0/192   false-split 0/183
+suite: 34 pass / 0 fail   (33 before + scripts/modifier-order.test.cjs)
+```
+New regression test covers three reorderings that must merge, two real differences that must still
+split, and the technology of both spellings.
+
+KNOWN RISK from fix 2: any `NN W`/`NN watt` in a title now counts as a laser wattage, so a listing
+that quotes a power-supply figure would be treated as a laser machine. Not observed in the eval set;
+worth watching in real scrapes.
+
+CAVEAT repeated so it is not forgotten: the 100% is on a set whose generated "same" pairs are mostly
+trivial (casing, folding, noise). The meaningful number is still the hand-written edges, now 15/15.
+
 ### Next
 Fine-tune (freeze the encoder, train the decision head) on labeled pairs, or train a small
 classifier on Laya embeddings. Do not wire Laya into the gray band until it beats Magellan alone on
