@@ -7,3 +7,916 @@ Worker listening at http://127.0.0.1:8788
 [2026-09-21 02:00:36] worker pid 32504
 Polling site https://3d-price.netlify.app
 Worker listening at http://127.0.0.1:8788
+Heartbeat failed: Blob write failed (503): <?xml version="1.0" encoding="UTF-8"?>
+<Error><Code>SlowDown</Code><Message>Please reduce your request rate.</Message><RequestId>PV20RD9QZTSAQ6YQ</RequestId><HostId>wtmkJZv33Ec026rRF5g3mPr/z1CeWIdKFS7lZShkNiX7zbTZR22nwxr8hLaWp5juzGMuJS5qhe9LBj3CV8azQMenUgM09MlB</HostId></Error>
+[job-mualqyer-9icuqo] Claimed running printer https://www.robolinkmarket.com/3d-yazicilar
+[job-mualqyer-9icuqo] Starting printer run for https://www.robolinkmarket.com/3d-yazicilar
+• Worker claimed this job. Opening https://www.robolinkmarket.com/3d-yazicilar (no model wait).
+• Loaded current online catalog: 32 products and 0 filaments
+• Starting at https://www.robolinkmarket.com/3d-yazicilar
+• Opening https://www.robolinkmarket.com/3d-yazicilar
+goto https://www.robolinkmarket.com/3d-yazicilar
+goto done https://www.robolinkmarket.com/3d-yazicilar
+• Reading https://www.robolinkmarket.com/3d-yazicilar
+• gather
+• Harvested 32 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=40
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=40
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=40
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=40
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=48
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=48
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=48
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=48
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=56
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=56
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=56
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=56
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=64
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=64
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=64
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=64
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=72
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=72
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=72
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=72
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=80
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=80
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=80
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=80
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=88
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=88
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=88
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=88
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=96
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=96
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=96
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=96
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=99
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=99
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=99
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=99
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• 32 listings taken from category cards.
+• Grouping 32 accepted listings against the catalog. Live site stays unchanged until you deploy.
+• Confirmed merge Bambu Lab H2S 3D Yazıcı → Bambu Lab H2S 3D Yazıcı (bambu/h2s/bare)
+• place
+• Confirmed merge Bambu Lab P1S AMS 2 Pro 3D Yazıcı → Bambu Lab P1S 3D Yazıcı (bambu/p1s/bare)
+• place
+• Confirmed merge BambuLab H2D 3D Yazıcı → BambuLab H2D 3D Yazıcı (bambu/h2d/bare)
+• place
+• place
+• Confirmed merge Flashforge Creator 5 3D Yazıcı → Flashforge Creator 5 3D Yazıcı (flashforge/creator-5/bare)
+• place
+• Confirmed create Flashforge Creator 5 Pro 3D Yazıcı (flashforge/creator-5-pro/bare)
+• place
+• Confirmed create Bambu Lab A2L Combo 3D Yazıcı (bambu/a2l/combo)
+• place
+• place
+• place
+• Confirmed create Anycubic Photon P1 Reçine 3D Yazıcı (anycubic/photon-p1/bare)
+• place
+• Confirmed create Bambu Lab X2D Combo 3D Yazıcı (bambu/x2d/combo)
+• place
+• Confirmed create Bambu Lab H2C Lazer Full Combo 10W 3D Yazıcı (bambu/h2c/combo/laser-10w)
+• place
+• Confirmed create Creality Ender 3 V4 Combo 3D Yazıcı (creality/ender-3/combo)
+• place
+• Confirmed create Creality SparkX i7 Combo 3D Yazıcı (creality/sparkx-i7/combo)
+• place
+• Confirmed create Bambu Lab H2D Lazer Full Combo 10W 3D Yazıcı (bambu/h2d/combo/laser-10w)
+• place
+• Confirmed create ELEGOO Centauri Carbon 2 Combo 3D Yazıcı (elegoo/centauri-carbon-2/combo)
+• place
+• Confirmed merge Bambu Lab P2S 3D Yazıcı → Bambu Lab P2S 3D Yazıcı (bambu/p2s/bare)
+• place
+• Confirmed merge Snapmaker U1 3D Yazıcı → Snapmaker U1 3D Yazıcı (snapmaker/u1/bare)
+• place
+• Confirmed create Bambu Lab H2S Lazer Full Combo 10W 3D Yazıcı (bambu/h2s/combo/laser-10w)
+• place
+• Confirmed create Creality K2 Pro Combo 3D Yazıcı (creality/k2-pro/combo)
+• place
+• Confirmed create Creality K2 Combo 3D Yazıcı (creality/k2/combo)
+• place
+• Confirmed create Anycubic Photon Mono M7 Pro MSLA 3D Yazıcı (anycubic/photon-mono-m7-pro/bare)
+• place
+• Confirmed merge Bambu Lab P1S 3D Yazıcı → Bambu Lab P1S 3D Yazıcı (bambu/p1s/bare)
+• place
+• Confirmed create ELEGOO Saturn 4 Ultra 16K 3D Yazıcı (elegoo/saturn-4-ultra-16k/bare)
+• place
+• Confirmed create Bambu Lab A1 Mini Combo 3D Yazıcı (bambu/a1-mini/combo)
+• place
+• Confirmed create Snapmaker Ray Lazer Gravür ve Kesici - 40W (snapmaker/ray/bare/laser-40w)
+• place
+• place
+• place
+• Confirmed create Anycubic Photon Mono 4 Ultra MSLA 3D Yazıcı (anycubic/photon-mono-4-ultra/bare)
+• place
+• place
+• Confirmed create Anycubic Photon Mono M7 MSLA 3D Yazıcı (anycubic/photon-mono-m7/bare)
+• place
+• place
+• done
+[job-mualqyer-9icuqo] Run complete — reading candidate from C:\Users\AbdulrahmanBitar\Documents\3d_Price\data\qwen-employee\catalog.candidate.json
+[job-mualqyer-9icuqo] Candidate uploaded. Review at https://3d-price.netlify.app/admin/
+[job-mualsjg2-bxz2nz] Claimed running printer https://www.robolinkmarket.com/3d-yazicilar
+[job-mualsjg2-bxz2nz] Starting printer run for https://www.robolinkmarket.com/3d-yazicilar
+• Worker claimed this job. Opening https://www.robolinkmarket.com/3d-yazicilar (no model wait).
+• Loaded current online catalog: 0 products and 0 filaments
+• Starting at https://www.robolinkmarket.com/3d-yazicilar
+• Opening https://www.robolinkmarket.com/3d-yazicilar
+goto https://www.robolinkmarket.com/3d-yazicilar
+goto done https://www.robolinkmarket.com/3d-yazicilar
+• Reading https://www.robolinkmarket.com/3d-yazicilar
+• gather
+• Harvested 32 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=40
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=40
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=40
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=40
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=48
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=48
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=48
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=48
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=56
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=56
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=56
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=56
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=64
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=64
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=64
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=64
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=72
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=72
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=72
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=72
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=80
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=80
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=80
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=80
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=88
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=88
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=88
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=88
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=96
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=96
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=96
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=96
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robolinkmarket.com/3d-yazicilar?ps=99
+goto https://www.robolinkmarket.com/3d-yazicilar?ps=99
+goto done https://www.robolinkmarket.com/3d-yazicilar?ps=99
+• Reading https://www.robolinkmarket.com/3d-yazicilar?ps=99
+• No in-scope products on this page yet (0 dropped)
+• Harvested 0 product URLs from the page HTML
+• discover
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• 32 listings taken from category cards.
+• Grouping 32 accepted listings against the catalog. Live site stays unchanged until you deploy.
+• Confirmed create Bambu Lab H2S 3D Yazıcı (bambu/h2s/bare)
+• place
+• Confirmed create Bambu Lab P1S AMS 2 Pro 3D Yazıcı (bambu/p1s/bare)
+• place
+• Confirmed create BambuLab H2D 3D Yazıcı (bambu/h2d/bare)
+• place
+• place
+• Confirmed create Flashforge Creator 5 3D Yazıcı (flashforge/creator-5/bare)
+• place
+• Confirmed create Flashforge Creator 5 Pro 3D Yazıcı (flashforge/creator-5-pro/bare)
+• place
+• Confirmed create Bambu Lab A2L Combo 3D Yazıcı (bambu/a2l/combo)
+• place
+• place
+• place
+• Confirmed create Anycubic Photon P1 Reçine 3D Yazıcı (anycubic/photon-p1/bare)
+• place
+• Confirmed create Bambu Lab X2D Combo 3D Yazıcı (bambu/x2d/combo)
+• place
+• Confirmed create Bambu Lab H2C Lazer Full Combo 10W 3D Yazıcı (bambu/h2c/combo/laser-10w)
+• place
+• Confirmed create Creality Ender 3 V4 Combo 3D Yazıcı (creality/ender-3/combo)
+• place
+• Confirmed create Creality SparkX i7 Combo 3D Yazıcı (creality/sparkx-i7/combo)
+• place
+• Confirmed create Bambu Lab H2D Lazer Full Combo 10W 3D Yazıcı (bambu/h2d/combo/laser-10w)
+• place
+• Confirmed create ELEGOO Centauri Carbon 2 Combo 3D Yazıcı (elegoo/centauri-carbon-2/combo)
+• place
+• Confirmed create Bambu Lab P2S 3D Yazıcı (bambu/p2s/bare)
+• place
+• Confirmed create Snapmaker U1 3D Yazıcı (snapmaker/u1/bare)
+• place
+• Confirmed create Bambu Lab H2S Lazer Full Combo 10W 3D Yazıcı (bambu/h2s/combo/laser-10w)
+• place
+• Confirmed create Creality K2 Pro Combo 3D Yazıcı (creality/k2-pro/combo)
+• place
+• Confirmed create Creality K2 Combo 3D Yazıcı (creality/k2/combo)
+• place
+• Confirmed create Anycubic Photon Mono M7 Pro MSLA 3D Yazıcı (anycubic/photon-mono-m7-pro/bare)
+• place
+• Confirmed create Bambu Lab P1S 3D Yazıcı (bambu/p1s/bare)
+• place
+• Confirmed create ELEGOO Saturn 4 Ultra 16K 3D Yazıcı (elegoo/saturn-4-ultra-16k/bare)
+• place
+• Confirmed create Bambu Lab A1 Mini Combo 3D Yazıcı (bambu/a1-mini/combo)
+• place
+• Confirmed create Snapmaker Ray Lazer Gravür ve Kesici - 40W (snapmaker/ray/bare/laser-40w)
+• place
+• place
+• place
+• Confirmed create Anycubic Photon Mono 4 Ultra MSLA 3D Yazıcı (anycubic/photon-mono-4-ultra/bare)
+• place
+• place
+• Confirmed create Anycubic Photon Mono M7 MSLA 3D Yazıcı (anycubic/photon-mono-m7/bare)
+• place
+• place
+• done
+[job-mualsjg2-bxz2nz] Run complete — reading candidate from C:\Users\AbdulrahmanBitar\Documents\3d_Price\data\qwen-employee\catalog.candidate.json
+[job-mualsjg2-bxz2nz] Candidate uploaded. Review at https://3d-price.netlify.app/admin/
+[job-mualuy73-qwrae4] Claimed running printer https://www.3dteknomarket.com/collections/fdm-yazicilar
+[job-mualuy73-qwrae4] Starting printer run for https://www.3dteknomarket.com/collections/fdm-yazicilar
+• Worker claimed this job. Opening https://www.3dteknomarket.com/collections/fdm-yazicilar (no model wait).
+• Loaded current online catalog: 19 products and 0 filaments
+• Starting at https://www.3dteknomarket.com/collections/fdm-yazicilar
+• Opening https://www.3dteknomarket.com/collections/fdm-yazicilar
+goto https://www.3dteknomarket.com/collections/fdm-yazicilar
+goto done https://www.3dteknomarket.com/collections/fdm-yazicilar
+• Reading https://www.3dteknomarket.com/collections/fdm-yazicilar
+• gather
+• Dropped 37 non-product URLs before placement
+• Harvested 8 product URLs from the page HTML
+• discover
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• 8 listings taken from category cards.
+• Grouping 8 accepted listings against the catalog. Live site stays unchanged until you deploy.
+• Magellan merge Bambu Lab A2L Combo 3D Yazıcı → Bambu Lab A2L Combo 3D Yazıcı (identical title)
+• place
+• Confirmed create Bambu Lab A1 Combo 3D Yazıcı (bambu/a1/combo)
+• place
+• Confirmed create Bambu Lab H2D AMS Combo 3D Yazıcı (bambu/h2d/combo)
+• place
+• Confirmed create Bambu Lab P1S Combo 3D Yazıcı (bambu/p1s/combo)
+• place
+• Confirmed create Bambu Lab H2D Laser Full Combo 40W 3D Yazıcı (bambu/h2d/combo/laser-40w)
+• place
+• Confirmed create Bambu Lab H2S AMS Combo 3D Yazıcı (bambu/h2s/combo)
+• place
+• Confirmed create Bambu Lab P2S Combo 3D Yazıcı (bambu/p2s/combo)
+• place
+• Magellan merge Bambu Lab X2D AMS Combo 3D Yazıcı → Bambu Lab X2D Combo 3D Yazıcı (magellan title subset)
+• place
+• done
+[job-mualuy73-qwrae4] Run complete — reading candidate from C:\Users\AbdulrahmanBitar\Documents\3d_Price\data\qwen-employee\catalog.candidate.json
+[job-mualuy73-qwrae4] Candidate uploaded. Review at https://3d-price.netlify.app/admin/
+[job-mualvk0u-6mny0m] Claimed running printer https://www.robotzade.com/kategori/3d-yazici
+[job-mualvk0u-6mny0m] Starting printer run for https://www.robotzade.com/kategori/3d-yazici
+• Worker claimed this job. Opening https://www.robotzade.com/kategori/3d-yazici (no model wait).
+• Loaded current online catalog: 25 products and 0 filaments
+• Starting at https://www.robotzade.com/kategori/3d-yazici
+• Opening https://www.robotzade.com/kategori/3d-yazici
+goto https://www.robotzade.com/kategori/3d-yazici
+goto done https://www.robotzade.com/kategori/3d-yazici
+• Reading https://www.robotzade.com/kategori/3d-yazici
+• gather
+• Dropped 44 non-product URLs before placement
+• Harvested 16 product URLs from the page HTML
+• discover
+• Opening https://www.robotzade.com/kategori/3d-yazici?tp=2
+goto https://www.robotzade.com/kategori/3d-yazici?tp=2
+goto done https://www.robotzade.com/kategori/3d-yazici?tp=2
+• Reading https://www.robotzade.com/kategori/3d-yazici?tp=2
+• No in-scope products on this page yet (60 dropped)
+• Dropped 60 non-product URLs before placement
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robotzade.com/kategori/3d-yazici?tp=3
+goto https://www.robotzade.com/kategori/3d-yazici?tp=3
+goto done https://www.robotzade.com/kategori/3d-yazici?tp=3
+• Reading https://www.robotzade.com/kategori/3d-yazici?tp=3
+• No in-scope products on this page yet (48 dropped)
+• Dropped 48 non-product URLs before placement
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robotzade.com/kategori/3d-yazici?tp=4
+goto https://www.robotzade.com/kategori/3d-yazici?tp=4
+goto done https://www.robotzade.com/kategori/3d-yazici?tp=4
+• Reading https://www.robotzade.com/kategori/3d-yazici?tp=4
+• No in-scope products on this page yet (48 dropped)
+• Dropped 48 non-product URLs before placement
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robotzade.com/kategori/3d-yazici?tp=5
+goto https://www.robotzade.com/kategori/3d-yazici?tp=5
+goto done https://www.robotzade.com/kategori/3d-yazici?tp=5
+• Reading https://www.robotzade.com/kategori/3d-yazici?tp=5
+• No in-scope products on this page yet (48 dropped)
+• Dropped 48 non-product URLs before placement
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robotzade.com/kategori/3d-yazici?tp=6
+goto https://www.robotzade.com/kategori/3d-yazici?tp=6
+goto done https://www.robotzade.com/kategori/3d-yazici?tp=6
+• Reading https://www.robotzade.com/kategori/3d-yazici?tp=6
+• No in-scope products on this page yet (48 dropped)
+• Dropped 48 non-product URLs before placement
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://www.robotzade.com/kategori/3d-yazici?tp=7
+goto https://www.robotzade.com/kategori/3d-yazici?tp=7
+goto done https://www.robotzade.com/kategori/3d-yazici?tp=7
+• Reading https://www.robotzade.com/kategori/3d-yazici?tp=7
+• No in-scope products on this page yet (48 dropped)
+• Dropped 48 non-product URLs before placement
+• Harvested 0 product URLs from the page HTML
+• discover
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• 16 listings taken from category cards.
+• Grouping 16 accepted listings against the catalog. Live site stays unchanged until you deploy.
+• Confirmed create Bambu Lab A1 3D Yazıcı (bambu/a1/bare)
+• place
+• Magellan merge Bambu Lab H2D AMS Combo 3D Yazıcı → Bambu Lab H2D AMS Combo 3D Yazıcı (identical title)
+• place
+• Confirmed create Bambu Lab A1 Mini 3D Yazıcı (bambu/a1-mini/bare)
+• place
+• Magellan merge Bambu Lab P1S Combo 3D Yazıcı → Bambu Lab P1S Combo 3D Yazıcı (identical title)
+• place
+• place
+• place
+• Confirmed create Anycubic Photon Mono M7 3D Yazıcı (anycubic/photon-mono-m7/bare)
+• place
+• Confirmed create Anycubic Photon Mono M7 Pro MSLA 3D Yazıcı (anycubic/photon-mono-m7-pro/bare)
+• place
+• place
+• place
+• Confirmed create Bambu Lab A2L 3D Yazıcı (bambu/a2l/bare)
+• place
+• Magellan merge Bambu Lab A2L Combo 3D Yazıcı → Bambu Lab A2L Combo 3D Yazıcı (identical title)
+• place
+• Magellan merge Bambu Lab P2S Combo 3D Yazıcı → Bambu Lab P2S Combo 3D Yazıcı (identical title)
+• place
+• Confirmed create Bambu Lab H2C Combo 3D Yazıcı (bambu/h2c/combo)
+• place
+• Magellan merge Bambu Lab A1 Combo 3D Yazıcı → Bambu Lab A1 Combo 3D Yazıcı (identical title)
+• place
+• Confirmed create ELEGOO Mercury Plus V3.0 Yıkama ve Kürleme Makinesi (elegoo/mercury-plus/bare)
+• place
+• done
+[job-mualvk0u-6mny0m] Run complete — reading candidate from C:\Users\AbdulrahmanBitar\Documents\3d_Price\data\qwen-employee\catalog.candidate.json
+[job-mualvk0u-6mny0m] Candidate uploaded. Review at https://3d-price.netlify.app/admin/
+[job-mualzh4j-lq7vma] Claimed running printer https://www.rhino3dprinter.com/3d-yazicilar
+[job-mualzh4j-lq7vma] Starting printer run for https://www.rhino3dprinter.com/3d-yazicilar
+• Worker claimed this job. Opening https://www.rhino3dprinter.com/3d-yazicilar (no model wait).
+• Loaded current online catalog: 29 products and 0 filaments
+• Starting at https://www.rhino3dprinter.com/3d-yazicilar
+• Opening https://www.rhino3dprinter.com/3d-yazicilar
+goto https://www.rhino3dprinter.com/3d-yazicilar
+goto done https://www.rhino3dprinter.com/3d-yazicilar
+[job-mualzh4j-lq7vma] Aborted; local work stopped.
+[job-mualzlp3-eu8wnm] Claimed running printer https://www.rhino3dprinter.com/3d-yazicilar
+[job-mualzlp3-eu8wnm] Starting printer run for https://www.rhino3dprinter.com/3d-yazicilar
+• Worker claimed this job. Opening https://www.rhino3dprinter.com/3d-yazicilar (no model wait).
+• Loaded current online catalog: 29 products and 0 filaments
+• Starting at https://www.rhino3dprinter.com/3d-yazicilar
+• Opening https://www.rhino3dprinter.com/3d-yazicilar
+goto https://www.rhino3dprinter.com/3d-yazicilar
+goto done https://www.rhino3dprinter.com/3d-yazicilar
+goto https://www.rhino3dprinter.com/bambu-lab-h2s-3d-yazici
+goto done https://www.rhino3dprinter.com/bambu-lab-h2s-3d-yazici
+goto https://www.rhino3dprinter.com/photon-p1-combo-msla-3d-yazici
+goto done https://www.rhino3dprinter.com/photon-p1-combo-msla-3d-yazici
+goto https://www.rhino3dprinter.com/bambu-lab-h2d-3d-printer
+goto done https://www.rhino3dprinter.com/bambu-lab-h2d-3d-printer
+goto https://www.rhino3dprinter.com/snapmaker-2.0-a350ent-3in1-3d-printer
+goto done https://www.rhino3dprinter.com/snapmaker-2.0-a350ent-3in1-3d-printer
+goto https://www.rhino3dprinter.com/anycubic-mono-4-sla-3d-yazici
+goto done https://www.rhino3dprinter.com/anycubic-mono-4-sla-3d-yazici
+goto https://www.rhino3dprinter.com/creality-k2-3d-yazici
+goto done https://www.rhino3dprinter.com/creality-k2-3d-yazici
+goto https://www.rhino3dprinter.com/anycubic-photon-mono-4-ultra-msla-3d-yazici
+goto done https://www.rhino3dprinter.com/anycubic-photon-mono-4-ultra-msla-3d-yazici
+goto https://www.rhino3dprinter.com/anycubic-photon-m7-sla-yazici
+goto done https://www.rhino3dprinter.com/anycubic-photon-m7-sla-yazici
+goto https://www.rhino3dprinter.com/bambu-lab-h2c-laser-full-combo-10w
+goto done https://www.rhino3dprinter.com/bambu-lab-h2c-laser-full-combo-10w
+goto https://www.rhino3dprinter.com/snapmaker-u1-stoktan
+goto done https://www.rhino3dprinter.com/snapmaker-u1-stoktan
+goto https://www.rhino3dprinter.com/anycubic-photon-p1
+goto done https://www.rhino3dprinter.com/anycubic-photon-p1
+goto https://www.rhino3dprinter.com/bambu-lab-a1-mini-combo-3d-printer
+goto done https://www.rhino3dprinter.com/bambu-lab-a1-mini-combo-3d-printer
+goto https://www.rhino3dprinter.com/qiditech-max-4-combo-3d-yazici
+goto done https://www.rhino3dprinter.com/qiditech-max-4-combo-3d-yazici
+goto https://www.rhino3dprinter.com/bambu-lab-h2d-laser-full-10w-3d-yazici
+goto done https://www.rhino3dprinter.com/bambu-lab-h2d-laser-full-10w-3d-yazici
+goto https://www.rhino3dprinter.com/creality-ender-3-v4-combo
+goto done https://www.rhino3dprinter.com/creality-ender-3-v4-combo
+goto https://www.rhino3dprinter.com/flashforge-creator-5-3d-yazici
+goto done https://www.rhino3dprinter.com/flashforge-creator-5-3d-yazici
+goto https://www.rhino3dprinter.com/qidi-q2-combo-3d-yazici
+goto done https://www.rhino3dprinter.com/qidi-q2-combo-3d-yazici
+goto https://www.rhino3dprinter.com/qidi-q2c-combo-3d-yazici
+goto done https://www.rhino3dprinter.com/qidi-q2c-combo-3d-yazici
+• Reading https://www.rhino3dprinter.com/3d-yazicilar
+• gather
+• 1 category mismatch held out of the printer run
+• Harvested 23 product URLs from the page HTML
+• discover
+• Opening https://www.rhino3dprinter.com/3d-yazicilar?sayfa=2
+goto https://www.rhino3dprinter.com/3d-yazicilar?sayfa=2
+goto done https://www.rhino3dprinter.com/3d-yazicilar?sayfa=2
+goto https://www.rhino3dprinter.com/creality-sparkx-i7-combo
+goto done https://www.rhino3dprinter.com/creality-sparkx-i7-combo
+goto https://www.rhino3dprinter.com/bambu-lab-h2c-combo-3d-yazici
+goto done https://www.rhino3dprinter.com/bambu-lab-h2c-combo-3d-yazici
+goto https://www.rhino3dprinter.com/anycubic-photon-m7-pro-14k-recine-3d-yazici
+goto done https://www.rhino3dprinter.com/anycubic-photon-m7-pro-14k-recine-3d-yazici
+goto https://www.rhino3dprinter.com/creality-k2-combo-3d-yazici
+goto done https://www.rhino3dprinter.com/creality-k2-combo-3d-yazici
+goto https://www.rhino3dprinter.com/qidi-tech-max4
+goto done https://www.rhino3dprinter.com/qidi-tech-max4
+goto https://www.rhino3dprinter.com/elegoo-centauri-carbon-2-combo
+goto done https://www.rhino3dprinter.com/elegoo-centauri-carbon-2-combo
+goto https://www.rhino3dprinter.com/creality-k2-pro-combo-3d-yazici
+goto done https://www.rhino3dprinter.com/creality-k2-pro-combo-3d-yazici
+goto https://www.rhino3dprinter.com/bambu-lab-ams-2-pro
+goto done https://www.rhino3dprinter.com/bambu-lab-ams-2-pro
+goto https://www.rhino3dprinter.com/anycubic-wash-cure-3-max-yikama-ve-kurleme-makinesi
+goto done https://www.rhino3dprinter.com/anycubic-wash-cure-3-max-yikama-ve-kurleme-makinesi
+goto https://www.rhino3dprinter.com/urun/anycubic-wash-and-cure-3-0-plus-yikama-ve-kurleme-makinesi
+goto done https://www.rhino3dprinter.com/urun/anycubic-wash-and-cure-3-0-plus-yikama-ve-kurleme-makinesi
+goto https://www.rhino3dprinter.com/urun/bambu-lab-x1e-combo-3d-yazici
+goto done https://www.rhino3dprinter.com/urun/bambu-lab-x1e-combo-3d-yazici
+goto https://www.rhino3dprinter.com/urun/anycubic-photon-mono-m7-max-3d-yazici
+goto done https://www.rhino3dprinter.com/urun/anycubic-photon-mono-m7-max-3d-yazici
+goto https://www.rhino3dprinter.com/urun/flashforge-adventurer-5x-renkli-3d-yazici
+goto done https://www.rhino3dprinter.com/urun/flashforge-adventurer-5x-renkli-3d-yazici
+goto https://www.rhino3dprinter.com/bambu-lab-x2d-3d-printer
+goto done https://www.rhino3dprinter.com/bambu-lab-x2d-3d-printer
+goto https://www.rhino3dprinter.com/qidi-q2c-ve-outlet-qidi-box-ozel-set
+goto done https://www.rhino3dprinter.com/qidi-q2c-ve-outlet-qidi-box-ozel-set
+• Reading https://www.rhino3dprinter.com/3d-yazicilar?sayfa=2
+• gather
+• 2 category mismatches held out of the printer run
+• Harvested 22 product URLs from the page HTML
+• discover
+• Opening https://www.rhino3dprinter.com/3d-yazicilar?sayfa=3
+goto https://www.rhino3dprinter.com/3d-yazicilar?sayfa=3
+goto done https://www.rhino3dprinter.com/3d-yazicilar?sayfa=3
+goto https://www.rhino3dprinter.com/flashforge-creator-5-pro-3d-yazici
+goto done https://www.rhino3dprinter.com/flashforge-creator-5-pro-3d-yazici
+goto https://www.rhino3dprinter.com/creality-ender-5-max-3d-yazici
+goto done https://www.rhino3dprinter.com/creality-ender-5-max-3d-yazici
+goto https://www.rhino3dprinter.com/creality-ender-3-v3-plus-corexz-3d-yazici
+goto done https://www.rhino3dprinter.com/creality-ender-3-v3-plus-corexz-3d-yazici
+goto https://www.rhino3dprinter.com/bambu-lab-h2c-lazer-full-combo-40w-3d-yazici
+goto done https://www.rhino3dprinter.com/bambu-lab-h2c-lazer-full-combo-40w-3d-yazici
+goto https://www.rhino3dprinter.com/bambu-lab-a2l-combo-3d-yazici
+goto done https://www.rhino3dprinter.com/bambu-lab-a2l-combo-3d-yazici
+goto https://www.rhino3dprinter.com/bambu-lab-h2s-laser-full-combo-3d-yazici
+goto done https://www.rhino3dprinter.com/bambu-lab-h2s-laser-full-combo-3d-yazici
+goto https://www.rhino3dprinter.com/creality-k1c-3d-yazici-2025-yeni-versiyon
+goto done https://www.rhino3dprinter.com/creality-k1c-3d-yazici-2025-yeni-versiyon
+goto https://www.rhino3dprinter.com/creality-k1-max-3d-yazici-2025-yeni-versiyon
+goto done https://www.rhino3dprinter.com/creality-k1-max-3d-yazici-2025-yeni-versiyon
+goto https://www.rhino3dprinter.com/bambu-lab-p2s-3d-yazici
+goto done https://www.rhino3dprinter.com/bambu-lab-p2s-3d-yazici
+goto https://www.rhino3dprinter.com/bambu-lab-p2s-combo-3d-yazici
+goto done https://www.rhino3dprinter.com/bambu-lab-p2s-combo-3d-yazici
+goto https://www.rhino3dprinter.com/bambu-lab-p1s-3d-yazici
+goto done https://www.rhino3dprinter.com/bambu-lab-p1s-3d-yazici
+goto https://www.rhino3dprinter.com/urun/bambulab-h2s-combo
+goto done https://www.rhino3dprinter.com/urun/bambulab-h2s-combo
+goto https://www.rhino3dprinter.com/urun/bambu-lab-h2d-combo
+goto done https://www.rhino3dprinter.com/urun/bambu-lab-h2d-combo
+goto https://www.rhino3dprinter.com/urun/bambu-lab-a1-mini-3d-printer
+goto done https://www.rhino3dprinter.com/urun/bambu-lab-a1-mini-3d-printer
+• Reading https://www.rhino3dprinter.com/3d-yazicilar?sayfa=3
+• gather
+• Dropped 7 non-product URLs before placement
+• Harvested 17 product URLs from the page HTML
+• discover
+• Opening https://www.rhino3dprinter.com/3d-yazicilar?sayfa=4
+goto https://www.rhino3dprinter.com/3d-yazicilar?sayfa=4
+goto done https://www.rhino3dprinter.com/3d-yazicilar?sayfa=4
+goto https://www.rhino3dprinter.com/urun/bambu-lab-p1s-combo-3d-yazici
+goto done https://www.rhino3dprinter.com/urun/bambu-lab-p1s-combo-3d-yazici
+goto https://www.rhino3dprinter.com/urun/bambu-lab-a1-combo-3d-yazici
+goto done https://www.rhino3dprinter.com/urun/bambu-lab-a1-combo-3d-yazici
+goto https://www.rhino3dprinter.com/urun/creality-hi-combo
+goto done https://www.rhino3dprinter.com/urun/creality-hi-combo
+goto https://www.rhino3dprinter.com/urun/creality-k2-plus-combo
+goto done https://www.rhino3dprinter.com/urun/creality-k2-plus-combo
+goto https://www.rhino3dprinter.com/urun/elegoo-orangestorm-giga-3d-yazici
+goto done https://www.rhino3dprinter.com/urun/elegoo-orangestorm-giga-3d-yazici
+• Reading https://www.rhino3dprinter.com/3d-yazicilar?sayfa=4
+• gather
+• Dropped 8 non-product URLs before placement
+• Harvested 7 product URLs from the page HTML
+• discover
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• 69 listings taken from category cards.
+• Grouping 69 accepted listings against the catalog. Live site stays unchanged until you deploy.
+• Magellan merge Bambu Lab H2S 3D Yazıcı → Bambu Lab H2S 3D Yazıcı (identical title)
+• place
+• place
+• Confirmed create FLASHFORGE Adventurer 5X & Enclosed Kit Bundle (Kamera Hediyeli) (flashforge/adventurer-5x/bare)
+• place
+• Confirmed create QIDI Tech Plus5 Combo 3D Yazıcı (qidi/plus5/combo)
+• place
+• Magellan merge Bambu Lab H2D 3D Printer → BambuLab H2D 3D Yazıcı (magellan title subset)
+• place
+• Confirmed create Anycubic Kobra 3 V2 Combo 3D Yazıcı (anycubic/kobra-3-v2/combo)
+• place
+• Confirmed create Anycubic KOBRA X 3D Yazıcı (anycubic/kobra-x/bare)
+• place
+• place
+• Confirmed create Anycubic Photon Mono 4 SLA 3D Yazıcı (anycubic/photon-mono-4/bare)
+• place
+• place
+• Confirmed create Creality K2 3D Yazıcı (creality/k2/bare)
+• place
+• Confirmed create Anycubic Photon Mono 4 Ultra MSLA 3D Yazıcı (anycubic/photon-mono-4-ultra/bare)
+• place
+• place
+• Confirmed create Bambu Lab H2C Laser Full Combo 10W (bambu/h2c/combo/laser-10w)
+• place
+• Magellan merge Snapmaker U1 Yazıcı I Fiyat I İnceleme 2026 → Snapmaker U1 3D Yazıcı (magellan title subset)
+• place
+• Confirmed create Anycubic Photon P1 14K SLA 3D Yazıcı (anycubic/photon-p1/bare)
+• place
+• Magellan merge Bambu Lab A1 Mini Combo 3D Yazıcı → Bambu Lab A1 Mini Combo 3D Yazıcı (identical title)
+• place
+• Confirmed create QIDI Tech Max4 Combo 3d Yazıcı * Polar Cooler Hediye* (qidi/max4/combo)
+• place
+• Confirmed create Bambu Lab H2D Laser Full Combo 10W 3d Yazıcı Fiyatı Ve Özellikleri (bambu/h2d/combo/laser-10w)
+• place
+• Magellan merge Creality Ender-3 V4 Combo → Creality Ender 3 V4 Combo 3D Yazıcı (magellan title subset)
+• place
+• Magellan merge Flashforge Creator 5 3d Yazıcı → Flashforge Creator 5 3D Yazıcı (identical title)
+• place
+• Confirmed create Qidi Q2 Combo 3d Yazıcı (qidi/q2/combo)
+• place
+• Confirmed create Qidi Q2C Combo 3d Yazıcı (qidi/q2c/combo)
+• place
+• place
+• Magellan merge Creality SparkX i7 Combo → Creality SparkX i7 Combo 3D Yazıcı (magellan title subset)
+• place
+• Magellan merge Bambu Lab H2C Combo 3D Yazıcı → Bambu Lab H2C Combo 3D Yazıcı (identical title)
+• place
+• place
+• Magellan merge Creality K2 Combo 3D Yazıcı → Creality K2 Combo 3D Yazıcı (identical title)
+• place
+• Confirmed create QIDI Tech Max4 (qidi/max4/bare)
+• place
+• Magellan merge Elegoo Centauri Carbon 2 Combo → ELEGOO Centauri Carbon 2 Combo 3D Yazıcı (magellan title subset)
+• place
+• Magellan merge Creality K2 Pro Combo 3D Yazıcı → Creality K2 Pro Combo 3D Yazıcı (identical title)
+• place
+• Confirmed create Creality K1 Serisi CFS Upgrade Kiti (creality/k1/bare)
+• place
+• Confirmed create Zaxe Z3S 3D Yazıcı (zaxe/z3s/bare)
+• place
+• Confirmed create Zaxe X4 3D Yazıcı (zaxe/x4/bare)
+• place
+• place
+• place
+• Confirmed create QIDI Tech Q2 3D Yazıcı (qidi/q2/bare)
+• place
+• place
+• place
+• place
+• Confirmed create Anycubic Photon Mono M7 Max 3D Yazıcı (anycubic/photon-mono-m7/bare)
+• place
+• place
+• Magellan merge Flashforge Adventurer 5X Renkli 3D Yazıcı → FLASHFORGE Adventurer 5X & Enclosed Kit Bundle (Kamera Hediyeli) (magellan title subset)
+• place
+• Confirmed create Bambu Lab X2D 3D Printer (bambu/x2d/bare)
+• place
+• Confirmed create QIDI Q2C ve Outlet QIDI Box Özel Set (qidi/q2c/bare)
+• place
+• Magellan merge Flashforge Creator 5 PRO 3d Yazıcı → Flashforge Creator 5 Pro 3D Yazıcı (identical title)
+• place
+• Confirmed create Creality Ender 5 Max 3D Yazıcı (creality/ender-5-max/bare)
+• place
+• Confirmed create Creality Ender-3 V3 Plus CoreXZ 3D Yazıcı (creality/ender-3-v3/bare)
+• place
+• Magellan merge Bambu Lab H2C Lazer Full Combo 40W 3D Yazıcı → Bambu Lab H2C Lazer Full Combo 10W 3D Yazıcı (magellan same title)
+• place
+• Confirmed create ELEGOO Jupiter 2 SLA 3D Yazıcı 2026 Fiyat ve İnceleme (elegoo/jupiter-2/bare)
+• place
+• Magellan merge Bambu Lab A2L Combo 3D Yazıcı Fiyat I İnceleme → Bambu Lab A2L Combo 3D Yazıcı (magellan title subset)
+• place
+• Confirmed create Bambu Lab H2S 10W Laser Full Combo 3D Yazıcı Özellikleri (bambu/h2s/combo/laser-10w)
+• place
+• Confirmed create Qidi Q2C 3d Yazıcı (qidi/q2c/bare)
+• place
+• Magellan merge Bambu Lab X2D Combo 3D Printer → Bambu Lab X2D Combo 3D Yazıcı (magellan title subset)
+• place
+• Confirmed create Creality K1C 3D Yazıcı - 2025 Yeni Versiyon (creality/k1c/bare)
+• place
+• Confirmed create Creality K1 Max 3D Yazıcı - 2025 Yeni Versiyon (creality/k1-max/bare)
+• place
+• Magellan merge Bambu Lab P2S 3D Yazıcı → Bambu Lab P2S 3D Yazıcı (identical title)
+• place
+• Magellan merge Bambu Lab P2S Combo 3D Yazıcı → Bambu Lab P2S Combo 3D Yazıcı (identical title)
+• place
+• Magellan merge Bambu Lab P1S 3D Yazıcı → Bambu Lab P1S 3D Yazıcı (identical title)
+• place
+• Magellan merge BambuLab H2S Combo 3D Yazıcı → Bambu Lab H2S AMS Combo 3D Yazıcı (magellan title subset)
+• place
+• Magellan merge Bambu Lab H2D Combo 3D Yazıcı → Bambu Lab H2D AMS Combo 3D Yazıcı (magellan title subset)
+• place
+• Magellan merge Bambu Lab A1 Mini 3d Yazıcı → Bambu Lab A1 Mini 3D Yazıcı (identical title)
+• place
+• Magellan merge Bambu Lab P1S Combo 3D Yazıcı → Bambu Lab P1S Combo 3D Yazıcı (identical title)
+• place
+• Magellan merge Bambu Lab A1 Combo 3D Yazıcı → Bambu Lab A1 Combo 3D Yazıcı (identical title)
+• place
+• Magellan merge Bambu Lab A1 3D Yazıcı STOKTAN → Bambu Lab A1 3D Yazıcı (magellan title subset)
+• place
+• place
+• Confirmed create Creality K2 Plus 3D Yazıcı (creality/k2-plus/bare)
+• place
+• Confirmed create Creality K2 Plus Combo 3D Yazıcı (creality/k2-plus/combo)
+• place
+• Confirmed create Elegoo OrangeStorm Giga 3D Yazıcı (elegoo/orangestorm-giga/bare)
+• place
+• done
+[job-mualzlp3-eu8wnm] Run complete — reading candidate from C:\Users\AbdulrahmanBitar\Documents\3d_Price\data\qwen-employee\catalog.candidate.json
+[job-mualzlp3-eu8wnm] Candidate uploaded. Review at https://3d-price.netlify.app/admin/
+[job-muam1x0r-mvf6a5] Claimed running printer https://store.metatechtr.com/3d-yazicilar
+[job-muam1x0r-mvf6a5] Starting printer run for https://store.metatechtr.com/3d-yazicilar
+• Worker claimed this job. Opening https://store.metatechtr.com/3d-yazicilar (no model wait).
+• Loaded current online catalog: 67 products and 0 filaments
+• Starting at https://store.metatechtr.com/3d-yazicilar
+• Opening https://store.metatechtr.com/3d-yazicilar
+goto https://store.metatechtr.com/3d-yazicilar
+goto done https://store.metatechtr.com/3d-yazicilar
+in-stock filter Sadece Stoktakiler https://store.metatechtr.com/3d-yazicilar
+• Reading https://store.metatechtr.com/3d-yazicilar
+• gather
+• Dropped 7 non-product URLs before placement
+• Harvested 9 product URLs from the page HTML
+• discover
+• Opening https://store.metatechtr.com/3d-yazicilar?ps=24
+goto https://store.metatechtr.com/3d-yazicilar?ps=24
+goto done https://store.metatechtr.com/3d-yazicilar?ps=24
+in-stock filter Sadece Stoktakiler https://store.metatechtr.com/3d-yazicilar?ps=24
+• Reading https://store.metatechtr.com/3d-yazicilar?ps=24
+• No in-scope products on this page yet (7 dropped)
+• Dropped 7 non-product URLs before placement
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://store.metatechtr.com/3d-yazicilar?ps=32
+goto https://store.metatechtr.com/3d-yazicilar?ps=32
+goto done https://store.metatechtr.com/3d-yazicilar?ps=32
+in-stock filter Sadece Stoktakiler https://store.metatechtr.com/3d-yazicilar?ps=32
+• Reading https://store.metatechtr.com/3d-yazicilar?ps=32
+• No in-scope products on this page yet (7 dropped)
+• Dropped 7 non-product URLs before placement
+• Harvested 0 product URLs from the page HTML
+• discover
+• Opening https://store.metatechtr.com/3d-yazicilar?ps=39
+goto https://store.metatechtr.com/3d-yazicilar?ps=39
+goto done https://store.metatechtr.com/3d-yazicilar?ps=39
+in-stock filter Sadece Stoktakiler https://store.metatechtr.com/3d-yazicilar?ps=39
+• Reading https://store.metatechtr.com/3d-yazicilar?ps=39
+• No in-scope products on this page yet (7 dropped)
+• Dropped 7 non-product URLs before placement
+• Harvested 0 product URLs from the page HTML
+• discover
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• extract
+• 9 listings taken from category cards.
+• Grouping 9 accepted listings against the catalog. Live site stays unchanged until you deploy.
+• Magellan merge Bambu Lab → Bambu Lab H2S 3D Yazıcı (magellan title subset)
+• place
+• Magellan merge Bambu Lab → Bambu Lab H2S 3D Yazıcı (magellan title subset)
+• place
+• Magellan merge Bambu Lab → Bambu Lab H2S 3D Yazıcı (magellan title subset)
+• place
+• Magellan merge Bambu Lab → Bambu Lab H2S 3D Yazıcı (magellan title subset)
+• place
+• Magellan merge Bambu Lab → Bambu Lab H2S 3D Yazıcı (magellan title subset)
+• place
+• place
+• Magellan merge Bambu Lab → Bambu Lab H2S 3D Yazıcı (magellan title subset)
+• place
+• Magellan merge Bambu Lab → Bambu Lab H2S 3D Yazıcı (magellan title subset)
+• place
+• Magellan merge Bambu Lab → Bambu Lab H2S 3D Yazıcı (magellan title subset)
+• place
+• done
+[job-muam1x0r-mvf6a5] Run complete — reading candidate from C:\Users\AbdulrahmanBitar\Documents\3d_Price\data\qwen-employee\catalog.candidate.json
+[job-muam1x0r-mvf6a5] Candidate uploaded. Review at https://3d-price.netlify.app/admin/
