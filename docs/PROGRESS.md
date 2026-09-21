@@ -153,6 +153,47 @@ Laya zero-shot got those same cases wrong (called an A1 nozzle "same" as an H2C 
 confidence 0.463). Training it on 375 CPU pairs to maybe match a guard that already exists would be
 effort spent in the wrong place.
 
+### Step 1 DONE: compatibility guard ported into decidePair
+
+`isNotTheProduct()` at `lib/product-match.cjs:324-331`, checked as the first statement of `decidePair`.
+Strong words (`tarzi benzer muadil alternatif replacement for for use with`) and part nouns (nozzle,
+nozul, hotend, extruder, plenum, yedek parca, plaka, plate, kabin, enclosure, tabla, termistor,
+kayis, filtre, icin) disqualify a merge. `uyumlu/uygun/compatible` deliberately do NOT.
+
+Re-measured on the same 375 pairs:
+```
+accuracy    85.3% -> 86.7%
+false-merge  5/192 -> 0/192      (was every error of this class)
+knockoff     0/2  -> 2/2
+accessory    1/4  -> 4/4
+```
+Suite still 33/33.
+
+**The backspace bug recurred.** My own new regexes contained 4 more literal 0x08 bytes instead of
+``, so the guard silently did nothing and the first measurement after adding it was unchanged to
+the digit (320/375 both times). Found only by dumping char codes again. Any regex written into this
+repo by a tool must be byte-checked - this is now the second time.
+
+### Step 2 analysis: the 49 false splits are mostly MY GENERATOR's fault
+
+The `token order shuffled` variant did `words.slice(2).reverse()`, which reverses the model core:
+```
+A: Anycubic kobra 2 max Combo ace pro 3D Yazici
+B: Anycubic kobra Yazici 3D pro ace Combo max 2     <- word salad, no shop writes this
+```
+Magellan splitting that is not a matcher weakness. Of the 50 false splits, ~49 are this variant and
+1 is genuine (the hand-written H2C pair). So the 27.3% false-split figure is inflated by unfair
+pairs and the true rate is far lower. Fixing the generator to reorder only trailing modifiers
+realistically is step 2's work.
+
+### Corrections I got wrong earlier (for the record)
+
+- I said the pip package had nothing to fine-tune. True of the package, FALSE overall: the GitHub
+  repo has `notebooks/laya_finetune_typed_decisions_2xT4_kaggle.ipynb` with `build_model` and
+  `proper_reward` from `laya.common`. I inspected one surface and asserted about the whole system.
+- I said the guard fixes 85% of errors. Wrong arithmetic: 5 false merges vs 49 false splits means it
+  fixed 5 of 54, about 9%. Splits are the dominant problem, not merges.
+
 ### Next
 Fine-tune (freeze the encoder, train the decision head) on labeled pairs, or train a small
 classifier on Laya embeddings. Do not wire Laya into the gray band until it beats Magellan alone on
