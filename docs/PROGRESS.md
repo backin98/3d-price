@@ -374,7 +374,34 @@ out-of-range `350W` with no power word at all, and `0W`.
 4. `node --check` then the full suite after the edit, with `git checkout` on failure.
 5. Diff reviewed, byte count checked, committed only green, then merged to main.
 
+### Step 1a DONE: real listings mined -> `docs/real-listings.jsonl`
+
+`node scripts/mine-listings.cjs` walks every JSON on disk generically (any object with a name/title is a
+listing) rather than guessing a schema per file type, because shop runs write catalogue, candidate and
+audit shapes with different nesting. Skips node_modules/.git/.netlify/graphify-out/.venv-laya.
+
+```
+files scanned      : 1631
+raw listings seen  : 16447
+after dedupe       : 2190      (by shop+URL, or shop+title when there is no URL)
+distinct shops     : 29 labels
+with a URL         : 2190
+with a price       :  642
+```
+Richest sources: `work/match-catalog.json` (1543), `data/qwen-url-jobs/*/placement.json` (several runs),
+`data/qwen-employee/last-audit.json` (40), `catalog.candidate.json`.
+
+Top shops: robotizmo.net 548, Robolink Market 419, Rhino 3D Printer 385, 3D Teknomarket 147.
+
+**Known flaw, to fix in step 1b:** the shop label is not canonical. The same shop appears as
+`rhino3dprinter.com`, `Rhino 3D Printer` and `Rhino 3D Printer · 3D Teknomarket`, and 351 listings have
+an empty label. Pairing needs "two different shops" to be trustworthy, so step 1b will derive the shop
+from the URL HOST (authoritative) and keep the written label separately. No listings were dropped for
+this - the data is all there, the labels need normalising.
+
 ### Next
+Step 1b: canonicalise shop from the URL host, then group listings by Magellan's family key to propose
+candidate "same" pairs -> `docs/real-groups.jsonl`, flagged as Magellan-proposed (NOT ground truth).
 Step 1 of the Laya decision: mine REAL hard positives - every catalogue product with 2+ shop listings,
 plus raw listings from recent scrape/hunt runs - tag them `source=real`, and report the count.
 Fine-tune (freeze the encoder, train the decision head) on labeled pairs, or train a small
