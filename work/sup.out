@@ -1,0 +1,9 @@
+[2026-09-21 02:00:21] starting worker (pid will follow)
+[2026-09-21 02:00:21] worker pid 49048
+Polling site https://3d-price.netlify.app
+Worker listening at http://127.0.0.1:8788
+[2026-09-21 02:00:35] worker exited (code 1) - restarting in 1s
+[2026-09-21 02:00:36] starting worker (pid will follow)
+[2026-09-21 02:00:36] worker pid 32504
+Polling site https://3d-price.netlify.app
+Worker listening at http://127.0.0.1:8788

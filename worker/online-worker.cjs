@@ -298,8 +298,10 @@ async function claimAndRun() {
   try {
     data = await poll();
   } catch (err) {
-    console.warn("Poll failed:", err.message);
-    return false;
+    // Rethrow so the poll loop sees the failure and backs off. Swallowing it here is why a dead site
+    // produced a flat, endless wall of "Poll failed" lines: the loop never observed an error, so its
+    // backoff could not run, and every 5s it tried again at full speed. The loop owns logging now.
+    throw err;
   }
   const job = data.job;
   if (!job || job.status === "aborted") return false;
@@ -315,7 +317,11 @@ async function claimAndRun() {
 
 async function kickRun() {
   for (let i = 0; i < 8; i += 1) {
-    const ran = await claimAndRun();
+    // claimAndRun now rethrows poll failures so the main loop can back off. This caller (the
+    // scheduled scrape) needs its own guard, or the rejection would be unhandled and Node would
+    // take the worker down with it.
+    let ran = false;
+    try { ran = await claimAndRun(); } catch (err) { console.warn("Scheduled scrape failed:", err.message); }
     if (ran) return true;
     await sleep(700);
   }
