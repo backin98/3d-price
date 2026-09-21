@@ -399,6 +399,22 @@ an empty label. Pairing needs "two different shops" to be trustworthy, so step 1
 from the URL HOST (authoritative) and keep the written label separately. No listings were dropped for
 this - the data is all there, the labels need normalising.
 
+### Multi-shop run form (feat/multi-shop-run)
+
+The run form now holds a list of shop rows with a "+ Shop" button that clones the first row, and one
+submit queues one job per row (the worker still takes them one at a time). Row 1 keeps its original ids
+(`run-shop`, `run-cat`, `shop-url`) so existing code and tests keep working; clones get the classes
+`.run-shop`/`.run-cat`/`.run-url` and their ids stripped, plus a Remove button. A row added and left
+blank does not block the filled rows, and per-row problems are collected and reported together.
+
+Verified: `node --check` passes, the full suite is 35/35, the markup and all handler branches are
+present in the file, and row 1's ids are unchanged.
+
+NOT verified: no behavioural test. I did not simulate a two-row submit in a DOM, so "clicking + Shop and
+submitting creates two jobs" is reasoned from the code, not observed. The existing UI test harness
+stubs only a flat `#selector` map, and extending it to nested rows, cloneNode and event dispatch was
+more than the room I had left. Treat the multi-job path as BUILT BUT UNTESTED until a real run is done.
+
 ### Next
 Step 1b: canonicalise shop from the URL host, then group listings by Magellan's family key to propose
 candidate "same" pairs -> `docs/real-groups.jsonl`, flagged as Magellan-proposed (NOT ground truth).
