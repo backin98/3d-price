@@ -231,6 +231,34 @@ node -e 'const s=require("fs").readFileSync(F,"utf8"); console.log((s.match(//g
 ```
 must print 0. Both instances in `lib/product-match.cjs` are currently 0.
 
+### Generator fixed -> the honest baseline, and it changes the conclusion
+
+Replaced the full-reversal shuffle with `modifierSwap`: it moves an equipment marker past a laser
+group, which is the change real shops make ("H2C Combo Lazer 10W" vs "H2C Lazer 10W Combo"), and
+returns null when a title has no such pair so the row simply gets no shuffled variant.
+
+```
+BEFORE (unfair)   accuracy 86.7%   false-merge 0/192   false-split 50/183 (27.3%)
+AFTER  (fair)     accuracy 99.7%   false-merge 0/192   false-split  1/183 ( 0.5%)
+```
+`surface` is 180/180. **The single remaining failure is the hand-written H2C word-order pair** - the
+one case the whole Laya exercise was about.
+
+### What this means for Laya (the uncomfortable part)
+
+- There is nothing left for a model to fix on this set: false-merge is already 0.
+- The one miss, H2C `10 Watt Combo` vs `Combo Laser 10 Watt`, is a case **Laya zero-shot also got
+  wrong** (it answered "different", 0.339/0.661, confidence 0.076). So Laya does not fix it either.
+- Honest caveat about my own set: after removing the unfair pairs, the generated "same" pairs are
+  mostly trivial - casing, Turkish folding, added noise. `modifierSwap` only applies where a laser
+  group and a Combo marker coexist, so the number of pairs that genuinely test word order is small
+  (counted below). 99.7% therefore flatters Magellan; the real signal is the 15 hand-written edges,
+  where Magellan scores 14/15.
+
+That single miss is a normalisation problem, not a similarity problem: the same tokens are present
+and only their order differs, so the axes should be computed from a canonical modifier order rather
+than from the token sequence. That is a deterministic fix and it should be tried before any model.
+
 ### Next
 Fine-tune (freeze the encoder, train the decision head) on labeled pairs, or train a small
 classifier on Laya embeddings. Do not wire Laya into the gray band until it beats Magellan alone on

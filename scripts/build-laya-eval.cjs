@@ -39,16 +39,30 @@ function titleOf(row) {
   return t + " 3D Yazıcı";
 }
 
+// A realistic word-order variant: move an equipment marker past a laser group, which is the change
+// real shops make ("H2C Combo Lazer 10W" vs "H2C Lazer 10W Combo"). The previous version reversed
+// every token after the brand, producing "Anycubic kobra Yazici 3D pro ace Combo max 2" - word salad
+// no shop writes, which inflated the false-split rate by counting ~49 unfair pairs as matcher misses.
+// Returns null when the title has no such pair to move, so the row simply gets no shuffled variant.
+function modifierSwap(base) {
+  const laser = base.match(/ Lazer [0-9]+W/);
+  const hasCombo = / Combo/.test(base);
+  if (!laser || !hasCombo) return null;
+  const moved = base.replace(laser[0], "").replace(/ Combo/, "");
+  return moved.replace(" 3D Yazici", " " + laser[0].trim() + " Combo 3D Yazici")
+              .replace(" 3D Yazıcı", " " + laser[0].trim() + " Combo 3D Yazıcı")
+              .replace(/\s+/g, " ").trim();
+}
+
 function variants(row) {
   const base = titleOf(row);
-  const words = base.split(" ");
-  const swapped = words.length > 3 ? [...words.slice(0, 2), ...words.slice(2).reverse()].join(" ") : base;
+  const swapped = modifierSwap(base);
   const out = [];
   out.push({ title: base, why: "canonical" });
   out.push({ title: base.toUpperCase(), why: "upper-cased" });
   out.push({ title: foldTurkish(base), why: "Turkish chars folded" });
-  out.push({ title: base + " Kargo Bedava 2 Yıl Garanti", why: "marketing noise added" });
-  out.push({ title: swapped, why: "token order shuffled" });
+  out.push({ title: base + " Kargo Bedava 2 Yil Garanti", why: "marketing noise added" });
+  if (swapped && swapped !== base) out.push({ title: swapped, why: "equipment marker moved" });
   return out;
 }
 
