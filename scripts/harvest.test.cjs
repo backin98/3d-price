@@ -1,7 +1,7 @@
 const assert = require("node:assert/strict");
 const { harvestCategory, isLikelyProductUrl, slugToTitle, readStockFromHtml, extractProductPage, transactionPrice, isJunkAmount } = require("../lib/harvest.js");
 const { discoverInStockFilter } = require("../lib/harvest-guards.cjs");
-const { listingFromHarvest } = require("../lib/qwen-website-job.cjs");
+const { listingFromHarvest, shouldAddVat } = require("../lib/qwen-website-job.cjs");
 
 const RHINO = [
   "https://www.rhino3dprinter.com/muhendislik-filamentleri",
@@ -56,6 +56,11 @@ const KEEP = new Set(RHINO.slice(7));
   });
   assert.equal(preorderCard.inScope.length, 1);
   assert.equal(preorderCard.inScope[0].stock, "preorder");
+  const savedVatListing = listingFromHarvest(preorderCard.inScope[0].url, preorderCard.inScope[0], { kind: "printer", vat: "excluded" }, new Set([preorderCard.inScope[0].url]));
+  assert.equal(savedVatListing.price, 12000, "a saved VAT-excluded shop policy survives into the next run");
+  assert.equal(savedVatListing.vatAdded, true);
+  const pageIncluded = listingFromHarvest(preorderCard.inScope[0].url, { ...preorderCard.inScope[0], vatStatus: "included" }, { kind: "printer", vat: "excluded" }, new Set([preorderCard.inScope[0].url]));
+  assert.equal(pageIncluded.price, 10000, "explicit KDV-included card text overrides the shop default");
   const deadCard = await harvestCategory({
     categoryUrl: "https://store.metatechtr.com/3d-yazicilar",
     kind: "printers",
@@ -222,6 +227,17 @@ const KEEP = new Set(RHINO.slice(7));
     <div class="sale-price">10.000,00 TL</div><span>+ KDV</span>`, "https://www.rhino3dprinter.com/creality-k1-max-3d-yazici", "printer");
   assert.equal(plusVat.product.plusVat, true);
   assert.equal(plusVat.product.price, 10000);
+  assert.equal(plusVat.product.vatStatus, "excluded");
+
+  const silentVat = extractProductPage(`
+    <h1>Creality K1 Max 3D Yazıcı</h1><button>Sepete Ekle</button>
+    <div class="sale-price">10.000,00 TL</div>`, "https://shop.example/creality-k1-max", "printer");
+  assert.equal(silentVat.product.vatStatus, "unknown", "a silent page stays unknown instead of becoming KDV-included");
+  assert.equal(silentVat.product.vatIncluded, undefined);
+  assert.equal(shouldAddVat("excluded", "unknown"), true, "the saved shop policy applies when a page is silent");
+  assert.equal(shouldAddVat("excluded", "included"), false, "explicit KDV-included page text overrides the shop default");
+  assert.equal(shouldAddVat("included", "excluded"), true, "explicit +KDV page text always adds tax");
+  assert.equal(shouldAddVat("included", "unknown"), false, "an included shop does not invent tax on a silent page");
 
   const incomplete = extractProductPage("<h1>Mystery</h1>", "https://www.rhino3dprinter.com/creality-k2-3d-yazici", "printer");
   assert.ok(incomplete.incomplete);
