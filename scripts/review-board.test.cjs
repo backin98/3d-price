@@ -51,6 +51,7 @@ const html = context.test.reviewBoardHtml(data.jobs[0]);
 assert.match(html, /id="select-all"/);
 assert.match(html, /id="flag-all"/);
 assert.match(html, /id="delete-flagged"/);
+assert.match(html, /id="delete-all-review"/);
 assert.match(html, /Goes to/);
 assert.match(html, /data-review-place-q/);
 assert.match(html, /place-hits/);
@@ -124,6 +125,9 @@ const apiContext = {
 };
 const adminSrc = fs.readFileSync('netlify/functions/admin.mjs', 'utf8').replace(/^import .*;$/gm, '').replace('export default async', 'globalThis.handler = async');
 apiContext.money = require('../lib/parse-money.cjs'); // the function imports this module
+apiContext.matcher = require('../lib/product-match.cjs');
+apiContext.baselineLib = require('../lib/baseline-catalog.js');
+apiContext.boardLib = require('../lib/baseline-board.cjs');
 vm.runInNewContext(adminSrc, apiContext);
 const post = (body) => new Request('https://example.com/api/admin', { method: 'POST', headers: { origin: 'https://example.com', 'content-type': 'application/json' }, body: JSON.stringify(body) });
 
@@ -161,6 +165,18 @@ const post = (body) => new Request('https://example.com/api/admin', { method: 'P
   assert.equal(result.status, 200);
   assert.equal(data.candidate.products.some((p) => (p.offers || []).some((o) => o.url === 'https://shop.example.com/k2')), false);
   assert.ok(data.jobs[0].dropped.includes('https://shop.example.com/k2'));
+  data.jobs.push({
+    id: 'job-2', status: 'complete', url: 'https://other.example/3d',
+    cards: { 'https://other.example/p1s': { url: 'https://other.example/p1s', name: 'P1S' } },
+    events: [{ card: { url: 'https://other.example/p1s', name: 'P1S' } }]
+  });
+  result = await apiContext.handler(post({ action: 'deleteAllReview' }));
+  assert.equal(result.status, 200);
+  const wiped = await result.json();
+  assert.ok(wiped.deleted >= 2, 'delete all clears every shop in a multi-shop collect, got ' + wiped.deleted);
+  assert.equal(Object.keys(data.jobs[0].cards || {}).length, 0);
+  assert.equal(Object.keys(data.jobs[1].cards || {}).length, 0);
+  assert.ok(data.jobs[1].dropped.includes('https://other.example/p1s'));
   const droppedHtml = context.test.reviewBoardHtml({
     ...data.jobs[0],
     dropped: ['https://shop.example.com/pla-black-1kg'],

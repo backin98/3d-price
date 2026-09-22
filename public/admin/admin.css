@@ -146,8 +146,22 @@ button, .ghost { min-height: 38px; }
 .product-card img { object-fit: contain; height: 140px; background: #f5f7fa; }
 .product-card .name { margin-top: 14px; }
 .product-card .meta { margin-bottom: 12px; }
-.product-card input, .product-card select { padding: 9px; }
+.product-card input, .product-card select, .product-card textarea { padding: 9px; max-width: 100%; }
 .product-card .actions { margin-top: 14px; }
+.baseline-card { min-width: 0; overflow: hidden; }
+.baseline-card textarea[data-baseline-field="name"] {
+  display: block;
+  width: 100%;
+  min-height: 3.4em;
+  resize: vertical;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: pre-wrap;
+  line-height: 1.35;
+  font-weight: 700;
+}
+.baseline-cat { margin: 18px 0 8px; }
+.baseline-cat > summary { cursor: pointer; margin-bottom: 8px; }
 #banner-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 .banner-card { margin: 0; padding: 20px; }
 .banner-card input[type=checkbox] { width: auto; }

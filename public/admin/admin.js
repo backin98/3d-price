@@ -9,6 +9,10 @@
     runRows: null,
     tab: "overview",
     catalogQuery: "",
+    baselineQuery: "",
+    baselineEdit: new Map(),
+    runAllActive: false,
+    runAllStop: false,
     catalogLimit: 40,
     editing: new Map(), // productId -> {shelf, object}
     pendingImages: new Map(),
@@ -434,6 +438,7 @@
     paint("#tab-overview", overviewHtml(d));
     paint("#tab-runs", runsHtml(d));
     paint("#tab-catalog", catalogHtml(d));
+    paint("#tab-baseline", baselineHtml(d));
     paint("#tab-shops", shopsHtml(d));
     paint("#tab-merch", merchHtml(d));
     paint("#tab-ai", aiHtml(d));
@@ -445,6 +450,7 @@
   const pages = {
     overview: ["Overview", "Your catalog, shop activity, and next steps at a glance."],
     catalog: ["Catalog", "Review and edit the products visible on your storefront."],
+    baseline: ["Baseline", "Human-approved models, grouped by category. No shop offers. Survives a catalog wipe."],
     shops: ["Shops", "Manage the shops included in your price comparison."],
     runs: ["Shop runs", "Collect products from a shop and follow its progress."],
     merch: ["Storefront", "Manage homepage banners and featured products."],
@@ -604,6 +610,27 @@
     return rows;
   }
 
+  function runCategoryFromRows(rows) {
+    for (const r of rows || []) if (r && r.cat) return r.cat;
+    return "";
+  }
+
+  function remainingRunShops(d, rows) {
+    const used = new Set((rows || []).map((r) => r.shop).filter(Boolean));
+    return deskShops(d).filter((s) => s.enabled !== false && !used.has(s.id));
+  }
+
+  function rowsWithRemainingShops(d, rows) {
+    const cat = runCategoryFromRows(rows);
+    const extra = remainingRunShops(d, rows).map((s) => ({
+      shop: s.id,
+      cat,
+      url: categoryUrlForShop(s, cat) || ""
+    }));
+    const kept = (rows || []).filter((r) => r.shop);
+    return { rows: kept.concat(extra), added: extra.length, cat };
+  }
+
   function collectRunRows(isQuick) {
     if (isQuick) return [{ shop: null, cat: "", url: ((($("#run-url") || {}).value) || "").trim() }];
     return runRowsFromDom().map((r) => ({ ...r, shop: shopById(state.data, r.shop) }))
@@ -629,6 +656,7 @@
     return new Promise((resolve) => {
       let waited = 0;
       const tick = async () => {
+        if (state.runAllStop) return resolve({ status: "aborted" });
         try {
           const d = await api("/api/admin");
           const j = (d.jobs || []).find((x) => x.id === id);
@@ -654,6 +682,7 @@
       shop: selectedShop ? selectedShop.id : "", cat: selectedName, url: (job && job.url) || ""
     }];
     const llmOn = (job && job.autoLlmMatch !== undefined ? job.autoLlmMatch === true : (d.desk && d.desk.autoLlmMatch) === true);
+    const liveJobs = (d.jobs || []).filter((j) => ["queued", "running"].includes(j.status));
     return `
       <div class="panel">
         <h2>Start a shop run</h2>
@@ -669,15 +698,18 @@
                 ${runRows.length > 1 ? `<button class="ghost danger remove-shop-row" type="button">Remove</button>` : ""}
               </div>`).join("")}
             <button class="ghost" type="button" id="add-shop-row">+ Add another shop run</button>
+            <button class="ghost" type="button" id="add-all-shops" ${remainingRunShops(d, runRows).length ? "" : "disabled"} title="Add every shop that is not already in the list, using the category already selected">Add all remaining shops</button>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-top:1px dashed #c7d2fe;padding-top:8px">
-              <button class="primary" type="button" id="run-all" title="Review every shop above, then run them one after another">Review &amp; run all</button>
+              <button class="primary" type="button" id="run-all" ${state.runAllActive ? "disabled" : ""} title="Review every shop above, then run them one after another">${state.runAllActive ? "Running…" : "Review &amp; run all"}</button>
               <span class="muted" style="font-size:12px">Runs them top to bottom, one at a time, so each shop is matched against the ones already run.</span>
             </div>
           </div>
                     <div class="field"><label for="shop-max">Max products</label><input id="shop-max" type="number" min="1" max="400" value="${(job && job.maxProducts) || 200}"></div>
           <label class="muted" style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="run-llm" ${llmOn ? "checked" : ""}> AI help on very close matches</label>
           <button class="primary" type="submit" ${job ? "disabled" : ""}>Queue run</button>
-          ${job ? `<button class="ghost danger" type="button" id="abort-active">Abort ${job.id}</button><button class="ghost danger" type="button" id="delete-run">Delete run</button>` : ""}
+          ${job ? `<button class="ghost danger" type="button" id="abort-active">Abort job</button>` : ""}
+          ${(job || liveJobs.length || state.runAllActive) ? `<button class="ghost danger" type="button" id="abort-all">Abort all</button>` : ""}
+          ${job ? `<button class="ghost danger" type="button" id="delete-run">Delete run</button>` : ""}
         </form>
         <p class="muted">AI help off (default): Magellan decides and close calls wait for you. No AI server is needed either way. On: one short AI ask, text only, only when Magellan is in the gray band. Hard conflicts (AMS, Combo, mini, laser) are never merged either way.<br>Visual match: on — thumbnails are fingerprinted locally when titles are a close call, and a matching photo is flagged for you to confirm. Vision never merges on its own.</p>
         ${job ? `<p><span class="badge ${job.status}">${esc(job.status)}</span> ${esc(job.progress || "")}</p>` : "<p class='muted'>No active run.</p>"}
@@ -971,6 +1003,7 @@
         <button class="btn-sm ghost" type="button" id="clear-review">Clear selection</button>
         <button class="btn-sm ghost" type="button" id="clear-flags">Clear flags</button>
         <button class="btn-sm danger" type="button" id="delete-flagged" ${state.reviewFlags.size ? "" : "disabled"}>Delete flagged (${state.reviewFlags.size})</button>
+        <button class="btn-sm danger" type="button" id="delete-all-review" title="Remove every gathered listing from every shop in this collect, no selection needed">Delete all</button>
         <button class="btn-sm ok" type="button" id="publish-selected" ${selected ? "" : "disabled"}>Publish selected (${selected})</button>
         <span class="muted">${cards.length} gathered</span>
       </div>
@@ -1074,6 +1107,68 @@
           <small class="muted" id="stock-result"></small>
         </div>
       </div>`;
+  }
+
+  function baselineHtml(d) {
+    const board = d.baseline || { categories: [{ id: "printers", name: "3D Printers" }], items: [] };
+    const cats = board.categories && board.categories.length ? board.categories : [{ id: "printers", name: "3D Printers" }];
+    const q = adminFold(state.baselineQuery || "");
+    const all = board.items || [];
+    const jobs = d.jobs || [];
+    const importJobs = jobs.filter((j) => j.status === "complete" || (j.cards && Object.keys(j.cards).length));
+    const match = (it) => !q || adminFold([it.name, it.brand].join(" ")).includes(q);
+    return `<div class="panel">
+      <h2>Baseline</h2>
+      <p class="muted">Human-approved models. No shop offers. Categories are global: create once, then every card can use it. Rename a category below — the id stays, so models keep their parent.</p>
+      <div class="form-row" style="flex-wrap:wrap;gap:8px">
+        <input id="baseline-q" type="search" placeholder="Search models…" value="${esc(state.baselineQuery || "")}" style="min-width:200px">
+        <button type="button" class="btn-sm primary" id="baseline-from-catalog">Import from catalog</button>
+        <button type="button" class="btn-sm" id="baseline-from-candidate">Import from draft</button>
+        <select id="baseline-run">${importJobs.map((j) => `<option value="${esc(j.id)}">${esc((j.site || j.url || j.id) + " · " + (j.kind || ""))}</option>`).join("") || '<option value="">No shop runs yet</option>'}</select>
+        <button type="button" class="btn-sm" id="baseline-from-run">Import from shop run</button>
+      </div>
+      <div class="form-row" style="flex-wrap:wrap;gap:8px;margin-top:8px">
+        <input id="baseline-new-cat" type="text" placeholder="New category name" style="min-width:180px">
+        <button type="button" class="btn-sm" id="baseline-add-cat">Add category</button>
+        <input id="baseline-new-name" type="text" placeholder="New model name" style="min-width:180px">
+        <input id="baseline-new-brand" type="text" placeholder="Brand" style="min-width:120px">
+        <select id="baseline-new-parent">${cats.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("")}</select>
+        <button type="button" class="btn-sm" id="baseline-add-item">Add model</button>
+      </div>
+      <p class="muted">${all.filter(match).length} shown · ${all.length} models · ${cats.length} categories</p>
+      ${cats.map((c) => {
+        const items = all.filter((it) => (it.category || "printers") === c.id && match(it));
+        return `<details class="baseline-cat" ${detailAttrs("bcat-" + c.id)} open>
+          <summary><strong>${esc(c.name)}</strong> <span class="muted">${items.length}</span></summary>
+          <div class="form-row" style="flex-wrap:wrap;gap:8px;margin:8px 0">
+            <input data-baseline-cat-name="${esc(c.id)}" type="text" value="${esc(c.name)}" aria-label="Category name">
+            <button type="button" class="btn-sm" data-baseline-cat-save="${esc(c.id)}">Save category</button>
+          </div>
+          <div class="catalog-results">${items.map((it) => baselineCard(it, cats)).join("") || '<p class="muted">No models in this category.</p>'}</div>
+        </details>`;
+      }).join("")}
+    </div>`;
+  }
+
+  function baselineCard(it, cats) {
+    const edit = state.baselineEdit.get(it.id) || {};
+    const name = edit.name != null ? edit.name : (it.name || "");
+    const brand = edit.brand != null ? edit.brand : (it.brand || "");
+    const list = cats && cats.length ? cats : [{ id: "printers", name: "3D Printers" }];
+    const pending = state.pendingImages.get(it.id);
+    return `<div class="product-card baseline-card" data-baseline-id="${esc(it.id)}">
+      <div class="catalog-thumb">${pending ? `<img src="${esc(pending.preview)}" alt="Uploaded thumbnail preview">` : it.image ? productImg(it.image) : '<div class="catalog-thumb-empty"></div>'}</div>
+      <label class="catalog-image-upload">Upload thumbnail<input type="file" accept="image/jpeg,image/png,image/webp" data-baseline-image="${esc(it.id)}"></label>
+      <textarea aria-label="Model name" data-baseline-field="name" data-baseline-id="${esc(it.id)}" rows="3">${esc(name)}</textarea>
+      <input aria-label="Brand" data-baseline-field="brand" data-baseline-id="${esc(it.id)}" value="${esc(brand)}" placeholder="Brand">
+      <label class="muted" style="font-size:12px">Change category
+        <select data-baseline-move="${esc(it.id)}">${list.map((c) => `<option value="${esc(c.id)}" ${(it.category || "printers") === c.id ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select>
+      </label>
+      <div class="actions">
+        <button class="btn-sm" type="button" data-baseline-save="${esc(it.id)}">Save</button>
+        <button class="btn-sm danger" type="button" data-baseline-del="${esc(it.id)}">Remove</button>
+      </div>
+    </div>`;
   }
 
   function catalogHtml(d) {
@@ -1326,7 +1421,8 @@
 
   function jobsHtml(d) {
     const jobs = d.jobs || [];
-    return `<div class="panel"><h2>Jobs</h2>${jobs.length ? `<div class="tape" style="max-height:none">${jobs.map((j) => `
+    const live = jobs.filter((j) => ["queued", "running"].includes(j.status)).length;
+    return `<div class="panel"><h2>Jobs</h2>${live ? `<p><button class="btn-sm danger" type="button" id="abort-all">Abort all (${live})</button></p>` : ""}${jobs.length ? `<div class="tape" style="max-height:none">${jobs.map((j) => `
       <div style="border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:8px;margin:6px 0">
         <b>${esc(j.type)}</b> <span class="badge ${esc(j.status)}">${esc(j.status)}</span> ${esc(j.progress || "")}<br>
         <span style="color:#8aa">${esc(j.url || "")} · ${new Date(j.createdAt || Date.now()).toLocaleString()}</span>
@@ -1373,9 +1469,19 @@
     document.addEventListener("click", async (e) => {
       if (e.target.closest("#add-shop-row")) {
         const rows = rememberRunRows();
-        state.runRows = [...rows, { shop: "", cat: "", url: "" }];
+        state.runRows = [...rows, { shop: "", cat: runCategoryFromRows(rows), url: "" }];
         painted.delete("#tab-runs");
         paint("#tab-runs", runsHtml(state.data));
+        return;
+      }
+      if (e.target.closest("#add-all-shops")) {
+        const rows = rememberRunRows();
+        const next = rowsWithRemainingShops(state.data, rows);
+        if (!next.added) { toast("All shops are already listed."); return; }
+        state.runRows = next.rows;
+        painted.delete("#tab-runs");
+        paint("#tab-runs", runsHtml(state.data));
+        toast("Added " + next.added + " shop" + (next.added === 1 ? "" : "s") + (next.cat ? " as " + next.cat : "") + ". Change any row’s category from its dropdown.");
         return;
       }
       if (e.target.closest("[data-move-run]")) {
@@ -1408,20 +1514,44 @@
         const order = rows.map((r, i) => (i + 1) + ". " + (r.shop.name || r.shop.id) + " — " + (r.cat || r.url)).join("\n");
         if (!confirm("Run these shops from top to bottom?\n\n" + order)) return;
         const btn = e.target.closest("#run-all");
+        const original = btn.textContent;
         const maxProducts = Number(($("#shop-max") || {}).value || 200);
         const llmValue = $("#run-llm") ? $("#run-llm").checked : undefined;
-        btn.disabled = true;
-        for (let i = 0; i < rows.length; i += 1) {
-          const r = rows[i];
-          const who = r.shop.name || r.shop.id;
-          btn.textContent = "Running " + (i + 1) + "/" + rows.length + " — " + who;
-          try {
-            const created = await action({ action: "createJob", type: "shop", url: r.url, kind: kindForCategory(r.cat), maxProducts, autoLlmMatch: llmValue });
-            try { await notifyWorker(created.job); } catch (kickErr) { console.warn(kickErr); }
-            await waitForRunJob(created.job.id);
-          } catch (err) { toast(who + ": " + err.message); }
+        state.runAllActive = true;
+        state.runAllStop = false;
+        painted.delete("#tab-runs");
+        paint("#tab-runs", runsHtml(state.data));
+        const startBtn = $("#run-all") || btn;
+        startBtn.disabled = true;
+        let stopped = false;
+        try {
+          for (let i = 0; i < rows.length; i += 1) {
+            if (state.runAllStop) { stopped = true; break; }
+            const r = rows[i];
+            const who = r.shop.name || r.shop.id;
+            const liveBtn = $("#run-all") || btn;
+            liveBtn.textContent = "Running " + (i + 1) + "/" + rows.length + " — " + who;
+            try {
+              if (state.runAllStop) { stopped = true; break; }
+              const created = await action({ action: "createJob", type: "shop", url: r.url, kind: kindForCategory(r.cat), maxProducts, autoLlmMatch: llmValue });
+              if (state.runAllStop) {
+                stopped = true;
+                if (created && created.job) try { await action({ action: "abortJob", id: created.job.id }); } catch (_) { /* already stopping */ }
+                break;
+              }
+              try { await notifyWorker(created.job); } catch (kickErr) { console.warn(kickErr); }
+              await waitForRunJob(created.job.id);
+              if (state.runAllStop) { stopped = true; break; }
+            } catch (err) { toast(who + ": " + err.message); }
+          }
+          toast(stopped || state.runAllStop ? "Run all aborted." : "Run all finished — " + rows.length + " shop(s).");
+        } finally {
+          state.runAllActive = false;
+          state.runAllStop = false;
+          const liveBtn = $("#run-all");
+          if (liveBtn) { liveBtn.disabled = false; liveBtn.textContent = original; }
+          else { btn.disabled = false; btn.textContent = original; }
         }
-        toast("Run all finished — " + rows.length + " shop(s).");
         return;
       }
       if (e.target.closest("#ai-detect")) {
@@ -1721,6 +1851,16 @@
         } catch (err) { toast(err.message); }
         return;
       }
+      if (e.target.closest("#delete-all-review")) {
+        if (!confirm("Delete every gathered listing from every shop run on the board? No selection needed. Live catalog is not touched.")) return;
+        try {
+          const res = await action({ action: "deleteAllReview" });
+          state.reviewFlags.clear();
+          state.reviewSelected.clear();
+          toast("Deleted " + (res.deleted || 0) + " listings from all shop runs.");
+        } catch (err) { toast(err.message); }
+        return;
+      }
       if (e.target.closest("#update-catalog")) {
         const btn = e.target.closest("#update-catalog");
         const ids = [...new Set([...state.editing.keys(), ...state.pendingImages.keys()])];
@@ -1964,6 +2104,15 @@
         const job = activeJob(state.data || { jobs: [] });
         if (!job) return;
         try { await action({ action: "abortJob", id: job.id }); toast("Abort requested."); } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("#abort-all")) {
+        state.runAllStop = true;
+        try {
+          const res = await action({ action: "abortAllJobs" });
+          toast("Aborted " + (res.aborted || 0) + " job(s).");
+        } catch (err) { toast(err.message); }
+        return;
       }
       if (e.target.closest("[data-delete-shop-cat]")) {
         const btn = e.target.closest("[data-delete-shop-cat]");
@@ -2019,6 +2168,107 @@
         state.editing.delete(id);
         state.pendingImages.delete(id);
         render();
+      }
+      if (e.target.closest("#baseline-from-catalog")) {
+        try {
+          const res = await action({ action: "importBaselineFromCatalog" });
+          if (res.baseline) state.data.baseline = res.baseline;
+          painted.delete("#tab-baseline");
+          render();
+          toast("Imported catalog: +" + res.added + " new, " + res.updated + " updated.");
+        } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("#baseline-from-candidate")) {
+        try {
+          const res = await action({ action: "importBaselineFromCatalog", from: "candidate" });
+          if (res.baseline) state.data.baseline = res.baseline;
+          painted.delete("#tab-baseline");
+          render();
+          toast("Imported draft: +" + res.added + " new, " + res.updated + " updated.");
+        } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("#baseline-from-run")) {
+        const jobId = ($("#baseline-run") || {}).value;
+        if (!jobId) { toast("No shop run to import."); return; }
+        try {
+          const res = await action({ action: "importBaselineFromRun", jobId });
+          if (res.baseline) state.data.baseline = res.baseline;
+          painted.delete("#tab-baseline");
+          render();
+          toast("Imported run: +" + res.added + " new, " + res.updated + " updated.");
+        } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("[data-baseline-del]")) {
+        const id = e.target.closest("[data-baseline-del]").dataset.baselineDel;
+        try {
+          const res = await action({ action: "deleteBaselineItem", id });
+          if (res.baseline) state.data.baseline = res.baseline;
+          state.baselineEdit.delete(id);
+          painted.delete("#tab-baseline");
+          render();
+          toast("Removed from baseline.");
+        } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("[data-baseline-save]")) {
+        const id = e.target.closest("[data-baseline-save]").dataset.baselineSave;
+        const card = e.target.closest(".baseline-card");
+        const name = ((card && card.querySelector('[data-baseline-field="name"]')) || {}).value;
+        const brand = ((card && card.querySelector('[data-baseline-field="brand"]')) || {}).value;
+        try {
+          const image = state.pendingImages.get(id);
+          const res = await action({ action: "updateBaselineItem", id, patch: { name, brand }, imageUpload: image ? { type: image.type, data: image.data } : null });
+          if (res.baseline) state.data.baseline = res.baseline;
+          state.baselineEdit.delete(id);
+          state.pendingImages.delete(id);
+          painted.delete("#tab-baseline");
+          render();
+          toast("Model saved.");
+        } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("[data-baseline-cat-save]")) {
+        const id = e.target.closest("[data-baseline-cat-save]").dataset.baselineCatSave;
+        const box = document.querySelector('[data-baseline-cat-name="' + id + '"]');
+        const name = ((box || {}).value || "").trim();
+        if (!name) { toast("Name the category first."); return; }
+        try {
+          const res = await action({ action: "renameBaselineCategory", id, name });
+          if (res.baseline) state.data.baseline = res.baseline;
+          painted.delete("#tab-baseline");
+          render();
+          toast("Category saved — it is global for every model.");
+        } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("#baseline-add-cat")) {
+        const name = (($("#baseline-new-cat") || {}).value || "").trim();
+        if (!name) { toast("Name the category first."); return; }
+        try {
+          const res = await action({ action: "addBaselineCategory", name });
+          if (res.baseline) state.data.baseline = res.baseline;
+          painted.delete("#tab-baseline");
+          render();
+          toast("Category added.");
+        } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("#baseline-add-item")) {
+        const name = (($("#baseline-new-name") || {}).value || "").trim();
+        const brand = (($("#baseline-new-brand") || {}).value || "").trim();
+        const category = (($("#baseline-new-parent") || {}).value || "printers");
+        if (!name) { toast("Name the model first."); return; }
+        try {
+          const res = await action({ action: "addBaselineItem", name, brand, category });
+          if (res.baseline) state.data.baseline = res.baseline;
+          painted.delete("#tab-baseline");
+          render();
+          toast("Model added.");
+        } catch (err) { toast(err.message); }
+        return;
       }
       if (e.target.closest("[data-abort-job]")) {
         const id = e.target.closest("[data-abort-job]").dataset.abortJob;
@@ -2155,15 +2405,15 @@
     });
 
     document.addEventListener("change", async (e) => {
-      if (e.target.matches("[data-product-image]")) {
-        const id = e.target.dataset.productImage;
+      if (e.target.matches("[data-product-image], [data-baseline-image]")) {
+        const id = e.target.dataset.productImage || e.target.dataset.baselineImage;
         try {
           const image = await prepareThumbnail(e.target.files && e.target.files[0]);
           state.pendingImages.set(id, image);
           const box = e.target.closest(".product-card").querySelector(".catalog-thumb");
           box.innerHTML = `<img src="${esc(image.preview)}" alt="Uploaded thumbnail preview">`;
-          showCatalogDirtyCount();
-          toast("Thumbnail ready. Press Update catalog or Save to publish it.");
+          if (e.target.dataset.productImage) showCatalogDirtyCount();
+          toast(e.target.dataset.baselineImage ? "Thumbnail ready. Press Save on this model." : "Thumbnail ready. Press Update catalog or Save to publish it.");
         } catch (err) { toast(err.message); e.target.value = ""; }
         return;
       }
@@ -2223,6 +2473,17 @@
           .catch((err) => { e.target.value = vat === "excluded" ? "included" : "excluded"; toast(err.message); });
         return;
       }
+      if (e.target.dataset.baselineMove) {
+        const id = e.target.dataset.baselineMove;
+        const category = e.target.value;
+        action({ action: "updateBaselineItem", id, patch: { category } }).then((res) => {
+          if (res.baseline) state.data.baseline = res.baseline;
+          painted.delete("#tab-baseline");
+          render();
+          toast("Category changed.");
+        }).catch((err) => toast(err.message));
+        return;
+      }
       if (e.target.dataset.reviewPlace == null) return;
       const url = decodeURIComponent(e.target.dataset.reviewPlace);
       const raw = e.target.value || "create";
@@ -2242,6 +2503,12 @@
         fillPlaceHits(e.target.closest(".review-card"), decodeURIComponent(placeQ), e.target.value);
         return;
       }
+      if (e.target.dataset.baselineField && e.target.dataset.baselineId) {
+        const cur = state.baselineEdit.get(e.target.dataset.baselineId) || {};
+        cur[e.target.dataset.baselineField] = e.target.value;
+        state.baselineEdit.set(e.target.dataset.baselineId, cur);
+        return;
+      }
       if (e.target.id === "review-job-select") {
         state.reviewJobId = e.target.value;
         state.reviewSelected.clear();
@@ -2256,6 +2523,14 @@
         if (e.target.id === "dupes-only") state.dupesOnly = e.target.checked;
         state.catalogLimit = 40;
         render();
+        return;
+      }
+      if (e.target.id === "baseline-q") {
+        state.baselineQuery = e.target.value;
+        painted.delete("#tab-baseline");
+        paint("#tab-baseline", baselineHtml(state.data));
+        const q = $("#baseline-q");
+        if (q) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); }
         return;
       }
       if (e.target.id === "catalog-search") {

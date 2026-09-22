@@ -36,7 +36,15 @@ const store = makeStore({
   'jobs.json': [{ id: 'job-1', createdAt: '2026-02-01T00:00:00.000Z', url: 'https://www.rhino3dprinter.com' }]
 });
 
-const sandbox = { console, Response, money: require('../lib/parse-money.cjs'), store, auth: { ownerFromHeaders: () => ({ role: 'owner' }), authReady: () => true } };
+const sandbox = {
+  console, Response, URL,
+  money: require('../lib/parse-money.cjs'),
+  store,
+  auth: { ownerFromHeaders: () => ({ role: 'owner' }), authReady: () => true },
+  matcher: require('../lib/product-match.cjs'),
+  baselineLib: require('../lib/baseline-catalog.js'),
+  boardLib: require('../lib/baseline-board.cjs')
+};
 vm.runInNewContext(source, sandbox);
 const call = (body) => sandbox.handler(req(body)).then(async (res) => ({ status: res.status, body: await res.json() }));
 

@@ -3,10 +3,12 @@ import store from "../../lib/netlify-store.cjs";
 import auth from "../../lib/netlify-auth.cjs";
 import money from "../../lib/parse-money.cjs";
 import matcher from "../../lib/product-match.cjs";
+import boardLib from "../../lib/baseline-board.cjs";
 
 const { readJSON, writeJSON, writeBytes, deleteKey } = store;
 const { ownerFromHeaders, authReady } = auth;
 const { withVat, withoutVat } = money;
+const { emptyBoard, fromProduct, fromRunCard, upsertItems, loadBackupPrinters, isIdentityStyleBoard, sanitizeBoard, addCategory, renameCategory, patchItem, addItem } = boardLib;
 
 function sameOriginUrl(req) {
   const origin = req.headers.get("origin");
@@ -55,6 +57,20 @@ function imageType(bytes) {
 
 const PRODUCT_PATCH_FIELDS = ["name", "title", "brand", "color", "polymer", "variant", "aisle", "unit", "kind", "packaging", "weight", "diameter"];
 
+async function storeUploadedImage(id, imageUpload) {
+  if (!imageUpload) return "";
+  const type = String(imageUpload.type || "");
+  const encoded = String(imageUpload.data || "");
+  if (!/^image\/(?:jpeg|png|webp)$/.test(type) || !/^[a-z0-9+/]+={0,2}$/i.test(encoded)) throw new Error("Use a JPG, PNG or WebP image");
+  const bytes = Buffer.from(encoded, "base64");
+  if (!bytes.length || bytes.length > 1024 * 1024) throw new Error("Thumbnail must be smaller than 1 MB");
+  if (imageType(bytes) !== type) throw new Error("The uploaded file is not a valid image");
+  const safeId = String(id || "image").toLowerCase().replace(/[^a-z0-9._-]+/g, "-").slice(0, 80) || "image";
+  const imageKey = safeId + "-" + Date.now();
+  await writeBytes("product-images/" + imageKey, bytes);
+  return "/api/product-image?key=" + encodeURIComponent(imageKey);
+}
+
 async function updateCatalogProduct(catalog, item) {
   const id = String(item.id || "");
   const patch = item.patch && typeof item.patch === "object" ? item.patch : {};
@@ -62,16 +78,7 @@ async function updateCatalogProduct(catalog, item) {
   const product = [...(catalog.products || []), ...(catalog.filaments || [])].find((p) => p.id === id);
   if (!product) throw new Error("Product not found: " + id);
   if (item.imageUpload) {
-    const type = String(item.imageUpload.type || "");
-    const encoded = String(item.imageUpload.data || "");
-    if (!/^image\/(?:jpeg|png|webp)$/.test(type) || !/^[a-z0-9+/]+={0,2}$/i.test(encoded)) throw new Error("Use a JPG, PNG or WebP image");
-    const bytes = Buffer.from(encoded, "base64");
-    if (!bytes.length || bytes.length > 1024 * 1024) throw new Error("Thumbnail must be smaller than 1 MB");
-    if (imageType(bytes) !== type) throw new Error("The uploaded file is not a valid image");
-    const safeId = id.toLowerCase().replace(/[^a-z0-9._-]+/g, "-").slice(0, 80) || "product";
-    const imageKey = safeId + "-" + Date.now();
-    await writeBytes("product-images/" + imageKey, bytes);
-    product.image = "/api/product-image?key=" + encodeURIComponent(imageKey);
+    product.image = await storeUploadedImage(id, item.imageUpload);
     // ponytail: old manual thumbnails stay immutable so catalog backups retain their images;
     // add garbage collection only if this small manual-upload store becomes material.
   }
@@ -91,6 +98,28 @@ async function loadAll() {
   const candidate = await readJSON("candidate.json", null);
   const jobs = await readJSON("jobs.json", []);
   return { desk, catalog, candidate, jobs };
+}
+
+async function loadBaselineBoard() {
+  const board = await readJSON("baseline.json", null);
+  if (board && Array.isArray(board.items)) return board;
+  return emptyBoard();
+}
+
+async function seedBaselineFromBackup() {
+  const board = emptyBoard();
+  upsertItems(board, loadBackupPrinters().map((p) => fromProduct(p, "backup")));
+  await writeJSON("baseline.json", sanitizeBoard(board));
+  return sanitizeBoard(board);
+}
+
+async function ensureBaseline() {
+  const loaded = await loadBaselineBoard();
+  if (!loaded.items || !loaded.items.length || isIdentityStyleBoard(loaded)) return seedBaselineFromBackup();
+  const dirty = (loaded.items || []).some((i) => i.offers || i.shops || i.runs);
+  const board = sanitizeBoard(loaded);
+  if (dirty) await writeJSON("baseline.json", board);
+  return board;
 }
 
 async function saveJobList(jobs) {
@@ -565,6 +594,22 @@ function purgeShop(catalog, candidate, desk, jobs, shop, opts = {}) {
   };
 }
 
+function listingUrlsFromJob(job) {
+  const urls = [];
+  for (const raw of Object.values(job.cards || {})) {
+    const c = (raw && raw.card) || raw;
+    if (c && c.url) urls.push(c.url);
+  }
+  for (const key of Object.keys(job.cards || {})) if (/^https?:\/\//i.test(key)) urls.push(key);
+  for (const e of job.events || []) {
+    if (e.card && e.card.url) urls.push(e.card.url);
+    if (e.url) urls.push(e.url);
+    for (const u of e.urls || []) urls.push(u);
+    for (const it of e.items || []) if (it && it.url) urls.push(it.url);
+  }
+  return urls.filter((u) => /^https?:\/\//i.test(String(u)));
+}
+
 function dropUrlsFromCatalog(catalog, urls) {
   const drop = new Set((urls || []).map(String));
   const strip = (list) => (list || [])
@@ -595,6 +640,7 @@ export default async (req) => {
       candidate: data.candidate,
       jobs: data.jobs || [],
       backups: await readBackupIndex(),
+      baseline: await ensureBaseline(),
       duplicateOffers: findDuplicateOfferUrls(catalog),
       heartbeat: await readJSON("heartbeat.json", null),
       counts: {
@@ -802,6 +848,71 @@ export default async (req) => {
         return json(200, { ok: true, backups: left });
       }
 
+      case "seedBaseline": {
+        const board = await seedBaselineFromBackup();
+        return json(200, { ok: true, baseline: board, seeded: board.items.length });
+      }
+
+      case "importBaselineFromCatalog": {
+        const board = await ensureBaseline();
+        const cat = body.from === "candidate" && candidate ? candidate : catalog;
+        const rows = body.category === "filaments" ? (cat.filaments || []) : (cat.products || []);
+        const incoming = rows.map((p) => fromProduct(p, body.from === "candidate" ? "candidate" : "catalog"));
+        const stats = upsertItems(board, incoming);
+        await writeJSON("baseline.json", board);
+        return json(200, { ok: true, baseline: board, ...stats });
+      }
+
+      case "importBaselineFromRun": {
+        const board = await ensureBaseline();
+        const job = jobs.find((j) => j.id === body.jobId);
+        if (!job) throw new Error("Pick a shop run");
+        const cards = Object.values(job.cards || {}).map((c) => (c && c.card) || c).filter((c) => c && c.name);
+        const incoming = cards.map((c) => fromRunCard(c, job));
+        const stats = upsertItems(board, incoming);
+        await writeJSON("baseline.json", board);
+        return json(200, { ok: true, baseline: board, ...stats });
+      }
+
+      case "deleteBaselineItem": {
+        const board = await ensureBaseline();
+        const id = String(body.id || "");
+        board.items = (board.items || []).filter((i) => i.id !== id);
+        await writeJSON("baseline.json", board);
+        return json(200, { ok: true, baseline: board });
+      }
+
+      case "updateBaselineItem": {
+        const board = await ensureBaseline();
+        const id = String(body.id || "");
+        const patch = body.patch && typeof body.patch === "object" ? { ...body.patch } : {};
+        if (body.imageUpload) patch.image = await storeUploadedImage(id, body.imageUpload);
+        patchItem(board, id, patch);
+        await writeJSON("baseline.json", board);
+        return json(200, { ok: true, baseline: board });
+      }
+
+      case "addBaselineItem": {
+        const board = await ensureBaseline();
+        addItem(board, { name: body.name, brand: body.brand, category: body.category, image: body.image });
+        await writeJSON("baseline.json", board);
+        return json(200, { ok: true, baseline: board });
+      }
+
+      case "addBaselineCategory": {
+        const board = await ensureBaseline();
+        addCategory(board, body.name);
+        await writeJSON("baseline.json", board);
+        return json(200, { ok: true, baseline: board });
+      }
+
+      case "renameBaselineCategory": {
+        const board = await ensureBaseline();
+        renameCategory(board, String(body.id || ""), body.name);
+        await writeJSON("baseline.json", board);
+        return json(200, { ok: true, baseline: board });
+      }
+
       case "discardCandidate": {
         candidate = null;
         await deleteKey("candidate.json");
@@ -824,6 +935,21 @@ export default async (req) => {
           await writeJSON("candidate.json", candidate);
         }
         return json(200, { ok: true, deleted: drop.size });
+      }
+
+      case "deleteAllReview": {
+        const urls = [...new Set(jobs.flatMap(listingUrlsFromJob))];
+        jobs = jobs.map((j) => ({
+          ...j,
+          dropped: [...new Set([...(j.dropped || []), ...urls])],
+          cards: {}
+        }));
+        await saveJobList(jobs);
+        if (candidate) {
+          candidate = dropUrlsFromCatalog(candidate, urls);
+          await writeJSON("candidate.json", candidate);
+        }
+        return json(200, { ok: true, deleted: urls.length });
       }
 
       case "createJob": {
@@ -864,6 +990,22 @@ export default async (req) => {
           await saveJobList(jobs);
         }
         return json(200, { ok: true });
+      }
+
+      case "abortAllJobs": {
+        const at = new Date().toISOString();
+        let aborted = 0;
+        for (const job of jobs) {
+          if (!["queued", "running"].includes(job.status)) continue;
+          job.status = "aborted";
+          job.progress = "Aborted from admin (all)";
+          job.updatedAt = at;
+          job.events = job.events || [];
+          job.events.push({ type: "log", at, text: "Aborted from the online admin (abort all)." });
+          aborted += 1;
+        }
+        if (aborted) await saveJobList(jobs);
+        return json(200, { ok: true, aborted });
       }
 
       case "deleteJob": {

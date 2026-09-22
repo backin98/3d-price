@@ -31,6 +31,8 @@ const source = fs.readFileSync('netlify/functions/admin.mjs', 'utf8')
   .replace('export default async', 'globalThis.handler = async');
 context.money = require('../lib/parse-money.cjs'); // the function imports this module
 context.matcher = require('../lib/product-match.cjs'); // and this one
+context.baselineLib = require('../lib/baseline-catalog.js');
+context.boardLib = require('../lib/baseline-board.cjs');
 vm.runInNewContext(source, context);
 
 const post = (body) => new Request('https://example.com/api/admin', {
@@ -124,7 +126,9 @@ const products = () => store['catalog.json'].products;
     console, Response, crypto: require('node:crypto'), store,
     auth: { ownerFromHeaders: () => ({ role: 'owner' }), authReady: () => true },
     money: require('../lib/parse-money.cjs'),
-    matcher: require('../lib/product-match.cjs')
+    matcher: require('../lib/product-match.cjs'),
+    baselineLib: require('../lib/baseline-catalog.js'),
+    boardLib: require('../lib/baseline-board.cjs')
   };
   api.runInNewContext(source, sandbox);
   const post = (body) => sandbox.handler({ method: 'POST', headers: { get: () => null, entries: () => [][Symbol.iterator]() }, json: async () => body });

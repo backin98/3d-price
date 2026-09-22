@@ -20,7 +20,8 @@ const adminSource = fs.readFileSync('netlify/functions/admin.mjs', 'utf8')
 const sandbox = {
   Buffer, URL, Response, crypto: require('node:crypto'), store,
   auth: { ownerFromHeaders: () => ({ role: 'owner' }), authReady: () => true },
-  money: require('../lib/parse-money.cjs'), matcher: require('../lib/product-match.cjs')
+  money: require('../lib/parse-money.cjs'), matcher: require('../lib/product-match.cjs'),
+  baselineLib: require('../lib/baseline-catalog.js'), boardLib: require('../lib/baseline-board.cjs')
 };
 vm.runInNewContext(adminSource, sandbox);
 

@@ -30,6 +30,8 @@ const sandbox = {
   URL, Response, crypto: require('node:crypto'), console,
   money: require('../lib/parse-money.cjs'),
  matcher: require('../lib/product-match.cjs'), // the function imports both
+  baselineLib: require('../lib/baseline-catalog.js'),
+  boardLib: require('../lib/baseline-board.cjs'),
   store: {
     // Real blobs are parsed fresh per request: a thrown action must not leave mutations behind.
     readJSON: async (k, f) => (k in storeState ? JSON.parse(JSON.stringify(storeState[k])) : f),
