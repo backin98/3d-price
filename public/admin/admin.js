@@ -247,7 +247,7 @@
         ? { model: state.workerLive.model, connection: state.workerLive.connection }
         : await requestDetect({ scan: true });
       const origin = info.connection && info.connection.modelUrl;
-      if (origin && info.model) await adoptDetectedUrl(origin);
+      if (/^https?:\/\//i.test(origin || "") && info.model) await adoptDetectedUrl(origin);
       if ($("#ai-status")) $("#ai-status").innerHTML = aiStatusHtml(state.data);
     } catch (_) { /* worker online but no local AI yet */ }
   }
@@ -1008,9 +1008,9 @@
         <span class="muted">${cards.length} gathered</span>
       </div>
       <div class="review-toolbar">
-        <span class="muted">Aggressive AI help — for what the matcher could not sort. It may only choose an identity from the current catalog (or say "new"/"hold"), and it can never override a hard split:</span>
-        <button class="btn-sm" type="button" id="gemma-unmatched" ${unmatched ? "" : "disabled"}>Ask AI: all unmatched (${unmatched})</button>
-        <button class="btn-sm" type="button" id="gemma-selected" ${selected ? "" : "disabled"}>Ask AI: selected (${selected})</button>
+        <span class="muted">Baseline-trained Laya help — scores only current catalog candidates and cannot override a hard split:</span>
+        <button class="btn-sm" type="button" id="laya-unmatched" ${unmatched ? "" : "disabled"}>Ask Laya: all unmatched (${unmatched})</button>
+        <button class="btn-sm" type="button" id="laya-selected" ${selected ? "" : "disabled"}>Ask Laya: selected (${selected})</button>
       </div>
       <div class="review-board" id="review-board">
         ${cards.map((e) => {
@@ -1033,8 +1033,7 @@
             : dec.action === "held" || dec.action === "hold" ? "Worker match: held — " + String(dec.reason || (dec.candidateName && "compared with " + dec.candidateName) || "needs a look").slice(0, 120)
             : "gathered — waiting for match";
           const visualNote = typeof dec.visual === "number" ? " · visual " + dec.visual.toFixed(2) : "";
-          const pathNote = dec.matchPath === "gemma-catalog-guided" ? " · AI (catalog-guided)" + (dec.identityId ? " · " + dec.identityId : "") + (dec.rejected ? " · rejected: " + dec.rejected : "")
-            : dec.matchPath === "gemma-gray" ? " · AI-gray"
+          const pathNote = dec.matchPath === "laya-baseline" ? " · Laya (baseline-trained)" + (dec.rejected ? " · rejected: " + dec.rejected : "")
             : dec.nearDupe ? (dec.photoMatch ? " · near duplicate — same thumbnail, confirm" : " · near duplicate — review") + visualNote
             : dec.matchPath === "magellan+visual" ? " · Magellan + visual" + visualNote
             : (dec.matchPath === "magellan" || dec.rule === "magellan") ? " · Magellan" : "";
@@ -1405,18 +1404,17 @@
     if (!online) {
       const where = (live && live.workerUrl) || "http://127.0.0.1:8788";
       const err = live && live.error ? " Could not reach " + esc(where) + " (" + esc(live.error) + ")." : "";
-      return '<p class="muted">Local worker offline. Start <code>node worker/online-worker.cjs</code> on this PC. It finds LM Studio (1234/1235) and Ollama (11434) by itself.' + err + ' If the browser asks to allow local network / loopback access, choose Allow.</p>';
+      return '<p class="muted">Local worker offline. Start <code>node worker/online-worker.cjs</code> on this PC.' + err + ' If the browser asks to allow local network / loopback access, choose Allow.</p>';
     }
-    if (c && c.error) return '<p><span class="badge complete">worker online</span></p><p class="error">' + esc(c.error) + '</p><p class="muted">Load a chat model, then click Detect.</p>';
-    if (!model) return '<p><span class="badge complete">worker online</span></p><p class="muted">Worker reached. Click Detect — it scans ports 1234, 1235 and 11434 on this PC.</p>';
+    if (c && c.error) return '<p><span class="badge complete">worker online</span></p><p class="error">' + esc(c.error) + '</p><p class="muted">Check the local .venv-laya installation and trained head.</p>';
+    if (!model) return '<p><span class="badge complete">worker online</span></p><p class="muted">Worker reached. Click Check Laya.</p>';
     const where = c && c.modelUrl ? ' at ' + esc(c.modelUrl) : '';
-    return '<p><span class="badge complete">' + (c && c.loadedVerified ? 'Loaded model detected' : 'Available model detected') + '</span></p><h3>' + esc(model) + '</h3><p class="muted">' + (c && c.loadedVerified ? 'Found' + where + ' and will be used automatically.' : 'This server lists models but does not report which are in memory.') + '</p>' + (c && c.models && c.models.length > 1 ? '<p class="muted">Multiple chat models found. Using the first reported model. Models: ' + c.models.map(esc).join(', ') + '</p>' : '');
+    return '<p><span class="badge complete">Laya ready</span></p><h3>' + esc(model) + '</h3><p class="muted">Loaded' + where + ' and trained from the approved baseline.</p>';
   }
 
   function aiHtml(d) {
     const desk = d.desk || {};
-    const shown = (state.workerLive && state.workerLive.connection && state.workerLive.connection.modelUrl) || desk.modelUrl || "";
-    return '<div class="panel"><h2>Local AI server</h2><p class="muted">The worker on this PC scans LM Studio (ports 1234 and 1235) and Ollama (11434). Paste a URL only if you use a different address.</p><form id="ai-form" class="form-row" novalidate><div class="field"><label for="ai-url">AI server URL (optional)</label><input id="ai-url" type="text" inputmode="url" autocomplete="off" placeholder="auto-detect" value="' + esc(shown) + '"><small class="muted">Leave blank and click Detect.</small></div><button type="button" class="ghost" id="ai-detect">Detect</button><button type="submit" class="primary">Save &amp; connect</button></form><label class="muted" style="display:flex;align-items:center;gap:8px;margin-top:12px"><input type="checkbox" id="auto-llm-match" ' + (desk.autoLlmMatch === true ? "checked" : "") + '> Auto AI match (extreme uncertainty only)</label><p class="muted">Off (default): Magellan only; gray titles wait for you. On: one short AI ask only when Magellan is in the extreme gray band. Never for stock, VAT, or price.</p></div><div class="panel"><h2>Connection status</h2><div id="ai-status" role="status">' + aiStatusHtml(d) + '</div></div>';
+    return '<div class="panel"><h2>Local matcher</h2><p class="muted">The PC worker starts Laya with the decision head trained from your approved baseline.</p><input id="ai-url" type="hidden" value=""><button type="button" class="ghost" id="ai-detect">Check Laya</button><label class="muted" style="display:flex;align-items:center;gap:8px;margin-top:12px"><input type="checkbox" id="auto-llm-match" ' + (desk.autoLlmMatch === true ? "checked" : "") + '> Auto Laya match (extreme uncertainty only)</label><p class="muted">Magellan runs first. Laya only scores its closed candidate list and cannot override hard model/configuration conflicts. It is never used for stock, VAT, price, or titles.</p></div><div class="panel"><h2>Connection status</h2><div id="ai-status" role="status">' + aiStatusHtml(d) + '</div></div>';
   }
 
   function jobsHtml(d) {
@@ -1973,10 +1971,10 @@
         }
         return;
       }
-      if (e.target.closest("#gemma-unmatched") || e.target.closest("#gemma-selected")) {
+      if (e.target.closest("#laya-unmatched") || e.target.closest("#laya-selected")) {
         // Second opinion after the fact: never runs during a run, never publishes by itself.
         // It only fills in "where this card goes"; you still press Publish selected.
-        const onlySelected = !!e.target.closest("#gemma-selected");
+        const onlySelected = !!e.target.closest("#laya-selected");
         const job = reviewJob(state.data || { jobs: [] });
         const targets = collectCards(job, state.data).filter((ev) => {
           const url = ev.card && ev.card.url;
@@ -1992,7 +1990,7 @@
         const btn = e.target.closest("button");
         const label = btn.textContent;
         btn.disabled = true;
-        btn.textContent = "Asking AI…";
+        btn.textContent = "Asking Laya…";
         try {
           const live = await pingWorker();
           if (!live.ok) throw new Error(live.error || "Local worker offline — start it with node worker/online-worker.cjs on this PC.");
@@ -2004,14 +2002,14 @@
             })
           });
           const data = await res.json().catch(() => ({}));
-          if (!res.ok) throw new Error(data.error || "AI pass failed");
+          if (!res.ok) throw new Error(data.error || "Laya pass failed");
           let merged = 0, created = 0, held = 0;
           for (const r of data.results || []) {
             if (r.action === "merge" && r.matchId) { state.reviewPlace.set(r.url, { action: "merge", candidateId: r.matchId }); merged += 1; }
             else if (r.action === "create") { state.reviewPlace.set(r.url, { action: "create", candidateId: "" }); created += 1; }
             else held += 1;
           }
-          toast("AI answered " + data.asked + " of " + targets.length + ": " + merged + " merge, " + created + " new, " + held + " still unsure. Check the board, then publish.");
+          toast("Laya answered " + data.asked + " of " + targets.length + ": " + merged + " merge, " + created + " new, " + held + " still unsure. Check the board, then publish.");
         } catch (err) {
           toast(err.message);
         } finally {

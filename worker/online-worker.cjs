@@ -2,7 +2,7 @@
 //
 //   node worker/online-worker.cjs
 //
-// Listens on 127.0.0.1:8788 by default. Admin → AI connection only needs the LM Studio URL.
+// Listens on 127.0.0.1:8788 by default. Matching uses the local baseline-trained Laya process.
 //
 // Required to poll the live site:
 //   INGEST_TOKEN      - matches the Netlify site's INGEST_TOKEN
@@ -18,7 +18,7 @@ const path = require("node:path");
 const { runWebsiteJob } = require("../lib/qwen-website-job.cjs");
 const { fetchHtml } = require("../lib/ai-scraper.cjs");
 const { refreshStock } = require("../lib/stock-refresh.cjs");
-const { setEndpoint, ping, discover } = require("../scripts/local-qwen.cjs");
+const laya = require("../lib/laya-match.cjs");
 
 function loadDotEnv() {
   try {
@@ -87,31 +87,16 @@ let detectedModel = null;
 let lastCheck = 0;
 
 async function detectModel(desk, opts = {}) {
-  const preferred = String((desk && desk.modelUrl) || process.env.LOCAL_AI_URL || "").trim();
-  const scan = opts.scan === true || !preferred;
-  if (
-    !scan
-    && connection
-    && connection.modelUrl
-    && connection.checkId === (desk && desk.modelCheckId)
-    && !connection.error
-    && Date.now() - lastCheck < 30000
-  ) return;
-  connection = { modelUrl: preferred, checkId: desk && desk.modelCheckId, models: [], loadedVerified: false, error: "" };
+  if (connection && !connection.error && Date.now() - lastCheck < 30000) return;
+  connection = { modelUrl: "local://laya", checkId: desk && desk.modelCheckId, models: [], loadedVerified: false, error: "" };
   detectedModel = null;
   try {
-    const info = preferred && !scan
-      ? await ping(preferred).catch(() => discover(preferred))
-      : await discover(preferred);
-    const origin = info.origin || preferred;
-    setEndpoint(origin);
-    connection.modelUrl = origin;
-    connection.models = info.usable || [];
-    connection.loadedVerified = info.loadedVerified === true;
-    connection.flavor = info.flavor || "";
-    detectedModel = info.picked || null;
-    if (!detectedModel) connection.error = "No loaded chat model. Load a model in your AI server.";
-  } catch (err) { connection.error = err.message || "Cannot reach the local AI server"; }
+    const info = await laya.health();
+    detectedModel = info.model;
+    connection.models = [info.model];
+    connection.loadedVerified = true;
+    connection.baselineItems = info.items;
+  } catch (err) { connection.error = err.message || "Cannot start baseline-trained Laya"; }
   lastCheck = Date.now();
   connection.checkedAt = new Date(lastCheck).toISOString();
   await postHeartbeat().catch(() => {});
@@ -234,11 +219,6 @@ async function runClaimedJob(job, desk) {
 
   let beatTimer;
   try {
-    // Point local Qwen at the address saved in the online desk.
-    try {
-      if (desk && desk.modelUrl) setEndpoint(desk.modelUrl);
-    } catch (_) { /* keep default */ }
-
     emit({ type: "log", stage: "boot", text: "Worker claimed this job. Opening " + job.url + " (no model wait)." });
     await flush();
     abort.signal.throwIfAborted();
@@ -470,7 +450,7 @@ function startHttp() {
           send(req, res, 400, { error: "No local catalog to match against yet (" + err.message + ")" });
           return;
         }
-        const { gemmaPick } = require("../lib/qwen-place.cjs");
+        const { layaPick } = require("../lib/qwen-place.cjs");
         const dir = path.join(path.dirname(catalogFile), "qwen-employee");
         const limit = Math.max(1, Math.min(Number(body.limit) || 200, 500));
         const started = Date.now();
@@ -488,14 +468,14 @@ function startHttp() {
             };
             if (!listing.name || !listing.url) continue;
             const pool = (listing.kind === "filament" ? catalog.filaments : catalog.products) || [];
-            const pick = await gemmaPick(listing, pool, { dir });
+            const pick = await layaPick(listing, pool, { dir });
             results.push({ url: card.url, ...pick });
             console.log("[rematch] " + listing.name.slice(0, 46) + " -> " + pick.action + (pick.matchId ? " " + pick.matchId : "") + (pick.reason ? " — " + pick.reason : ""));
           }
         } finally {
           busy = false;
         }
-        send(req, res, 200, { ok: true, asked: results.length, ms: Date.now() - started, model: detectedModel, results });
+        send(req, res, 200, { ok: true, asked: results.length, ms: Date.now() - started, model: "laya-multilingual+catalog-head", results });
         return;
       }
       if (url.pathname === "/run" && req.method === "POST") {

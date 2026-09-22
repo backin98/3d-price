@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const { harvestCategory, isLikelyProductUrl, slugToTitle, readStockFromHtml, extractProductPage, transactionPrice, isJunkAmount } = require("../lib/harvest.js");
+const { harvestCategory, isLikelyProductUrl, slugToTitle, readStockFromHtml, extractProductPage, transactionPrice, vatIncludedPrice, isJunkAmount } = require("../lib/harvest.js");
 const { discoverInStockFilter } = require("../lib/harvest-guards.cjs");
 const { listingFromHarvest, shouldAddVat } = require("../lib/qwen-website-job.cjs");
 
@@ -219,6 +219,14 @@ const KEEP = new Set(RHINO.slice(7));
   const cartPriced = extractProductPage(cartPricePage, "https://shop.example/bambu-lab-h2s-3d-yazici", "printer");
   assert.equal(cartPriced.product.price, 72000, "cart price wins over the crossed-out/list price");
   assert.equal(cartPriced.product.priceSource, "cart-price");
+
+  const netAndGross = `<h1>Example Model 3D Printer</h1><span class="product-price-not-vat">20.921,52</span> TL + KDV
+    <p>KDV Dahil: <span class="product-price">25.105,83</span> TL</p>
+    <script type="application/ld+json">{"@type":"Product","name":"Example Model 3D Printer","offers":{"price":"20921.52","priceCurrency":"TRY"}}</script><button>Sepete Ekle</button>`;
+  assert.equal(vatIncludedPrice(netAndGross).price, 25105.83, "the exact labeled KDV-included total is recognized");
+  const grossPriced = extractProductPage(netAndGross, "https://shop.example/example-model", "printer");
+  assert.equal(grossPriced.product.price, 25105.83, "the displayed KDV-included total wins over the net JSON-LD price");
+  assert.equal(grossPriced.product.priceSource, "vat-included-price");
 
   const plusVat = extractProductPage(`
     <h1>Creality K1 Max 3D Yazıcı</h1>

@@ -1,0 +1,537 @@
+{
+  "updatedAt": "2026-09-22T21:08:45.980Z",
+  "categories": [
+    {
+      "id": "printers",
+      "name": "3D Printers"
+    },
+    {
+      "id": "filaments",
+      "name": "Filament"
+    }
+  ],
+  "items": [
+    {
+      "id": "qwen-17bac78b27db4cbc",
+      "category": "printers",
+      "name": "Anycubic Kobra S1 V2 Combo",
+      "brand": "kobra"
+    },
+    {
+      "id": "qwen-784b79c444f6aeaa",
+      "category": "printers",
+      "name": "Flashforge Creator 5",
+      "brand": "flashforge"
+    },
+    {
+      "id": "qwen-e5daba1c0112f429",
+      "category": "printers",
+      "name": "Flashforge Creator 5 Pro",
+      "brand": "flashforge"
+    },
+    {
+      "id": "qwen-63f1c63d994e9b16",
+      "category": "printers",
+      "name": "Bambu Lab A2L",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-9c7b94d7aecd4068",
+      "category": "printers",
+      "name": "Bambu Lab A2L Combo",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-bd214e8e06fa9bda",
+      "category": "printers",
+      "name": "Bambu Lab X2D Combo",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-6d5f328c2b0e201f",
+      "category": "printers",
+      "name": "Creality Ender 3 V4 Combo",
+      "brand": "creality"
+    },
+    {
+      "id": "qwen-644ad347718d1a71",
+      "category": "printers",
+      "name": "Anycubic Kobra X",
+      "brand": "kobra"
+    },
+    {
+      "id": "qwen-bb1ff51df8a160c7",
+      "category": "printers",
+      "name": "ELEGOO Centauri Carbon 2 Combo",
+      "brand": "elegoo"
+    },
+    {
+      "id": "qwen-07ddeb0d9870f568",
+      "category": "printers",
+      "name": "Bambu Lab P2S",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-69892d3cc981af02",
+      "category": "printers",
+      "name": "Bambu Lab H2C Combo",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-efef36ce461e2607",
+      "category": "printers",
+      "name": "Snapmaker U1",
+      "brand": "snapmaker"
+    },
+    {
+      "id": "qwen-2c576d88f6310ce6",
+      "category": "printers",
+      "name": "Bambu Lab H2S AMS Combo",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-0fd0d5e5e61d60d7",
+      "category": "printers",
+      "name": "Bambu Lab P1S",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "sel-1bmgtv5",
+      "category": "printers",
+      "name": "Bambu Lab P1S AMS 2 Pro Combo",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-785d260b02a96d08",
+      "category": "printers",
+      "name": "Bambu Lab H2S",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-8ed6a5811c916320",
+      "category": "printers",
+      "name": "Flashforge Adventurer 5X Renkli",
+      "brand": "Flashforge"
+    },
+    {
+      "id": "qwen-4f02f28008aa65c9",
+      "category": "printers",
+      "name": "QIDI Tech Plus5 Combo",
+      "brand": "QIDI Tech"
+    },
+    {
+      "id": "qwen-db9b9ca54be40ccb",
+      "category": "printers",
+      "name": "Bambu Lab H2D",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-9321460ffed2071f",
+      "category": "printers",
+      "name": "Anycubic Kobra 3 V2 Combo",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "sel-144c3o6",
+      "category": "printers",
+      "name": "Snapmaker 2.0 A350ENT 3in1",
+      "brand": "Snapmaker"
+    },
+    {
+      "id": "sel-wen0t",
+      "category": "printers",
+      "name": "Aktip Tekno AT1000",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-6ed62a96f372cbd3",
+      "category": "printers",
+      "name": "Creality K2",
+      "brand": "Creality"
+    },
+    {
+      "id": "sel-1bxron2",
+      "category": "printers",
+      "name": "Bambu Lab H2C Laser Full Combo 10W",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-edfa5e31b9f63fa7",
+      "category": "printers",
+      "name": "Bambu Lab A1 Mini Combo",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-0314a1b907a859dc",
+      "category": "printers",
+      "name": "QIDI Tech Max4 Combo",
+      "brand": "QIDI Tech"
+    },
+    {
+      "id": "sel-1m1njzc",
+      "category": "printers",
+      "name": "Bambu Lab H2D Laser Full Combo 10W",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-9c51e26c11ab8f11",
+      "category": "printers",
+      "name": "Qidi Q2 Combo",
+      "brand": "QIDI Tech"
+    },
+    {
+      "id": "qwen-045cddca2675bb03",
+      "category": "printers",
+      "name": "Creality SparkX i7 Combo",
+      "brand": "Creality"
+    },
+    {
+      "id": "qwen-9bc71c356af55b4e",
+      "category": "printers",
+      "name": "Creality K2 Combo",
+      "brand": "creality"
+    },
+    {
+      "id": "qwen-51152a4e2f642669",
+      "category": "printers",
+      "name": "QIDI Tech Max4",
+      "brand": "QIDI Tech"
+    },
+    {
+      "id": "qwen-a3affd831f261c98",
+      "category": "printers",
+      "name": "Creality K2 Pro Combo",
+      "brand": "Creality"
+    },
+    {
+      "id": "qwen-38f50cbf41392a33",
+      "category": "printers",
+      "name": "Zaxe Z3S",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-69817ec780841154",
+      "category": "printers",
+      "name": "Zaxe X4",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-4d8fc99eb2b69cc1",
+      "category": "printers",
+      "name": "QIDI Tech Q2",
+      "brand": "QIDI Tech"
+    },
+    {
+      "id": "sel-115v3zp",
+      "category": "printers",
+      "name": "Bambu Lab X1E Combo",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "qwen-de45311c443c4b7c",
+      "category": "printers",
+      "name": "Bambu Lab H2S",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "sel-15p2kor",
+      "category": "printers",
+      "name": "Bambu Lab P1S AMS 2 Pro",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-07929abba90ec9dd",
+      "category": "printers",
+      "name": "BambuLab H2D",
+      "brand": "bambulab"
+    },
+    {
+      "id": "sel-116cad4",
+      "category": "printers",
+      "name": "Bambu Lab H2C Lazer Full Combo 10W",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-709ab531bd22d75b",
+      "category": "printers",
+      "name": "Creality SparkX i7 Combo",
+      "brand": "creality"
+    },
+    {
+      "id": "sel-3xksbb",
+      "category": "printers",
+      "name": "Bambu Lab H2D Lazer Full Combo 10W",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "sel-2hwne0",
+      "category": "printers",
+      "name": "Bambu Lab H2S Lazer Full Combo 10W",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-51b9343b7ea5369d",
+      "category": "printers",
+      "name": "Creality K2 Pro Combo",
+      "brand": "creality"
+    },
+    {
+      "id": "qwen-903acebc8b5f62f8",
+      "category": "printers",
+      "name": "Creality K2 Combo",
+      "brand": "creality"
+    },
+    {
+      "id": "qwen-b24ed0bd56d56bdd",
+      "category": "printers",
+      "name": "Bambu Lab A1 Mini Combo 3D Yazıcı",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "sel-1u1yg0a",
+      "category": "printers",
+      "name": "Bambu Lab X1E Combo",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-9fd65907c4e99953",
+      "category": "printers",
+      "name": "Bambu Lab A1 Combo",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-900b72ace8cd7029",
+      "category": "printers",
+      "name": "Bambu Lab P1S Combo",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-1f36fbf13b172a2b",
+      "category": "printers",
+      "name": "Flashforge Adventurer 5X AD5X Hızlı 3D Yazıcı ( Filament Hediyeli ) Kameralı Paket",
+      "brand": "flashforge"
+    },
+    {
+      "id": "qwen-fe0847a96e2ada98",
+      "category": "printers",
+      "name": "Bambu Lab H2C Combo",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-c8bcae0c35024b20",
+      "category": "printers",
+      "name": "Creality K1 Max *New Version*",
+      "brand": "creality"
+    },
+    {
+      "id": "sel-eux27i",
+      "category": "printers",
+      "name": "Creality Hi Combo Yüksek Hızlı Çok Renkli",
+      "brand": "creality"
+    },
+    {
+      "id": "sel-14pau",
+      "category": "printers",
+      "name": "Snapmaker 2.0 Modüler 3'Ü 1 Arada 3D Yazıcı Kapalı Kasa A350ent gravür / Kesme / Oyma",
+      "brand": "snapmaker"
+    },
+    {
+      "id": "qwen-00413625c86d5e6f",
+      "category": "printers",
+      "name": "Anycubic Kobra X",
+      "brand": "kobra"
+    },
+    {
+      "id": "sel-1fu381b",
+      "category": "printers",
+      "name": "FLASHFORGE Adventurer 5X",
+      "brand": "flashforge"
+    },
+    {
+      "id": "qwen-96e0f714f6408e82",
+      "category": "printers",
+      "name": "Zaxe X4 3D Yazıcı",
+      "brand": "zaxe"
+    },
+    {
+      "id": "qwen-651dc68919993c59",
+      "category": "printers",
+      "name": "FLASHFORGE Guider 3 Ultra",
+      "brand": "flashforge"
+    },
+    {
+      "id": "sel-y3el4h",
+      "category": "printers",
+      "name": "Snapmaker A350ENT 3-in-1 *Kabinli*",
+      "brand": "snapmaker"
+    },
+    {
+      "id": "qwen-d7e8a8dbec3199ad",
+      "category": "printers",
+      "name": "Bambu Lab H2D AMS Pro",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-890045aa3c8dfd14",
+      "category": "printers",
+      "name": "Bambu Lab P2S Combo",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-4087c28d8b141a91",
+      "category": "printers",
+      "name": "Anycubic Kobra 3 Combo V2",
+      "brand": "kobra"
+    },
+    {
+      "id": "sel-wwq7rp",
+      "category": "printers",
+      "name": "FLASHFORGE Adventurer 5X Enclosed Kit Bundle (Kamera Hediyeli)",
+      "brand": "flashforge"
+    },
+    {
+      "id": "qwen-20cc93124e123f5d",
+      "category": "printers",
+      "name": "Bambu Lab A1",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-d6cc41c64d3a4bca",
+      "category": "printers",
+      "name": "Creality K2 3D Yazıcı",
+      "brand": "creality"
+    },
+    {
+      "id": "sel-es4913",
+      "category": "printers",
+      "name": "Bambu Lab H2C Laser Full Combo 40W",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-db34f1d2243e22b8",
+      "category": "printers",
+      "name": "Zaxe Z3S",
+      "brand": "zaxe"
+    },
+    {
+      "id": "sel-17n6gz4",
+      "category": "printers",
+      "name": "Bambu Lab H2D AMS Combo",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-0da727575f2c4983",
+      "category": "printers",
+      "name": "Bambu Lab A1 Mini",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-b4e949bca70b438d",
+      "category": "printers",
+      "name": "Bambu Lab A2L",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-c55cc2f2e1b07537",
+      "category": "printers",
+      "name": "Anycubic Kobra 3 V2 Combo",
+      "brand": "kobra"
+    },
+    {
+      "id": "sel-zypg85",
+      "category": "printers",
+      "name": "Wanhao D13 Idex Dual Extruder Endüstriyel",
+      "brand": ""
+    },
+    {
+      "id": "qwen-8fdd42f2c5873801",
+      "category": "printers",
+      "name": "ELEGOO OrangeStorm Giga",
+      "brand": "elegoo"
+    },
+    {
+      "id": "sel-c3ojwa",
+      "category": "printers",
+      "name": "Bambu Lab H2D Laser Full Combo 40W",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "qwen-a7bf873a56374339",
+      "category": "printers",
+      "name": "Bambu Lab H2S AMS Combo",
+      "brand": "bambu lab"
+    },
+    {
+      "id": "sel-18usk5",
+      "category": "printers",
+      "name": "Prusa XL",
+      "brand": "Prusa Research"
+    },
+    {
+      "id": "qwen-6d3386be9df9939a",
+      "category": "printers",
+      "name": "Bambu Lab X2D",
+      "brand": "Bambu Lab"
+    },
+    {
+      "id": "sel-1l7630d",
+      "category": "printers",
+      "name": "QIDI Q2C ve Outlet QIDI Box Özel Set",
+      "brand": "QIDI Tech"
+    },
+    {
+      "id": "qwen-c63c1378ad16ed4f",
+      "category": "printers",
+      "name": "Creality Ender 5 Max",
+      "brand": "Creality"
+    },
+    {
+      "id": "qwen-0d3111f33ce5c9c1",
+      "category": "printers",
+      "name": "Creality Ender-3 V3 Plus CoreXZ",
+      "brand": "Creality"
+    },
+    {
+      "id": "qwen-856d1c50d55d8fd9",
+      "category": "printers",
+      "name": "Qidi Q2C",
+      "brand": "QIDI Tech"
+    },
+    {
+      "id": "qwen-3ccb75bc8cfa64d3",
+      "category": "printers",
+      "name": "Creality K1C  *2025 Yeni Versiyon*",
+      "brand": "Creality"
+    },
+    {
+      "id": "qwen-36a84fadb808e8ec",
+      "category": "printers",
+      "name": "Creality K2 Plus",
+      "brand": "Creality"
+    },
+    {
+      "id": "qwen-b0a8778d835b596e",
+      "category": "printers",
+      "name": "Creality K2 Plus Combo",
+      "brand": "Creality"
+    },
+    {
+      "id": "qwen-9a5eb1b9453d7808",
+      "category": "printers",
+      "name": "FLSUN S1 PRO",
+      "brand": "flsun"
+    },
+    {
+      "id": "qwen-a807b369970a87c7",
+      "category": "printers",
+      "name": "FLSUN T1 PRO",
+      "brand": "flsun"
+    },
+    {
+      "id": "sel-1vuh2nf",
+      "category": "printers",
+      "name": "Creality Hi Lo Combo",
+      "brand": "creality"
+    }
+  ]
+}
