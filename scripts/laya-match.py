@@ -1,5 +1,5 @@
 """Train and serve the catalog matcher backed by Laya's multilingual encoder."""
-import argparse, json, os, random, sys
+import argparse, json, os, random, re, sys
 from pathlib import Path
 
 os.environ.setdefault("USE_TF", "0")
@@ -36,16 +36,20 @@ def feature(a, b):
 
 def variants(name):
     base = " ".join(str(name).split())
-    return list(dict.fromkeys([
+    rows = [
         base, base.lower(), base.replace("-", " "),
         base + " 3D Yazıcı", base + " 3D Printer",
-    ]))
+        re.sub(r"\b(pro|plus|max|mini|ultra|lite|neo|turbo|se|ke|xl)\s+combo\b", r"\1Combo", base, flags=re.I),
+    ]
+    if "combo" in base.lower(): rows += [base + " Çok Renkli Baskı Sistemi", base + " Multicolor Printing"]
+    return list(dict.fromkeys(rows))
 
 
 def train():
     random.seed(7); torch.manual_seed(7)
     board = json.loads(BASELINE.read_text(encoding="utf-8"))
-    names = [x["name"] for x in board["items"] if x.get("name")]
+    items = [x for x in board["items"] if x.get("name")]
+    names = [x["name"] for x in items]
     eval_rows = [json.loads(line) for line in (ROOT / "docs" / "laya-eval.jsonl").read_text(encoding="utf-8").splitlines() if line]
     texts = list(dict.fromkeys([*(v for name in names for v in variants(name)),
                                 *(str(r[k]) for r in eval_rows for k in ("a", "b"))]))
@@ -56,7 +60,10 @@ def train():
         vv = variants(name)
         anchor = vv[0]
         for v in vv[1:]: pairs.append((anchor, v, 1.0))
-        others = [names[(i + step) % len(names)] for step in (1, 3, 11, 29) if names[(i + step) % len(names)] != name]
+        brand = str(items[i].get("brand") or "").casefold().strip()
+        others = [x["name"] for x in items if x["name"] != name and brand and str(x.get("brand") or "").casefold().strip() == brand]
+        others += [names[(i + step) % len(names)] for step in (1, 3, 11, 29) if names[(i + step) % len(names)] != name]
+        others = list(dict.fromkeys(others))
         for other in others: pairs.append((anchor, variants(other)[0], 0.0))
     pairs.extend((r["a"], r["b"], 1.0 if r["label"] == "same" else 0.0) for r in eval_rows)
     random.shuffle(pairs)

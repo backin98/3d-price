@@ -33,7 +33,7 @@ const scores = (values) => async (_name, candidates) => ({ threshold: 0.8, match
   let seen = [];
   const recovered = await layaPick(valment, choices, { scorer: async (_name, candidates) => {
     seen = candidates.map((c) => c.id);
-    return { threshold: 0.8, matches: candidates.map((c) => ({ id: c.id, score: c.id === 'k2' ? 0.99 : c.id === 'k2pro' ? 0.96 : 0.2 })) };
+    return { threshold: 0.8, matches: candidates.map((c) => ({ id: c.id, score: c.id === 'k2' ? 0.99 : c.id === 'k2pro' ? 0.76 : 0.2 })) };
   } });
   assert.ok(seen.includes('k2pro'), 'Laya sees every relevant same-brand candidate, not only the first three');
   assert.ok(!seen.includes('foreign'), 'Laya does not compare across known brands');
