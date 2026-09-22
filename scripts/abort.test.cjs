@@ -11,8 +11,12 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
  let calls=0;const controller=new AbortController();const dir=fs.mkdtempSync(path.join(os.tmpdir(),'ai-abort-'));
  global.fetch=async(url,options)=>{if(String(url).endsWith('/v1/models'))return {ok:true,json:async()=>({data:[{id:'chat'}]})};if(!String(url).endsWith('/chat/completions'))return {ok:false};calls++;return new Promise((resolve,reject)=>{options.signal.addEventListener('abort',()=>reject(options.signal.reason),{once:true});controller.abort(new Error('user abort'));});};
  const ai=require('./local-qwen.cjs');ai.setEndpoint('http://localhost:1235');await assert.rejects(ai.ask('test',{}, {},dir,controller.signal),/user abort/);assert.equal(calls,1);assert.equal(fs.readdirSync(dir).filter(x=>x.includes('attempt')).length,0);
- let writes=0;const apiContext={URL,Response,store:{readJSON:async()=>[{id:'test',status:'aborted'}],writeJSON:async()=>{writes++}},auth:{workerAuth:()=>true}};
+ let writes=0;const apiContext={URL,Response,stock:require('../lib/stock-refresh.cjs'),store:{readJSON:async()=>[{id:'test',status:'aborted'}],writeJSON:async()=>{writes++}},auth:{workerAuth:()=>true}};
  source=fs.readFileSync('netlify/functions/worker.mjs','utf8').replace(/^import .*;$/gm,'').replace('export default async','globalThis.handler = async');vm.runInNewContext(source,apiContext);
  for(const action of ['progress','complete']){const response=await apiContext.handler(new Request('https://example.com/api/worker?action='+action,{method:'POST',body:JSON.stringify({jobId:'test',candidate:{products:[]},events:[{text:'late'}]})}));assert.equal((await response.json()).aborted,true);}assert.equal(writes,0);
+ const catalog={products:[{id:'p',offers:[{url:'https://shop/p',stockStatus:'in_stock'}]}],filaments:[]};let saved;
+ const stockContext={URL,Response,stock:require('../lib/stock-refresh.cjs'),auth:{workerAuth:()=>true},store:{readJSON:async()=>catalog,writeJSON:async(name,value)=>{saved=value}}};vm.runInNewContext(source,stockContext);
+ const stockResponse=await stockContext.handler(new Request('https://example.com/api/worker?action=stock',{method:'POST',body:JSON.stringify({results:[{url:'https://shop/p',after:'out_of_stock',verified:true,method:'rendered-no-buy-control'}]})}));
+ assert.equal((await stockResponse.json()).updated,1);assert.equal(saved.products[0].stockStatus,'out_of_stock');
  console.log('PASS: quiet worker detects abort, active AI request cancels without retry, no completion upload, late progress/completion cannot revive aborted job.');
 })().catch(e=>{console.error(e);process.exitCode=1});

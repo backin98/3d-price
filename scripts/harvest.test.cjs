@@ -45,6 +45,8 @@ const KEEP = new Set(RHINO.slice(7));
   assert.equal(readStockFromHtml("<div>Stoktan Teslim</div><button>Sepete Ekle</button>").status, "in_stock");
   assert.equal(readStockFromHtml("<div>Tükendi</div>").status, "out_of_stock");
   assert.equal(readStockFromHtml("<div>Ön Sipariş</div><button>Sepete Ekle</button>").status, "preorder");
+  assert.equal(readStockFromHtml("<div>Ön Sipariş 10.000,00 TL</div>").status, "out_of_stock", "preorder text without a buy control is unavailable");
+  assert.equal(readStockFromHtml("<div>10.000,00 TL</div><button disabled>Sepete Ekle</button>").status, "out_of_stock", "a disabled cart control is not buyable");
   const preorderCard = await harvestCategory({
     categoryUrl: "https://store.metatechtr.com/3d-yazicilar",
     kind: "printers",
@@ -118,15 +120,13 @@ const KEEP = new Set(RHINO.slice(7));
   assert.equal(cards.inScope[0].stock, "dropshipping");
   assert.equal(cards.inScope[0].price, 37051.3);
   assert.doesNotMatch(cards.inScope[0].name, /Dropshipping/i);
-  assert.equal(cards.rejected.length, 1);
-  assert.equal(cards.mismatches.length, 1);
-  assert.equal(cards.mismatches[0].detectedType, "accessory");
-  assert.equal(cards.mismatches[0].declaredType, "printer");
+  assert.equal(cards.rejected.length, 2);
+  assert.equal(cards.mismatches.length, 0);
 
   const shopify = await harvestCategory({
     categoryUrl: "https://www.3dteknomarket.com/collections/fdm-yazicilar",
     kind: "printers",
-    html: `<div class="card product-card"><a href="/collections/vendors?q=Bambu%20Lab" title="Bambu Lab">Bambu Lab</a><a href="/products/bambu-lab-a1-combo-3d-yazici"><div class="product-card__title">Bambu Lab A1 Combo 3D Yazıcı</div><div class="sale-price">$599</div></a></div>`
+    html: `<div class="card product-card"><a href="/collections/vendors?q=Bambu%20Lab" title="Bambu Lab">Bambu Lab</a><a href="/products/bambu-lab-a1-combo-3d-yazici"><div class="product-card__title">Bambu Lab A1 Combo 3D Yazıcı</div><div class="sale-price">$599</div></a><button>Add to cart</button></div>`
   });
   assert.equal(shopify.inScope.length, 1);
 

@@ -1,9 +1,11 @@
 // /api/worker — local worker bridge for online shop runs (Netlify Functions v2).
 import store from "../../lib/netlify-store.cjs";
 import auth from "../../lib/netlify-auth.cjs";
+import stock from "../../lib/stock-refresh.cjs";
 
 const { readJSON, writeJSON } = store;
 const { workerAuth } = auth;
+const { rollupProductStock } = stock;
 
 function json(status, payload) {
   return new Response(JSON.stringify(payload), {
@@ -115,6 +117,11 @@ export default async (req) => {
       const candidate = await readJSON("candidate.json", null);
       return json(200, { catalog: unionCatalog(catalog, candidate) });
     }
+    if (req.method === "GET" && action === "stock-catalog") {
+      const catalog = await readJSON("catalog.json", null);
+      if (!catalog || !Array.isArray(catalog.products) || !Array.isArray(catalog.filaments)) return json(503, { error: "Online catalog unavailable" });
+      return json(200, { catalog });
+    }
     if (req.method === "GET" && (action === "poll" || url.pathname.endsWith("/poll"))) {
       const jobs = await getJobs();
       const now = Date.now();
@@ -144,6 +151,37 @@ export default async (req) => {
     }
 
     const body = await req.json().catch(() => ({}));
+
+    if (req.method === "POST" && action === "stock") {
+      const catalog = await readJSON("catalog.json", null);
+      if (!catalog || !Array.isArray(catalog.products) || !Array.isArray(catalog.filaments)) return json(503, { error: "Online catalog unavailable" });
+      const allowed = new Set(["in_stock", "out_of_stock", "preorder", "dropshipping", "unknown"]);
+      const incoming = new Map((Array.isArray(body.results) ? body.results : []).slice(0, 100)
+        .filter((r) => r && typeof r.url === "string" && allowed.has(r.after))
+        .map((r) => [r.url, r]));
+      const now = Date.now();
+      let updated = 0;
+      for (const product of [...catalog.products, ...catalog.filaments]) {
+        let touched = false;
+        for (const offer of product.offers || []) {
+          const result = incoming.get(offer.url);
+          if (!result) continue;
+          Object.assign(offer, {
+            stockStatus: result.after,
+            stockVerified: result.verified === true && result.after !== "unknown",
+            stockCheckedAt: result.checkedAt || new Date(now).toISOString(),
+            stockCheckMethod: String(result.method || "worker").slice(0, 80),
+            stockPolicyVersion: 3
+          });
+          touched = true;
+          updated += 1;
+        }
+        if (touched) rollupProductStock(product, now);
+      }
+      catalog.savedAt = new Date(now).toISOString();
+      await writeJSON("catalog.json", catalog);
+      return json(200, { ok: true, updated });
+    }
 
     if (req.method === "POST" && (action === "heartbeat" || url.pathname.endsWith("/heartbeat"))) {
       await writeJSON("heartbeat.json", { at: new Date().toISOString(), model: typeof body.model === "string" ? body.model.slice(0, 300) : null, connection: body.connection ? { checkedAt: String(body.connection.checkedAt || "").slice(0, 40), modelUrl: String(body.connection.modelUrl || "").slice(0, 2000), checkId: String(body.connection.checkId || "").slice(0, 100), error: String(body.connection.error || "").slice(0, 500), models: Array.isArray(body.connection.models) ? body.connection.models.filter(x => typeof x === "string").slice(0, 50) : [], loadedVerified: body.connection.loadedVerified === true } : null });

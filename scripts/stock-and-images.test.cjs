@@ -93,9 +93,20 @@ const html = (body) => '<html><head><title>t</title></head><body>' + body + '<di
   const { readStockPage } = require('../lib/stock-refresh.cjs');
   const noisy = readStockPage('<div class=buy>Sepete Ekle <span>21.999,00 TL</span></div>' + '<div>x</div>'.repeat(120) + '<div class=rec>Benzer urun TUKENDI</div>');
   assert.equal(noisy.status, 'in_stock', 'a sold-out recommendation card is not this product');
-  assert.equal(readStockPage('<script type="application/ld+json">{"availability":"https://schema.org/OutOfStock"}</script><div>Sepete Ekle</div>').status, 'out_of_stock', 'structured data wins over a cart button');
+  assert.equal(readStockPage('<script type="application/ld+json">{"availability":"https://schema.org/OutOfStock"}</script><div>Sepete Ekle</div>').status, 'in_stock', 'a usable cart control wins over stale structured stock');
   assert.equal(readStockPage('<script type="application/ld+json">{"availability":"https://schema.org/InStock"}</script>').status, 'in_stock');
   assert.equal(readStockPage('<nav>On Siparis</nav><div>Sepete Ekle 1.234,00 TL</div>').status, 'in_stock', 'a menu mentioning pre-order proves nothing');
+  assert.equal(readStockPage('<script type="application/ld+json">{"availability":"https://schema.org/OutOfStock"}</script><div>Ön Sipariş Ürünü <button>Sepete Ekle</button></div>').status, 'preorder', 'preorder buy box wins over stale metadata');
+  assert.equal(readStockPage('<div>12.345,00 TL</div>').status, 'unknown', 'plain HTTP cannot infer a missing JavaScript cart');
+  assert.equal(readStockPage('<div>12.345,00 TL</div>', { rendered: true }).status, 'out_of_stock', 'a rendered priced page without a buy control is unavailable');
+  assert.equal(readStockPage('<div>12.345,00 TL</div><button disabled>Sepete Ekle</button>', { rendered: true }).status, 'out_of_stock', 'a disabled cart control is unavailable');
+  let rendered = 0;
+  const renderedResult = await checkOfferStock('https://x/rendered', {
+    fetchImpl: stub({ 'https://x/rendered': { body: '12.345,00 TL' } }),
+    renderHtml: async () => { rendered += 1; return html('<button>Sepete Ekle</button><div>12.345,00 TL</div>'); }
+  });
+  assert.equal(renderedResult.status, 'in_stock');
+  assert.equal(rendered, 1, 'unknown static pages are retried with a browser');
 
   // --- a whole shop going dead in one pass is a parsing failure, not reality --------
   const guardCat = {

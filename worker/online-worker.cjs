@@ -16,6 +16,8 @@ const fs = require("node:fs");
 const http = require("node:http");
 const path = require("node:path");
 const { runWebsiteJob } = require("../lib/qwen-website-job.cjs");
+const { fetchHtml } = require("../lib/ai-scraper.cjs");
+const { refreshStock } = require("../lib/stock-refresh.cjs");
 const { setEndpoint, ping, discover } = require("../scripts/local-qwen.cjs");
 
 function loadDotEnv() {
@@ -291,9 +293,30 @@ async function runClaimedJob(job, desk) {
 }
 
 let busy = false;
+let stockBusy = false;
+
+async function refreshLiveStock({ limit = 24, staleHours = 2 } = {}) {
+  if (busy || stockBusy) throw new Error("The worker is busy");
+  stockBusy = true;
+  try {
+    const live = await api("stock-catalog");
+    const result = await refreshStock({
+      catalog: live.catalog,
+      limit: Math.max(1, Math.min(Number(limit) || 24, 100)),
+      staleHours: Math.max(0, Number(staleHours) || 0),
+      budgetMs: 240000,
+      timeoutMs: 10000,
+      renderHtml: (url) => fetchHtml(url, null, { scroll: false, waitForStock: true })
+    });
+    const saved = await api("stock", { method: "POST", body: JSON.stringify({ results: result.results }) });
+    return { ...result.summary, updated: saved.updated, changes: result.results.filter((r) => r.before !== r.after) };
+  } finally {
+    stockBusy = false;
+  }
+}
 
 async function claimAndRun() {
-  if (busy || !siteUrl || !hasToken) return false;
+  if (busy || stockBusy || !siteUrl || !hasToken) return false;
   let data;
   try {
     data = await poll();
@@ -391,7 +414,8 @@ function startHttp() {
           site: siteUrl || null,
           model: detectedModel,
           connection,
-          busy
+          busy,
+          stockBusy
         });
         return;
       }
@@ -414,6 +438,15 @@ function startHttp() {
         const desk = { modelUrl, modelCheckId: body.modelCheckId || "admin" };
         await detectModel(desk, { scan: body.scan === true || !modelUrl });
         send(req, res, 200, { ok: true, model: detectedModel, connection, listen: listenUrl() });
+        return;
+      }
+      if (url.pathname === "/stock-refresh" && req.method === "POST") {
+        if (busy || stockBusy) {
+          send(req, res, 409, { error: "The worker is busy — try again when it finishes" });
+          return;
+        }
+        const result = await refreshLiveStock({ limit: body.limit, staleHours: body.staleHours });
+        send(req, res, 200, { ok: true, summary: result, changes: result.changes });
         return;
       }
       if (url.pathname === "/rematch" && req.method === "POST") {
@@ -495,6 +528,10 @@ async function main() {
   });
   setInterval(() => { if (hasToken && siteUrl) postHeartbeat().catch(() => {}); }, 45000);
   if (hasToken && siteUrl) await postHeartbeat().catch(() => {});
+  if (hasToken && siteUrl) {
+    setTimeout(() => refreshLiveStock().catch((err) => console.warn("Stock refresh:", err.message)), 60000);
+    setInterval(() => refreshLiveStock().catch((err) => console.warn("Stock refresh:", err.message)), Math.max(Number(process.env.STOCK_REFRESH_MS || 900000), 300000));
+  }
   const scheduleMs = Number(process.env.SCRAPE_EVERY_MS || 21600000);
   if (process.env.SCRAPE_SCHEDULE === '1') {
     console.log('Scheduled shop refresh every ' + scheduleMs + 'ms');

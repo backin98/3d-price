@@ -32,7 +32,7 @@ const realUrl = 'https://www.urhanshop.com/fdm-3d-yazicilar-ka434';
   assert.equal(p1s.url, 'https://www.urhanshop.com/bambu-lab-x1e-combo-3d-yazici-u126396');
 
   // --- a platform we have never seen, no known class names anywhere ------------------
-  const card = (href, title, price) => `<div class="herhangi"><a href="${href}"><h3 class="blok">${title}</h3></a><span class="tutar">${price}</span></div>`;
+  const card = (href, title, price) => `<div class="herhangi"><a href="${href}"><h3 class="blok">${title}</h3></a><span class="tutar">${price}</span><button>Add to cart</button></div>`;
   const unknown = `<html><body>
     <a href="anasayfa">Anasayfa</a>
     <a href="iletisim">İletişim</a>
@@ -64,7 +64,7 @@ const realUrl = 'https://www.urhanshop.com/fdm-3d-yazicilar-ka434';
   assert.match(none.warning, /no product grid/, 'the empty page still explains itself');
 
   // --- known platforms keep their own path (selectors, no discovery needed) ----------
-  const shopify = `<html><body><div class="product-item"><a href="/products/widget-abc">Widget</a><div class="price">999,00 TL</div></div></body></html>`;
+  const shopify = `<html><body><div class="product-item"><a href="/products/widget-abc">Widget</a><div class="price">999,00 TL</div><button>Add to cart</button></div></body></html>`;
   assert.equal(extractCards(shopify).length, 1, 'the selector path still matches known markup');
   const s = await harvestCategory({ categoryUrl: 'https://shop.example/collections/all', kind: 'printer', html: shopify });
   assert.equal(s.inScope.length, 1);

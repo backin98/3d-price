@@ -3,6 +3,7 @@ const os = require('node:os');
 const path = require('node:path');
 const fs = require('node:fs');
 const { stripDom, priceOnPage, listingFromExtract, detectCurrency, handleInfiniteScroll, listingPageUrls } = require('../lib/ai-scraper.cjs');
+const { paginationMisses } = require('../lib/qwen-website-job.cjs');
 const { compare_products, rankByPrice, toTry } = require('../lib/compare-products.cjs');
 const { record, history } = require('../lib/price-history.cjs');
 
@@ -103,5 +104,8 @@ fs.rmSync(db, { force: true });
   const spanPages = listingPageUrls('https://store.metatechtr.com/3d-yazicilar', 'Toplam <span class="text-primary fw-bold">112</span> ürün ' + 'mb-2 product-item '.repeat(8));
   assert.ok(spanPages[0].includes('ps='));
   assert.doesNotMatch(spanPages[0], /pg=/);
+  assert.equal(paginationMisses('https://shop.example/list?page=2', 0, 0), 1);
+  assert.equal(paginationMisses('https://shop.example/list?page=3', 0, 1), 2);
+  assert.equal(paginationMisses('https://shop.example/list?page=4', 3, 2), 0);
   console.log('PASS: Gemma extract evidence, multilingual compare, FX rank, sqlite history, infinite scroll.');
 })().catch((err) => { console.error(err); process.exitCode = 1; });

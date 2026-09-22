@@ -1060,7 +1060,7 @@
     const unknown = withUrl.filter((o) => !o.stockStatus || o.stockStatus === "unknown").length;
     return `<div class="panel">
         <h2>Stock</h2>
-        <p class="muted">Re-reads the product pages we link to and leaves out vendors that are out of stock. ${withUrl.length} offers: ${dead} out of stock, ${unknown} unverified, ${stale} older than 6h.</p>
+        <p class="muted">The PC worker renders product pages, waits for JavaScript buy controls, and leaves out vendors that are out of stock. ${withUrl.length} offers: ${dead} out of stock, ${unknown} unverified, ${stale} older than 6h.</p>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
           <button class="btn-sm primary" type="button" id="check-stock">Check stock now (${stale} stale)</button>
           <button class="btn-sm ghost" type="button" id="check-stock-all">Check every offer (${withUrl.length})</button>
@@ -1813,9 +1813,16 @@
         btn.disabled = true;
         btn.textContent = "Checking pages…";
         try {
-          // staleHours 0 means "every offer", which is what the second button is for.
-          const query = "/api/stock-refresh?limit=" + (all ? 60 : 25) + "&staleHours=" + (all ? 0 : 6);
-          const data = await api(query);
+          const live = await pingWorker();
+          if (!live.ok) throw new Error("PC worker is offline");
+          const res = await workerFetch("/stock-refresh", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ site: location.origin, limit: all ? 60 : 25, staleHours: all ? 0 : 6 }),
+            signal: AbortSignal.timeout(300000)
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || "Stock refresh failed");
           const s = data.summary || {};
           const changes = (data.changes || []).slice(0, 6).map((c) => c.store + " " + c.before + " → " + c.after).join(" · ");
           if (out) out.textContent = "checked " + s.checked + " of " + s.stale + " · " + s.outOfStock + " newly out of stock" + (s.skipped ? " · " + s.skipped + " left, press again" : "") + (changes ? " — " + changes : " — nothing changed");
