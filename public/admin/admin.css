@@ -211,9 +211,6 @@ button, .ghost { min-height: 38px; }
 .dupe-head{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:5px}
 .dupe-cluster ul{margin:4px 0 0;padding-left:18px}
 .dupe-cluster li{margin:2px 0}
-.merge-bar{border-left:4px solid #0b5c93}
-.keeper-list{list-style:none;margin:8px 0;padding:0}
-.keeper-list li{padding:4px 0}
 .danger-zone{margin:10px 0;border:1px solid #f0c9c9;border-radius:8px;padding:6px 10px;background:#fff8f8}
 .danger-zone summary{cursor:pointer;font-weight:600;color:#a12a2a}
 .offer-src-box{margin:8px 0;border-top:1px solid #eef1f5;padding-top:6px}

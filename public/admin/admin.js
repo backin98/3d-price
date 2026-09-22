@@ -22,7 +22,6 @@
     catalogVariant: "",
     dupesOnly: false,
     dupes: null,
-    keeperId: "",
     reviewJobId: "",
     catalogUndo: null,
     // Which disclosures the user opened. The 5s poll rebuilds the page HTML, which would
@@ -326,6 +325,14 @@
       ...(c.products || []).map((p) => ({ ...p, shelf: "product" })),
       ...(c.filaments || []).map((p) => ({ ...p, shelf: "filament" }))
     ];
+  }
+
+  function showCatalogDirtyCount() {
+    const btn = $("#update-catalog");
+    if (!btn) return;
+    const changed = new Set([...state.editing.keys(), ...state.pendingImages.keys()]).size;
+    btn.disabled = !changed;
+    btn.textContent = "Update catalog" + (changed ? " (" + changed + ")" : "");
   }
 
   const ADMIN_STOP = new Set(["3d", "yazici", "printer", "fiyat", "fiyati", "inceleme", "stok", "stoktan", "ve", "ile", "adet", "urun", "model", "makine", "makinesi", "kutu", "hediye", "yeni", "tl", "try"]);
@@ -1072,14 +1079,15 @@
   function catalogHtml(d) {
     const products = filteredProducts();
     const savedAt = d.catalog && d.catalog.savedAt ? new Date(d.catalog.savedAt).toLocaleString() : "never";
+    const changed = new Set([...state.editing.keys(), ...state.pendingImages.keys()]).size;
     return `
       ${stockPanelHtml(d)}
       <div class="panel">
         <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center">
           <h2 style="margin:0">Saved catalog</h2>
           <span class="muted">Last saved: ${esc(savedAt)}</span>
+          <button class="btn-sm primary" type="button" id="update-catalog" ${changed ? "" : "disabled"}>Update catalog${changed ? ` (${changed})` : ""}</button>
           <button class="btn-sm ghost" type="button" id="select-all-catalog">Select all</button>
-          <button class="btn-sm" type="button" id="merge-selected-catalog" ${state.catalogSelected.size > 1 ? "" : "disabled"}>Merge selected (${state.catalogSelected.size})…</button>
           <button class="btn-sm ghost" type="button" id="find-duplicates">Find duplicate groups</button>
           ${state.catalogUndo ? `<button class="btn-sm ghost" type="button" id="undo-merge">Undo last merge</button>` : ""}
           <button class="btn-sm danger" type="button" id="delete-selected-catalog" ${state.catalogSelected.size ? "" : "disabled"}>Delete selected (${state.catalogSelected.size})</button>
@@ -1112,35 +1120,14 @@
           </div>
         </details>
         <div class="search"><input id="catalog-search" aria-label="Search catalog" type="search" placeholder="Search name, brand, color, polymer…" value="${esc(state.catalogQuery)}"><span class="muted" id="catalog-count">${products.length} shown</span>
-          <button class="btn-sm ghost" type="button" id="catalog-refresh">Refresh live data</button>
+          <button class="btn-sm ghost" type="button" id="catalog-refresh">Reload catalog</button>
         </div>
         <datalist id="catalog-targets">${allProducts().map((x) => `<option value="${esc(x.name || x.id)}"></option>`).join("")}</datalist>
-        ${mergeBarHtml()}
         ${dupesPanelHtml()}
         <div class="catalog-results" id="catalog-results">${products.map(productCard).join("") || '<div class="empty">No products found.</div>'}</div>
         <button class="ghost" id="catalog-more" style="margin-top:20px" ${products.length < state.catalogLimit ? "hidden" : ""}>Show more products</button>
       </div>
     `;
-  }
-
-  // Grouping is the job here: pick the keeper explicitly, then merge.
-  function mergeBarHtml() {
-    const picked = allProducts().filter((p) => state.catalogSelected.has(p.id));
-    if (picked.length < 2) return "";
-    const keeper = picked.find((p) => p.id === state.keeperId) || picked[0];
-    return `<div class="panel merge-bar">
-      <h3 style="margin-top:0">Merge ${picked.length} products into one keeper</h3>
-      <p class="muted">Offers are combined onto the keeper and the other rows disappear. Undo last merge puts it back.</p>
-      <ul class="keeper-list">${picked.map((p) => `<li>
-        <label><input type="radio" name="keeper" data-keeper="${esc(p.id)}" ${p.id === keeper.id ? "checked" : ""}> <strong>${esc(p.name || p.id)}</strong>
-        <span class="muted">${(p.offers || []).length} offers · ${esc(p.id)}${p.axes ? " · " + esc(p.axes.label) : ""}</span></label>
-      </li>`).join("")}</ul>
-      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-        <button class="btn-sm" type="button" id="merge-selected-go">Merge into ${esc(keeper.name || keeper.id)}</button>
-        <button class="btn-sm ghost" type="button" id="merge-cancel">Cancel</button>
-        <small class="muted" id="merge-result"></small>
-      </div>
-    </div>`;
   }
 
   // The duplicates inbox: proposed groups with a keeper, and the pairs that look alike but
@@ -1512,23 +1499,11 @@
         }
         return;
       }
-      if (e.target.closest("[data-keeper]")) {
-        state.keeperId = e.target.closest("[data-keeper]").dataset.keeper;
-        render();
-        return;
-      }
-      if (e.target.closest("#merge-cancel")) {
-        state.keeperId = "";
-        state.catalogSelected.clear();
-        render();
-        toast("Merge cancelled.");
-        return;
-      }
-      if (e.target.closest("[data-merge-cluster]") || e.target.closest("#merge-selected-go")) {
-        const clusterKey = e.target.closest("[data-merge-cluster]") ? e.target.closest("[data-merge-cluster]").dataset.mergeCluster : "";
-        const cluster = clusterKey ? (state.dupes && state.dupes.clusters || []).find((c) => c.key === clusterKey) : null;
-        const ids = cluster ? cluster.rows.map((r) => r.id) : allProducts().filter((p) => state.catalogSelected.has(p.id)).map((p) => p.id);
-        const keeperId = cluster ? cluster.keeperId : (state.keeperId || ids[0]);
+      if (e.target.closest("[data-merge-cluster]")) {
+        const clusterKey = e.target.closest("[data-merge-cluster]").dataset.mergeCluster;
+        const cluster = (state.dupes && state.dupes.clusters || []).find((c) => c.key === clusterKey);
+        const ids = cluster ? cluster.rows.map((r) => r.id) : [];
+        const keeperId = cluster ? cluster.keeperId : "";
         if (ids.length < 2) { toast("Nothing to merge."); return; }
         if (!confirm("Merge " + ids.length + " rows into " + keeperId + "? Offers are combined; the other rows disappear. Undo is available right after.")) return;
         const btn = e.target.closest("button");
@@ -1540,7 +1515,6 @@
           state.catalogUndo = state.data && state.data.catalog ? JSON.parse(JSON.stringify(state.data.catalog)) : null;
           const res = await action({ action: "mergeProducts", ids, keeperId });
           state.catalogSelected.clear();
-          state.keeperId = "";
           state.dupes = null;
           state.dupesOnly = false;
           toast("Merged " + (res.merged + 1) + " rows into " + (res.keeper.name || res.keeper.id) + " (" + res.keeper.offers + " offers). Undo is in the toolbar.");
@@ -1747,13 +1721,36 @@
         } catch (err) { toast(err.message); }
         return;
       }
+      if (e.target.closest("#update-catalog")) {
+        const btn = e.target.closest("#update-catalog");
+        const ids = [...new Set([...state.editing.keys(), ...state.pendingImages.keys()])];
+        if (!ids.length) return;
+        btn.disabled = true;
+        btn.textContent = "Updating…";
+        try {
+          const items = ids.map((id) => {
+            const image = state.pendingImages.get(id);
+            return { id, patch: state.editing.get(id) || {}, imageUpload: image ? { type: image.type, data: image.data } : null };
+          });
+          await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateProducts", items }) });
+          state.editing.clear();
+          state.pendingImages.clear();
+          await loadData();
+          toast("Catalog updated. The website now uses these changes.");
+        } catch (err) {
+          toast(err.message);
+          btn.disabled = false;
+          btn.textContent = "Update catalog (" + ids.length + ")";
+        }
+        return;
+      }
       if (e.target.closest("#catalog-refresh")) {
         const btn = e.target.closest("#catalog-refresh");
         btn.disabled = true;
         try {
           await loadData();
           render();
-          toast("Reloaded from the live catalog.");
+          toast("Reloaded from the live catalog. Unsaved changes were kept.");
         } catch (err) {
           toast(err.message);
         } finally {
@@ -2010,9 +2007,10 @@
         const patch = state.editing.get(id) || {};
         const image = state.pendingImages.get(id);
         try {
-          await action({ action: "updateProduct", id, patch, imageUpload: image ? { type: image.type, data: image.data } : null });
+          await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateProduct", id, patch, imageUpload: image ? { type: image.type, data: image.data } : null }) });
           state.editing.delete(id);
           state.pendingImages.delete(id);
+          await loadData();
           toast("Product saved.");
         } catch (err) { toast(err.message); }
       }
@@ -2164,7 +2162,8 @@
           state.pendingImages.set(id, image);
           const box = e.target.closest(".product-card").querySelector(".catalog-thumb");
           box.innerHTML = `<img src="${esc(image.preview)}" alt="Uploaded thumbnail preview">`;
-          toast("Thumbnail ready. Press Save to publish it.");
+          showCatalogDirtyCount();
+          toast("Thumbnail ready. Press Update catalog or Save to publish it.");
         } catch (err) { toast(err.message); e.target.value = ""; }
         return;
       }
@@ -2293,6 +2292,7 @@
       const edit = state.editing.get(id) || { ...original };
       edit[e.target.dataset.field] = e.target.type === "number" ? Number(e.target.value) : e.target.value;
       state.editing.set(id, edit);
+      showCatalogDirtyCount();
     });
 
     document.addEventListener("click", (e) => {

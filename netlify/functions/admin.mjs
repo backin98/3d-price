@@ -53,6 +53,32 @@ function imageType(bytes) {
   return "";
 }
 
+const PRODUCT_PATCH_FIELDS = ["name", "title", "brand", "color", "polymer", "variant", "aisle", "unit", "kind", "packaging", "weight", "diameter"];
+
+async function updateCatalogProduct(catalog, item) {
+  const id = String(item.id || "");
+  const patch = item.patch && typeof item.patch === "object" ? item.patch : {};
+  if (!id) throw new Error("Product id required");
+  const product = [...(catalog.products || []), ...(catalog.filaments || [])].find((p) => p.id === id);
+  if (!product) throw new Error("Product not found: " + id);
+  if (item.imageUpload) {
+    const type = String(item.imageUpload.type || "");
+    const encoded = String(item.imageUpload.data || "");
+    if (!/^image\/(?:jpeg|png|webp)$/.test(type) || !/^[a-z0-9+/]+={0,2}$/i.test(encoded)) throw new Error("Use a JPG, PNG or WebP image");
+    const bytes = Buffer.from(encoded, "base64");
+    if (!bytes.length || bytes.length > 1024 * 1024) throw new Error("Thumbnail must be smaller than 1 MB");
+    if (imageType(bytes) !== type) throw new Error("The uploaded file is not a valid image");
+    const safeId = id.toLowerCase().replace(/[^a-z0-9._-]+/g, "-").slice(0, 80) || "product";
+    const imageKey = safeId + "-" + Date.now();
+    await writeBytes("product-images/" + imageKey, bytes);
+    product.image = "/api/product-image?key=" + encodeURIComponent(imageKey);
+    // ponytail: old manual thumbnails stay immutable so catalog backups retain their images;
+    // add garbage collection only if this small manual-upload store becomes material.
+  }
+  for (const key of PRODUCT_PATCH_FIELDS) if (key in patch) product[key] = patch[key];
+  return product;
+}
+
 function toHeaders(req) {
   const out = {};
   for (const [key, value] of req.headers.entries()) out[key] = value;
@@ -1004,37 +1030,19 @@ export default async (req) => {
       }
 
       case "updateProduct": {
-        const id = String(body.id || "");
-        const patch = body.patch && typeof body.patch === "object" ? body.patch : {};
-        if (!id) throw new Error("Product id required");
-        const allowed = ["name", "title", "brand", "color", "polymer", "variant", "aisle", "unit", "kind", "packaging", "weight", "diameter"];
-        const product = [...(catalog.products || []), ...(catalog.filaments || [])].find((p) => p.id === id);
-        if (!product) throw new Error("Product not found");
-        if (body.imageUpload) {
-          const type = String(body.imageUpload.type || "");
-          const encoded = String(body.imageUpload.data || "");
-          if (!/^image\/(?:jpeg|png|webp)$/.test(type) || !/^[a-z0-9+/]+={0,2}$/i.test(encoded)) throw new Error("Use a JPG, PNG or WebP image");
-          const bytes = Buffer.from(encoded, "base64");
-          if (!bytes.length || bytes.length > 1024 * 1024) throw new Error("Thumbnail must be smaller than 1 MB");
-          if (imageType(bytes) !== type) throw new Error("The uploaded file is not a valid image");
-          const safeId = id.toLowerCase().replace(/[^a-z0-9._-]+/g, "-").slice(0, 80) || "product";
-          const imageKey = safeId + "-" + Date.now();
-          await writeBytes("product-images/" + imageKey, bytes);
-          product.image = "/api/product-image?key=" + encodeURIComponent(imageKey);
-          // ponytail: old manual thumbnails stay immutable so catalog backups retain their images;
-          // add garbage collection only if this small manual-upload store becomes material.
-        }
-        for (const key of allowed) {
-          if (key in patch) product[key] = patch[key];
-        }
-        const inProducts = (catalog.products || []).some((p) => p.id === id);
-        if (inProducts) {
-          catalog.products = catalog.products.map((p) => (p.id === id ? product : p));
-        } else {
-          catalog.filaments = catalog.filaments.map((p) => (p.id === id ? product : p));
-        }
+        const product = await updateCatalogProduct(catalog, body);
+        catalog.savedAt = new Date().toISOString();
         await writeJSON("catalog.json", catalog);
         return json(200, { ok: true, product });
+      }
+
+      case "updateProducts": {
+        const items = Array.isArray(body.items) ? body.items : [];
+        if (!items.length || items.length > 500) throw new Error("Choose between 1 and 500 products to update");
+        for (const item of items) await updateCatalogProduct(catalog, item || {});
+        catalog.savedAt = new Date().toISOString();
+        await writeJSON("catalog.json", catalog);
+        return json(200, { ok: true, updated: items.length });
       }
 
       default:

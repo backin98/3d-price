@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 
 const files = {
-  'catalog.json': { products: [{ id: 'p1', name: 'Printer', offers: [{ url: 'https://shop.example/p1' }] }], filaments: [] },
+  'catalog.json': { products: [{ id: 'p1', name: 'Printer', offers: [{ url: 'https://shop.example/p1' }] }, { id: 'p2', name: 'Printer 2', offers: [{ url: 'https://shop.example/p2' }] }], filaments: [] },
   'desk.json': { shops: [] }, 'jobs.json': []
 };
 const bytes = {};
@@ -43,6 +43,14 @@ const post = (body) => new Request('https://example.com/api/admin', {
   const bad = await sandbox.handler(post({ action: 'updateProduct', id: 'p1', imageUpload: { type: 'image/svg+xml', data: 'PHN2Zz4=' } }));
   assert.equal(bad.status, 400, 'unsafe image formats are refused');
 
+  const batch = await sandbox.handler(post({ action: 'updateProducts', items: [
+    { id: 'p1', patch: { name: 'Printer one' } },
+    { id: 'p2', patch: { name: 'Printer two' } }
+  ] }));
+  assert.equal(batch.status, 200, await batch.text());
+  assert.deepEqual(files['catalog.json'].products.map((p) => p.name), ['Printer one', 'Printer two'], 'Update catalog saves every edited card in one write');
+  assert.ok(files['catalog.json'].savedAt, 'the catalog save time reflects the update');
+
   const imageSource = fs.readFileSync('netlify/functions/product-image.mjs', 'utf8')
     .replace(/^import .*;$/gm, '')
     .replace('export default async', 'globalThis.imageHandler = async');
@@ -51,5 +59,5 @@ const post = (body) => new Request('https://example.com/api/admin', {
   assert.equal(shown.status, 200);
   assert.equal(shown.headers.get('content-type'), 'image/png');
   assert.deepEqual(Buffer.from(await shown.arrayBuffer()), png);
-  console.log('PASS: a catalog thumbnail upload is validated, stored separately, saved on the product, and served publicly.');
+  console.log('PASS: catalog edits save together; thumbnails are validated, stored separately, and served publicly.');
 })().catch((err) => { console.error(err); process.exitCode = 1; });
