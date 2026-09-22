@@ -1,6 +1,7 @@
 const assert = require("node:assert/strict");
 const { harvestCategory, isLikelyProductUrl, slugToTitle, readStockFromHtml, extractProductPage, isJunkAmount } = require("../lib/harvest.js");
 const { discoverInStockFilter } = require("../lib/harvest-guards.cjs");
+const { listingFromHarvest } = require("../lib/qwen-website-job.cjs");
 
 const RHINO = [
   "https://www.rhino3dprinter.com/muhendislik-filamentleri",
@@ -63,6 +64,27 @@ const KEEP = new Set(RHINO.slice(7));
   });
   assert.equal(deadCard.inScope.length, 0);
   assert.ok(deadCard.rejected.some((r) => r.reason === "out_of_stock"));
+  const noCartGrid = await harvestCategory({
+    categoryUrl: "https://unknown.example/printers",
+    kind: "printer",
+    inStockOnly: true,
+    html: `<div class="product-item"><a class="brand-title">Maker</a><a class="product-title" href="/maker-model-10-3d-printer">Maker Model 10 3D Printer</a><div class="price">10.000,00 TL</div></div>
+      <div class="product-item"><a class="brand-title">Other</a><a class="product-title" href="/other-model-20-3d-printer">Other Model 20 3D Printer</a><div class="price">20.000,00 TL</div></div>
+      <div class="product-item"><a class="product-title" href="/maker-model-30-3d-printer">Maker Model 30 3D Printer</a><div class="price">30.000,00 TL</div><span>Tükendi</span></div>`
+  });
+  assert.equal(noCartGrid.inScope.length, 2, "a grid layout with no cart controls defers its products to their detail pages");
+  assert.equal(noCartGrid.inScope[0].name, "Maker Model 10 3D Printer", "the product title wins over an earlier brand link");
+  assert.ok(noCartGrid.inScope.every((p) => p.stock === "unknown"));
+  assert.equal(listingFromHarvest(noCartGrid.inScope[0].url, noCartGrid.inScope[0], { kind: "printer" }, new Set()), null, "deferred cards cannot bypass product-page stock verification");
+  const mixedGrid = await harvestCategory({
+    categoryUrl: "https://unknown.example/printers",
+    kind: "printer",
+    inStockOnly: true,
+    html: `<div class="product-item"><a class="product-title" href="/maker-live-3d-printer">Maker Live 3D Printer</a><div class="price">10.000,00 TL</div><button>Add to cart</button></div>
+      <div class="product-item"><a class="product-title" href="/maker-dead-3d-printer">Maker Dead 3D Printer</a><div class="price">20.000,00 TL</div></div>`
+  });
+  assert.equal(mixedGrid.inScope.length, 1, "when a grid supports cart controls, a card without one is out of stock");
+  assert.ok(mixedGrid.rejected.some((r) => r.url.endsWith("maker-dead-3d-printer") && r.reason === "out_of_stock"));
   assert.equal(isJunkAmount(1, "placeholder"), true);
   assert.equal(isJunkAmount(2500, "2.500 TL ÜZERİ ALIŞVERİŞTE KARGO ÜCRETSİZ"), true);
   assert.equal(isJunkAmount(37051, "Photon P1 Combo"), false);
@@ -120,8 +142,9 @@ const KEEP = new Set(RHINO.slice(7));
   assert.equal(cards.inScope[0].stock, "dropshipping");
   assert.equal(cards.inScope[0].price, 37051.3);
   assert.doesNotMatch(cards.inScope[0].name, /Dropshipping/i);
-  assert.equal(cards.rejected.length, 2);
-  assert.equal(cards.mismatches.length, 0);
+  assert.equal(cards.rejected.length, 1);
+  assert.equal(cards.mismatches.length, 1);
+  assert.equal(cards.mismatches[0].detectedType, "accessory");
 
   const shopify = await harvestCategory({
     categoryUrl: "https://www.3dteknomarket.com/collections/fdm-yazicilar",
