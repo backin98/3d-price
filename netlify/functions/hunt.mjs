@@ -1,6 +1,7 @@
 import store from "../../lib/netlify-store.cjs";
 import catalogUnion from "../../lib/catalog-union.cjs";
 import search from "../../lib/search-match.cjs";
+import boardLib from "../../lib/baseline-board.cjs";
 
 const { readJSON } = store;
 const { collapseByMagellan, pricesToTry } = catalogUnion;
@@ -8,6 +9,7 @@ const { collapseByMagellan, pricesToTry } = catalogUnion;
 // Token search over the row and its offers (see lib/search-match.cjs): a family query finds a
 // branched row even when its own name is only a slug.
 const { filterSearch } = search;
+const { applyBaselineImages } = boardLib;
 
 function filterList(list, q) {
   if (!q) return list || [];
@@ -22,6 +24,7 @@ export default async (req) => {
     filaments: []
   });
   const catalog = pricesToTry(collapseByMagellan(raw)); // stored prices are already KDV-inclusive
+  applyBaselineImages(catalog, await readJSON("baseline.json", { items: [] }));
   const products = filterList(catalog.products, q);
   const filaments = filterList(catalog.filaments, q);
   return Response.json(

@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { emptyBoard, fromProduct, fromRunCard, upsertItems, loadBackupPrinters, sanitizeItem, addCategory, renameCategory, patchItem, addItem } = require('../lib/baseline-board.cjs');
+const { emptyBoard, fromProduct, fromRunCard, upsertItems, loadBackupPrinters, sanitizeItem, addCategory, renameCategory, patchItem, addItem, itemForProduct, applyBaselineImages } = require('../lib/baseline-board.cjs');
 
 const board = emptyBoard();
 assert.ok(board.categories.some((c) => c.id === 'printers'));
@@ -25,6 +25,15 @@ patchItem(board, board.items[0].id, { category: 'filaments', name: board.items[0
 assert.equal(board.items[0].category, 'filaments');
 addItem(board, { name: 'Hand approved P1S', brand: 'Bambu Lab', category: 'printers' });
 assert.ok(board.items.some((i) => i.name === 'Hand approved P1S'));
+const imageBoard = { items: [{ id: 'base-a1', name: 'Bambu Lab A1 Combo', brand: 'Bambu Lab', category: 'printers', image: '/baseline-a1.webp' }] };
+const imageCatalog = { products: [
+  { id: 'shop-a1', name: 'Bambu Lab A1 Combo 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer', image: '/shop-a1.webp' },
+  { id: 'new-model', name: 'Acme Z900 3D Yazıcı', brand: 'Acme', kind: 'printer', image: '/new.webp' }
+], filaments: [] };
+assert.equal(itemForProduct(imageBoard, imageCatalog.products[0]).id, 'base-a1');
+applyBaselineImages(imageCatalog, imageBoard);
+assert.equal(imageCatalog.products[0].image, '/baseline-a1.webp', 'known models always use the baseline thumbnail');
+assert.equal(imageCatalog.products[1].image, '/new.webp', 'a model absent from baseline keeps its catalog thumbnail');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'netlify', 'functions', 'admin.mjs'), 'utf8')
   .replace(/^import .*;$/gm, '')

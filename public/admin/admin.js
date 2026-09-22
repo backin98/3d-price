@@ -1172,6 +1172,8 @@
 
   function catalogHtml(d) {
     const products = filteredProducts();
+    const baselineModels = (d.baseline && d.baseline.items) || [];
+    const baselineLabel = (x) => x.name + (x.brand ? " — " + x.brand : "");
     const savedAt = d.catalog && d.catalog.savedAt ? new Date(d.catalog.savedAt).toLocaleString() : "never";
     const changed = new Set([...state.editing.keys(), ...state.pendingImages.keys()]).size;
     return `
@@ -1216,7 +1218,7 @@
         <div class="search"><input id="catalog-search" aria-label="Search catalog" type="search" placeholder="Search name, brand, color, polymer…" value="${esc(state.catalogQuery)}"><span class="muted" id="catalog-count">${products.length} shown</span>
           <button class="btn-sm ghost" type="button" id="catalog-refresh">Reload catalog</button>
         </div>
-        <datalist id="catalog-targets">${allProducts().map((x) => `<option value="${esc(x.name || x.id)}"></option>`).join("")}</datalist>
+        <datalist id="catalog-targets">${baselineModels.map((x) => `<option value="${esc(baselineLabel(x))}"></option>`).join("")}</datalist>
         ${dupesPanelHtml()}
         <div class="catalog-results" id="catalog-results">${products.map(productCard).join("") || '<div class="empty">No products found.</div>'}</div>
         <button class="ghost" id="catalog-more" style="margin-top:20px" ${products.length < state.catalogLimit ? "hidden" : ""}>Show more products</button>
@@ -1303,9 +1305,9 @@
         <div class="muted" title="worker title">worker: ${esc(p.name || p.id)}</div>
         <div class="muted" title="url slug">${esc(slug)}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-          <input list="catalog-targets" data-offer-move-q="${esc(o.url)}" placeholder="Move to product…" style="flex:1;min-width:140px">
+          <input list="catalog-targets" data-offer-move-q="${esc(o.url)}" placeholder="Move to baseline model…" style="flex:1;min-width:140px">
           <button class="btn-sm" type="button" data-offer-move="${esc(o.url)}" data-offer-from="${esc(p.id)}" data-offer-name="${esc(p.name || "")}">Move</button>
-          <button class="btn-sm ghost" type="button" data-offer-branch="${esc(o.url)}" data-offer-from="${esc(p.id)}" title="Split this offer into a product of its own, named from the scraped title">Branch as own product</button>
+          <button class="btn-sm ghost" type="button" data-offer-branch="${esc(o.url)}" data-offer-from="${esc(p.id)}" title="Create a new catalog product and baseline model from the scraped title">Create new model</button>
         </div>
       </li>`;
     }).join("");
@@ -1900,7 +1902,7 @@
         const btn = e.target.closest("[data-offer-branch]");
         const url = btn.dataset.offerBranch;
         const from = btn.dataset.offerFrom;
-        if (!confirm("Take this offer off this product and make it a product of its own, named from its scraped title?")) return;
+        if (!confirm("Create a new catalog product and baseline model from this offer's scraped title?")) return;
         btn.disabled = true;
         try {
           const res = await action({ action: "retargetOffer", url, from, to: "new" });
@@ -1919,19 +1921,17 @@
         const box = btn.closest(".offer-src");
         const typed = ((box && box.querySelector("[data-offer-move-q]")) || {}).value || "";
         const want = typed.trim().toLowerCase();
-        const target = allProducts().find((x) => String(x.name || "").toLowerCase() === want)
-          || allProducts().find((x) => (x.name || "").toLowerCase().includes(want) && want.length > 3);
+        const baseline = ((state.data && state.data.baseline && state.data.baseline.items) || []);
+        const label = (x) => (x.name + (x.brand ? " — " + x.brand : "")).toLowerCase();
+        const target = baseline.find((x) => label(x) === want)
+          || baseline.find((x) => String(x.name || "").toLowerCase() === want);
         if (!target) {
-          toast("Type the name of the product this offer belongs to (pick one from the list).");
-          return;
-        }
-        if (target.id === from) {
-          toast("It is already on that product.");
+          toast("Pick a model from the baseline list.");
           return;
         }
         btn.disabled = true;
         try {
-          await action({ action: "retargetOffer", url, from, to: target.id });
+          await action({ action: "retargetOffer", url, from, to: "baseline:" + target.id });
           toast("Moved onto " + (target.name || target.id) + ".");
         } catch (err) {
           toast(err.message);

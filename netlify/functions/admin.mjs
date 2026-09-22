@@ -8,7 +8,7 @@ import boardLib from "../../lib/baseline-board.cjs";
 const { readJSON, writeJSON, writeBytes, deleteKey } = store;
 const { ownerFromHeaders, authReady } = auth;
 const { withVat, withoutVat } = money;
-const { emptyBoard, fromProduct, fromRunCard, upsertItems, loadBackupPrinters, isIdentityStyleBoard, sanitizeBoard, addCategory, renameCategory, patchItem, addItem } = boardLib;
+const { emptyBoard, fromProduct, fromRunCard, upsertItems, loadBackupPrinters, isIdentityStyleBoard, sanitizeBoard, addCategory, renameCategory, patchItem, addItem, itemForProduct, applyBaselineImages } = boardLib;
 
 function sameOriginUrl(req) {
   const origin = req.headers.get("origin");
@@ -633,14 +633,15 @@ export default async (req) => {
   if (req.method === "GET") {
     const data = await loadAll();
     const catalog = data.catalog || { products: [], filaments: [] };
+    const baseline = await ensureBaseline();
     return json(200, {
       configured: authReady(),
       desk: data.desk,
-      catalog: withAxes(catalog),
+      catalog: withAxes(applyBaselineImages(catalog, baseline)),
       candidate: data.candidate,
       jobs: data.jobs || [],
       backups: await readBackupIndex(),
-      baseline: await ensureBaseline(),
+      baseline,
       duplicateOffers: findDuplicateOfferUrls(catalog),
       heartbeat: await readJSON("heartbeat.json", null),
       counts: {
@@ -717,6 +718,16 @@ export default async (req) => {
       case "publishCandidate": {
         candidate = candidate || (await readJSON("candidate.json", null));
         if (!candidate) throw new Error("No candidate snapshot to publish");
+        const board = await ensureBaseline();
+        const oldRows = [...(catalog.products || []), ...(catalog.filaments || [])];
+        const oldIds = new Set(oldRows.map((p) => p.id));
+        const oldUrls = new Set(oldRows.flatMap((p) => (p.offers || []).map((o) => o.url)).filter(Boolean));
+        const fresh = [...(candidate.products || []), ...(candidate.filaments || [])]
+          .filter((p) => !oldIds.has(p.id) && !(p.offers || []).some((o) => oldUrls.has(o.url)));
+        if (fresh.length) {
+          upsertItems(board, fresh.map((p) => fromProduct(p, "candidate")));
+          await writeJSON("baseline.json", board);
+        }
         await writeJSON("catalog.json", candidate);
         await writeJSON("last-publish.json", { publishedAt: new Date().toISOString(), savedAt: candidate.savedAt });
         return json(200, { ok: true, publishedAt: new Date().toISOString() });
@@ -732,6 +743,15 @@ export default async (req) => {
         const applied = next._applied || 0;
         delete next._applied;
         if (!applied) throw new Error("None of the selected products could be published");
+        const createdUrls = new Set(items.filter((it) => (it.action || "create") === "create").map((it) => String(it.url || (it.card && it.card.url) || "")));
+        if (createdUrls.size) {
+          const board = await ensureBaseline();
+          const created = [...(next.products || []), ...(next.filaments || [])].filter((p) => (p.offers || []).some((o) => createdUrls.has(o.url)));
+          if (created.length) {
+            upsertItems(board, created.map((p) => fromProduct(p, "catalog")));
+            await writeJSON("baseline.json", board);
+          }
+        }
         await writeJSON("catalog.json", next);
         await writeJSON("last-publish.json", { publishedAt: new Date().toISOString(), savedAt: next.savedAt });
         const urls = items.map((it) => String(it.url || (it.card && it.card.url) || "")).filter(Boolean);
@@ -1091,9 +1111,17 @@ export default async (req) => {
         };
         const shelfOf = (kind) => (kind === "filament" ? catalog.filaments : catalog.products);
         // Validate the destination before touching anything, so a refused move is a no-op.
+        const board = await ensureBaseline();
         let target = null;
+        let baselineTarget = null;
         if (to === "new") {
           // stays null: a new row is always allowed
+        } else if (to.startsWith("baseline:")) {
+          baselineTarget = (board.items || []).find((it) => it.id === to.slice(9));
+          if (!baselineTarget) throw new Error("Baseline model not found");
+          target = [...shelves.flat()].find((p) => itemForProduct(board, p)?.id === baselineTarget.id) || null;
+          if (target && target.id === from) throw new Error("Already on that product");
+          if (target && (target.offers || []).some((o) => o.url === url)) throw new Error("Target already has that offer");
         } else {
           target = shelves.flat().find((p) => p.id === to);
           if (!target) throw new Error("Target product not found");
@@ -1132,10 +1160,28 @@ export default async (req) => {
           };
           delete row.similar;
           shelfOf(row.kind).push(row);
+          upsertItems(board, [fromProduct(row, "catalog")]);
+          await writeJSON("baseline.json", board);
         } else {
+          if (!target && baselineTarget) {
+            target = {
+              id: baselineTarget.id,
+              name: baselineTarget.name,
+              title: baselineTarget.name,
+              brand: baselineTarget.brand || "",
+              kind: baselineTarget.category === "filaments" ? "filament" : "printer",
+              aisle: baselineTarget.category === "filaments" ? "filament" : "fdm",
+              image: baselineTarget.image || offer.image || "",
+              offers: [],
+              manual: true,
+              baselineId: baselineTarget.id
+            };
+            shelfOf(target.kind).push(target);
+          }
           target.offers = target.offers || [];
           target.offers.push(offer);
           target.price = priceOf(target);
+          if (baselineTarget) Object.assign(target, { name: baselineTarget.name, title: baselineTarget.name, brand: baselineTarget.brand || target.brand || "", image: baselineTarget.image || target.image, baselineId: baselineTarget.id });
         }
         // A row that lost its last offer is gone: an empty product is not a product.
         if (!(found.offers || []).length) {
@@ -1152,6 +1198,7 @@ export default async (req) => {
           ok: true,
           action: to === "new" ? "branched" : "moved",
           scrapedTitle: scraped,
+          baseline: board,
           counts: { products: catalog.products.length, filaments: catalog.filaments.length }
         });
       }
@@ -1173,6 +1220,14 @@ export default async (req) => {
 
       case "updateProduct": {
         const product = await updateCatalogProduct(catalog, body);
+        if (body.imageUpload) {
+          const board = await ensureBaseline();
+          const item = itemForProduct(board, product);
+          if (item) {
+            patchItem(board, item.id, { image: product.image });
+            await writeJSON("baseline.json", board);
+          }
+        }
         catalog.savedAt = new Date().toISOString();
         await writeJSON("catalog.json", catalog);
         return json(200, { ok: true, product });
@@ -1181,7 +1236,17 @@ export default async (req) => {
       case "updateProducts": {
         const items = Array.isArray(body.items) ? body.items : [];
         if (!items.length || items.length > 500) throw new Error("Choose between 1 and 500 products to update");
-        for (const item of items) await updateCatalogProduct(catalog, item || {});
+        const board = await ensureBaseline();
+        let baselineChanged = false;
+        for (const item of items) {
+          const product = await updateCatalogProduct(catalog, item || {});
+          const baselineItem = item.imageUpload && itemForProduct(board, product);
+          if (baselineItem) {
+            patchItem(board, baselineItem.id, { image: product.image });
+            baselineChanged = true;
+          }
+        }
+        if (baselineChanged) await writeJSON("baseline.json", board);
         catalog.savedAt = new Date().toISOString();
         await writeJSON("catalog.json", catalog);
         return json(200, { ok: true, updated: items.length });

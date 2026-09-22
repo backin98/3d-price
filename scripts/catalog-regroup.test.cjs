@@ -25,7 +25,14 @@ const catalog = {
 };
 fs.writeFileSync(catalogFile, JSON.stringify(catalog));
 
-const storeState = { 'catalog.json': JSON.parse(JSON.stringify(catalog)), 'jobs.json': [], 'desk.json': { shops: [] } };
+const storeState = {
+  'catalog.json': JSON.parse(JSON.stringify(catalog)),
+  'baseline.json': { categories: [{ id: 'printers', name: '3D Printers' }], items: [
+    { id: 'qwen-p1s', category: 'printers', name: 'Bambu Lab P1S Combo 3D Yazıcı', brand: 'Bambu Lab', image: '/baseline-p1s.webp' },
+    { id: 'base-a1', category: 'printers', name: 'Bambu Lab A1 Combo', brand: 'Bambu Lab', image: '/baseline-a1.webp' }
+  ] },
+  'jobs.json': [], 'desk.json': { shops: [] }
+};
 const sandbox = {
   URL, Response, crypto: require('node:crypto'), console,
   money: require('../lib/parse-money.cjs'),
@@ -63,15 +70,27 @@ const send = async (b) => (await sandbox.handler(post(b))).json();
   assert.equal(k2.offers.length, 1, 'the K2 Combo row kept only its own offer');
   assert.equal(k2.price, 32384.81, 'and its price dropped back to its own offer');
   assert.equal(rows.length, 3, 'one row added, none lost');
+  assert.ok(storeState['baseline.json'].items.some((p) => /K2 Plus Combo/i.test(p.name)), 'creating a catalog model creates it in baseline too');
 
-  // 2. Move an offer onto another existing product instead of branching.
-  const moved = await send({ action: 'retargetOffer', url: 'https://www.rhino3dprinter.com/urun/creality-k2-plus-combo', from: plus.id, to: 'qwen-p1s' });
+  // 2. Move an offer onto a baseline model instead of choosing from incidental catalog rows.
+  const moved = await send({ action: 'retargetOffer', url: 'https://www.rhino3dprinter.com/urun/creality-k2-plus-combo', from: plus.id, to: 'baseline:qwen-p1s' });
   assert.equal(moved.action, 'moved');
   const after = storeState['catalog.json'].products;
   assert.equal(after.some((p) => /K2 Plus/i.test(p.name)), false, 'the emptied row is gone: no empty products');
   const p1s = after.find((p) => p.id === 'qwen-p1s');
   assert.equal(p1s.offers.length, 2, 'the offer landed on the target row');
   assert.equal(p1s.price, 34986, 'price is the cheapest of its offers');
+  assert.equal(p1s.image, '/baseline-p1s.webp', 'moving to a baseline model applies its canonical thumbnail');
+
+  // 2b. A baseline model need not already have a catalog row; moving its first offer creates it.
+  const k2row = after.find((p) => p.id === 'qwen-k2');
+  k2row.offers.push({ store: 'shop', price: 15000, url: 'https://shop.example/a1-combo', sourceTitle: 'Bambu Lab A1 Combo' });
+  const firstOffer = await send({ action: 'retargetOffer', url: 'https://shop.example/a1-combo', from: 'qwen-k2', to: 'baseline:base-a1' });
+  assert.equal(firstOffer.action, 'moved');
+  const a1 = storeState['catalog.json'].products.find((p) => p.id === 'base-a1');
+  assert.ok(a1, 'the baseline destination became a catalog row');
+  assert.equal(a1.image, '/baseline-a1.webp');
+  assert.equal(a1.offers.length, 1);
 
   // 3. Refusals stay honest (the handler answers with an error body, not a throw).
   const bad = async (b) => String((await send(b)).error || "");
