@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const { harvestCategory, isLikelyProductUrl, slugToTitle, readStockFromHtml, extractProductPage, isJunkAmount } = require("../lib/harvest.js");
+const { harvestCategory, isLikelyProductUrl, slugToTitle, readStockFromHtml, extractProductPage, transactionPrice, isJunkAmount } = require("../lib/harvest.js");
 const { discoverInStockFilter } = require("../lib/harvest-guards.cjs");
 const { listingFromHarvest } = require("../lib/qwen-website-job.cjs");
 
@@ -206,6 +206,14 @@ const KEEP = new Set(RHINO.slice(7));
     <script type="application/ld+json">{"@type":"Product","name":"Elegoo","brand":{"name":"Elegoo"},"offers":{"price":"20000"}}</script>
     <div class="sale-price">20.000,00 TL</div>`, "https://shop.example/elegoo-neptune-4-pro", "printer");
   assert.match(brandOnly.product.name, /Neptune 4 Pro/, "brand-only structured title falls back to the product slug");
+
+  const cartPricePage = `<script>window.product={"satisFiyatiStr":"₺77.000,00","indirimliFiyatiStr":"₺72.000,00","urunSepetFiyatiStr":"₺72.000,00"}</script>
+    <script type="application/ld+json">{"@type":"Product","name":"Bambu Lab H2S 3D Yazıcı","brand":{"name":"Bambu Lab"},"offers":{"price":"72000","priceCurrency":"TRY"}}</script>
+    <h1>Bambu Lab H2S 3D Yazıcı</h1><div><span id="fiyat">₺77.000,00</span><span id="indirimliFiyat">₺72.000,00</span></div><button>Sepete Ekle</button>`;
+  assert.equal(transactionPrice(cartPricePage).price, 72000, "the formatted product cart price is transaction evidence");
+  const cartPriced = extractProductPage(cartPricePage, "https://shop.example/bambu-lab-h2s-3d-yazici", "printer");
+  assert.equal(cartPriced.product.price, 72000, "cart price wins over the crossed-out/list price");
+  assert.equal(cartPriced.product.priceSource, "cart-price");
 
   const plusVat = extractProductPage(`
     <h1>Creality K1 Max 3D Yazıcı</h1>

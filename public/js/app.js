@@ -106,7 +106,7 @@
   function liveOffers(product) {
     const offers = (product && product.offers) || [];
     // An offer carrying no stock information stays in: unknown is not out of stock.
-    return offers.filter((o) => offerStatus(o) !== "out_of_stock");
+    return offers.filter((o) => Number.isFinite(Number(o.price)) && Number(o.price) > 0 && offerStatus(o) !== "out_of_stock");
   }
 
   function bestOffer(product) {

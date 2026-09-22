@@ -180,7 +180,8 @@ const html = (body) => '<html><head><title>t</title></head><body>' + body + '<di
   assert.equal(api.bestOffer(product).store, 'live.example', 'verified in-stock beats a cheaper unknown or dead offer');
   assert.equal(api.isSellable({ id: 'x', offers: [{ stockStatus: 'out_of_stock' }] }), false, 'a product with no live vendor leaves the site');
   assert.equal(api.isSellable({ id: 'x2', offers: [{ stock: 'out_of_stock' }] }), false, 'legacy stock fields cannot leak a dead offer');
-  assert.equal(api.isSellable({ id: 'y', offers: [{ stockStatus: 'unknown' }] }), true, 'unknown stays on the site');
+  assert.equal(api.isSellable({ id: 'y', offers: [{ price: 10, stockStatus: 'unknown' }] }), true, 'unknown stock stays on the site when it has a real price');
+  assert.equal(api.isSellable({ id: 'price-less', offers: [{ stockStatus: 'in_stock' }] }), false, 'a legacy offer without a price cannot render as a purchasable result');
   assert.equal(api.bestOffer({ offers: [{ store: 'dead', price: 1, stockStatus: 'out_of_stock' }] }).store, '', 'an all-dead row has no best offer');
 
   // --- the thumbnail walker ---------------------------------------------------------

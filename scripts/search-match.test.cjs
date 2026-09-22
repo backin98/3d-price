@@ -13,15 +13,15 @@ const { filterSearch: huntFilter } = require('../lib/search-match.cjs');
 // The exact branched row and its sibling from the live catalog.
 const branched = {
   id: 'man-sdqdo9', name: 'creality k2 plus combo', brand: '', kind: 'printer',
-  offers: [{ store: 'rhino3dprinter.com', sourceTitle: '', url: 'https://www.rhino3dprinter.com/urun/creality-k2-plus-combo' }]
+  offers: [{ store: 'rhino3dprinter.com', sourceTitle: '', price: 1, url: 'https://www.rhino3dprinter.com/urun/creality-k2-plus-combo' }]
 };
 const sibling = {
   id: 'qwen-k2', name: 'Creality K2 Combo 3D Yazıcı', brand: 'Creality', kind: 'printer', price: 32384.81,
-  offers: [{ store: 'rhino3dprinter.com', sourceTitle: 'Creality K2 Combo 3D Yazıcı', url: 'https://www.rhino3dprinter.com/creality-k2-combo-3d-yazici' }]
+  offers: [{ store: 'rhino3dprinter.com', sourceTitle: 'Creality K2 Combo 3D Yazıcı', price: 1, url: 'https://www.rhino3dprinter.com/creality-k2-combo-3d-yazici' }]
 };
 const p1s = {
   id: 'qwen-p1s', name: 'Bambu Lab P1S Combo 3D Yazıcı', brand: 'Bambu Lab', kind: 'printer',
-  offers: [{ store: 'rhino3dprinter.com', sourceTitle: 'Bambu Lab P1S AMS 2 Pro Combo 3D Printer with Buffer', url: 'https://www.rhino3dprinter.com/bambu-lab-p1s-ams-2-pro-combo' }]
+  offers: [{ store: 'rhino3dprinter.com', sourceTitle: 'Bambu Lab P1S AMS 2 Pro Combo 3D Printer with Buffer', price: 1, url: 'https://www.rhino3dprinter.com/bambu-lab-p1s-ams-2-pro-combo' }]
 };
 
 // --- the family query finds the branched row -------------------------------------------

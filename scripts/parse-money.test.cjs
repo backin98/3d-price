@@ -14,4 +14,5 @@ assert.equal(pickPrice('<div class="yeni-fiyat">1.000,00 TL</div><del>1.200,00</
 assert.equal(pickPrice('<div class="yeni-fiyat">1.000,00 TL</div><del>1.200,00</del>', '1.200,00').was, 1200);
 assert.equal(pickPrice('<div class="sale-price">10.000,00 TL</div><span>+ KDV</span>').plusVat, true);
 assert.equal(pickPrice('<div class="sale-price">10.000,00 TL</div><span>KDV Dahil</span>').plusVat, false);
+assert.equal(pickPrice('<div><span id="fiyat">₺77.000,00</span></div><div><span id="indirimliFiyat">₺72.000,00</span></div>').price, 72000);
 console.log('PASS: TR/US separators, VAT, sale vs struck-through list price.');

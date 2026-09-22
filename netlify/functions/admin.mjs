@@ -312,6 +312,7 @@ function applySelectedListings(live, candidate, items) {
       ? { ...found.offer, sourceTitle: found.offer.sourceTitle || scrapedTitle }
       : { store: offerStore(url, card), price: card.price, url, image: card.image || "", sourceTitle: scrapedTitle,
           priceSuspect: card.priceSuspect === true ? "harvest" : undefined, priceCurrency: card.currency || undefined };
+    if (!Number.isFinite(Number(offer.price)) || Number(offer.price) <= 0) continue;
     const shelf = found?.shelf || (card.kind === "filament" ? "filaments" : "products");
     const dest = next[shelf];
     const mergeId = item.action === "merge" ? String(item.candidateId || "") : "";
