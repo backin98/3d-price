@@ -234,6 +234,12 @@ const KEEP = new Set(RHINO.slice(7));
   assert.equal(vatIncludedPrice(robotizmoGross).price, 51749.11, "script settings cannot hide the visible KDV-included total");
   assert.equal(extractProductPage(robotizmoGross, "https://shop.example/snapmaker-u1-3d-yazici", "printer").product.price, 51749.11);
 
+  const priceBeforeVatLabel = `<h1>Creality K2 Pro Combo 3D Yazıcı</h1>
+    <div>Fiyat: ₺52.999,00 (KDV Dahil)</div><div>₺5.888,78 'den başlayan taksitlerle</div>
+    <script type="application/ld+json">{"@type":"Product","name":"Creality K2 Pro Combo 3D Yazıcı","offers":{"price":"52999","priceCurrency":"TRY"}}</script><button>Sepete Ekle</button>`;
+  assert.equal(vatIncludedPrice(priceBeforeVatLabel).price, 52999, "a price immediately before the VAT label wins over a later installment");
+  assert.equal(extractProductPage(priceBeforeVatLabel, "https://shop.example/creality-k2-pro-combo", "printer").product.price, 52999);
+
   const microdataCurrency = extractProductPage(`<h1>Bambu Lab X1E Combo</h1>
     <meta itemprop="price" content="159001.88"><meta itemprop="priceCurrency" content="TRY">
     <div>$2,700.00 €2,500.00</div><button>Sepete Ekle</button>`, "https://shop.example/bambu-lab-x1e-combo", "printer");
