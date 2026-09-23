@@ -202,6 +202,8 @@ const html = (body) => '<html><head><title>t</title></head><body>' + body + '<di
   assert.equal(api.isSellable({ id: 'y', offers: [{ price: 10, stockStatus: 'unknown' }] }), true, 'unknown stock stays on the site when it has a real price');
   assert.equal(api.isSellable({ id: 'price-less', offers: [{ stockStatus: 'in_stock' }] }), false, 'a legacy offer without a price cannot render as a purchasable result');
   assert.equal(api.bestOffer({ offers: [{ store: 'dead', price: 1, stockStatus: 'out_of_stock' }] }).store, '', 'an all-dead row has no best offer');
+  assert.equal(api.isPreorderOffer({ stockStatus: 'preorder' }), true, 'preorder status is attached to the individual shop offer');
+  assert.equal(api.isPreorderOffer({ stockStatus: 'in_stock' }), false, 'ordinary shop offers stay unlabelled');
 
   // --- the thumbnail walker ---------------------------------------------------------
   const chain = api.productImages(product).map((i) => i.url);

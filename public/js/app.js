@@ -102,6 +102,7 @@
 
   // Vendors out of stock do not get to be "the best price": a dead offer is not an offer.
   const offerStatus = (offer) => String((offer && (offer.stockStatus || offer.stock)) || "unknown");
+  const isPreorderOffer = (offer) => !!(offer && (offer.preorder || offerStatus(offer) === "preorder"));
 
   function liveOffers(product) {
     const offers = (product && product.offers) || [];
@@ -119,13 +120,9 @@
     // many shops do not expose reliable stock markup at all.
     const verified = pool.filter((o) => offerStatus(o) === "in_stock");
     const available = verified.length ? verified : pool;
-    const notPreorder = available.filter((o) => !o.preorder && offerStatus(o) !== "preorder");
+    const notPreorder = available.filter((o) => !isPreorderOffer(o));
     const finalPool = notPreorder.length ? notPreorder : available;
     return finalPool.sort((a, b) => a.price - b.price)[0];
-  }
-
-  function hasPreorder(p) {
-    return !!(p && (p.preorder || (p.offers || []).some((o) => o.preorder || offerStatus(o) === "preorder")));
   }
 
   function liveAisles() {
@@ -1075,7 +1072,7 @@
         : p.packaging === "spool" ? (state.lang === "tr" ? "Makaralı" : "With spool") : "",
       stores.join(" · ")
     ].filter(Boolean);
-    return `<article class="fil-hit${hasPreorder(p) ? " is-preorder" : ""}" data-open-sheet="${p.id}">
+    return `<article class="fil-hit" data-open-sheet="${p.id}">
       <div class="fil-hit-photo">
         ${productGallery(p)}
         <span class="spool spool--badge" style="${spoolStyle(p, p.polymer)}"></span>
@@ -1094,11 +1091,6 @@
           ${
             stores.length > 1
               ? `<span class="off-pill">${escapeHtml(C.live.compared)}</span>`
-              : ""
-          }
-          ${
-            hasPreorder(p)
-              ? `<span class="off-pill pre-pill">${escapeHtml(C.live.preorder)}</span>`
               : ""
           }
         </div>
@@ -1500,7 +1492,7 @@
     const stores = Array.from(new Set((product.offers || []).map((o) => o.store)));
     const metaBits = [product.unit || product.brand, stores.join(" · ")];
     if (best.km != null) metaBits.push(km(best.km));
-    return `<article class="deal${hasPreorder(product) ? " is-preorder" : ""}" data-open-sheet="${product.id}">
+    return `<article class="deal" data-open-sheet="${product.id}">
       <div class="deal-photo">${productGallery(product)}</div>
       <div class="deal-body">
         <div class="deal-name">${escapeHtml(displayName(product))}</div>
@@ -1519,11 +1511,6 @@
           ${
             stores.length > 1
               ? `<span class="off-pill">${escapeHtml(C.live.compared)}</span>`
-              : ""
-          }
-          ${
-            hasPreorder(product)
-              ? `<span class="off-pill pre-pill">${escapeHtml(C.live.preorder)}</span>`
               : ""
           }
         </div>
@@ -1616,14 +1603,15 @@
     // Only live vendors are compared; the ones that ran out are left out, not shown dead.
     const compared = liveOffers(p).slice().sort((a, b) => a.price - b.price);
     const rows = compared
-      .map((o, i) => {
-        const tag = i === 0 ? `<span class="off-pill">${escapeHtml(C.bestOffer)}</span>` : "";
-        const pre = o.preorder
-          ? `<span class="off-pill pre-pill">${escapeHtml(C.live.preorder)}</span>`
+      .map((o) => {
+        const tag = o.url === best.url ? `<span class="off-pill">${escapeHtml(C.bestOffer)}</span>` : "";
+        const preorder = isPreorderOffer(o);
+        const pre = preorder
+          ? `<span class="offer-preorder">${escapeHtml(C.live.preorder)}</span>`
           : "";
-        return `<div class="offer-row${o.preorder ? " is-preorder" : ""}">
+        return `<div class="offer-row">
           <div>
-            <strong>${escapeHtml(o.store)}</strong>
+            <strong>${escapeHtml(o.store)}</strong>${pre}
             ${o.bundleName ? `<div class="deal-meta">${escapeHtml(o.bundleName)}</div>` : ""}
             <div class="deal-meta">${escapeHtml(
               [o.km != null ? km(o.km) : C.live.online, o.was ? fill(C.wasPrice, { price: money(o.was, p.currency) }) : ""]
@@ -1635,7 +1623,7 @@
           <div style="text-align:end">
             <div class="price-now${o.was ? " is-sale" : ""}">${money(o.price, p.currency)}</div>
             ${vatTag()}
-            ${tag}${pre}
+            ${tag}
           </div>
         </div>`;
       })
@@ -1672,7 +1660,7 @@
   }
 
   window.__imgFail = imgFail;
-  window.__3dp = { state, bestOffer, liveOffers, isSellable, productImages, imgFail, matchingProducts, matchingFilaments, searchRelevance, searchHaystack, foldText, setQuery, catalogIsStale, huntRhino };
+  window.__3dp = { state, bestOffer, liveOffers, isPreorderOffer, isSellable, productImages, imgFail, matchingProducts, matchingFilaments, searchRelevance, searchHaystack, foldText, setQuery, catalogIsStale, huntRhino };
 
   function escapeHtml(str) {
     return String(str)
