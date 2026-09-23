@@ -90,6 +90,7 @@ const get = () => sandbox.handler({ method: 'GET', url: 'https://3d-price.netlif
   assert.equal(first.baseline.items.length, 1, 'offer-style board is cleaned, not re-seeded');
   assert.equal(first.baseline.items[0].offers, undefined);
   assert.equal(first.baseline.items[0].name, 'Bambu Lab P1S');
+  assert.ok(files['baseline.json'].items[0].offers, 'an automatic admin refresh never writes the baseline');
   const moved = await sandbox.handler(req({ action: 'updateBaselineItem', id: 'keep-me', patch: { category: 'filaments', name: 'Bambu Lab P1S Combo' } }));
   const movedBody = await moved.json();
   assert.equal(moved.status, 200, JSON.stringify(movedBody));
@@ -137,5 +138,11 @@ const get = () => sandbox.handler({ method: 'GET', url: 'https://3d-price.netlif
   const abortBody = await aborted.json();
   assert.equal(aborted.status, 200, JSON.stringify(abortBody));
   assert.equal(abortBody.aborted, 2);
+  const permanent = JSON.stringify(files['baseline.json']);
+  await sandbox.handler(req({ action: 'createJob', url: 'https://shop.example/printers', kind: 'printer' }));
+  await sandbox.handler(req({ action: 'deleteAllReview' }));
+  await sandbox.handler(req({ action: 'deleteAllCatalog' }));
+  await sandbox.handler(req({ action: 'deleteJob', id: 'job-1' }));
+  assert.equal(JSON.stringify(files['baseline.json']), permanent, 'runs, uncertainty cleanup, catalog wipes and job deletion cannot change the baseline');
   console.log('PASS: baseline is editable human models under categories, no offers.');
 })().catch((e) => { console.error(e); process.exitCode = 1; });

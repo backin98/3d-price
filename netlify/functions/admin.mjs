@@ -107,7 +107,7 @@ async function loadBaselineBoard() {
 }
 
 async function seedBaselineFromBackup() {
-  const board = emptyBoard();
+  const board = await loadBaselineBoard();
   upsertItems(board, loadBackupPrinters().map((p) => fromProduct(p, "backup")));
   await writeJSON("baseline.json", sanitizeBoard(board));
   return sanitizeBoard(board);
@@ -116,10 +116,9 @@ async function seedBaselineFromBackup() {
 async function ensureBaseline() {
   const loaded = await loadBaselineBoard();
   if (!loaded.items || !loaded.items.length) return loaded.items ? loaded : emptyBoard();
-  const dirty = (loaded.items || []).some((i) => i.offers || i.shops || i.runs);
-  const board = sanitizeBoard(loaded);
-  if (dirty) await writeJSON("baseline.json", board);
-  return board;
+  // Polling the admin must be read-only. A stale GET used to write its sanitized copy back
+  // over a model that had just been added while a shop run was being queued.
+  return sanitizeBoard(loaded);
 }
 
 async function saveJobList(jobs) {
