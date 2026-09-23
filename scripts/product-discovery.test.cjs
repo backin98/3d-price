@@ -56,6 +56,16 @@ const realUrl = 'https://www.urhanshop.com/fdm-3d-yazicilar-ka434';
     assert.ok(!urls.includes(junk), junk + ' is navigation, not a product');
   }
 
+  // --- clean one-segment slugs, as used by IKAS/SAMM -------------------------------
+  const clean = `<html><body><nav><a href="/blog">Blog</a><a href="/iletisim">İletişim</a></nav><main>
+    ${card('/creality-ender-v4-combo-3d-yazici', 'Creality Ender V4 Combo 3D Yazıcı', '19.737,18 TL')}
+    ${card('/bambu-lab-a1-combo-3d-yazici', 'Bambu Lab A1 Combo 3D Yazıcı', '24.000,00 TL')}
+    ${card('/snapmaker-u1-3d-yazici', 'Snapmaker U1 3D Yazıcı', '50.288,60 TL')}
+  </main></body></html>`;
+  const cleanResult = await harvestCategory({ categoryUrl: 'https://market.example/fdm-yazici', kind: 'printer', html: clean });
+  assert.equal(cleanResult.inScope.length, 3, 'clean product slugs are accepted only from repeated priced buy-box cards');
+  assert.ok(cleanResult.inScope.every((p) => !/blog|iletisim/.test(p.url)), 'navigation beside the clean-slug grid stays excluded');
+
   // --- a page with no product grid stays empty, and says so --------------------------
   const navOnly = '<html><body><a href="hakkimizda">Hakkımızda</a><a href="iletisim">İletişim</a><a href="blog">Blog</a><a href="sss">SSS</a></body></html>';
   const none = await harvestCategory({ categoryUrl: 'https://unknown.example/', kind: 'printer', html: navOnly });
@@ -71,5 +81,5 @@ const realUrl = 'https://www.urhanshop.com/fdm-3d-yazicilar-ka434';
   assert.equal(s.discovery, null, 'discovery must not run when the selectors already worked');
   assert.equal(discoverCards(shopify).length, 0, 'no id cluster on a /products/ grid: discovery stays out');
 
-  console.log('PASS: product links are discovered from link shapes alone — relative id slugs, query ids, unknown markup — while known platforms are unaffected.');
+  console.log('PASS: product links are discovered from repeated priced cards — id/query shapes and clean slugs — while navigation and known platforms are unaffected.');
 })().catch((e) => { console.error(e); process.exitCode = 1; });
