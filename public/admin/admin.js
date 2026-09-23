@@ -1405,7 +1405,7 @@
         : "Magellan: unmatched")
       : "Magellan: " + ((ev.decision && ev.decision.action) || "placed");
     const place = defaultPlace(ev);
-    const held = !!(ev.held || state.uncertainHeld.has(url));
+    const held = state.uncertainHeld.has(url);
     const saved = state.uncertainSaved.has(url);
     const published = state.uncertainPublished.has(url);
     return `<div class="product-card baseline-card uncertain-card${held ? " is-held" : ""}${saved ? " is-saved" : ""}${published ? " is-published" : ""}" data-uncertain-url="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">
