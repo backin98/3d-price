@@ -195,19 +195,21 @@ async function runClaimedJob(job, desk) {
   console.log(`[${job.id}] Starting ${job.kind} run for ${job.url}`);
   const events = [];
   const abort = new AbortController();
-  let flushing = false;
+  let flushChain = Promise.resolve();
   let flushTimer;
-  const flush = async () => {
-    if (flushing || abort.signal.aborted) return;
-    flushing = true;
-    const batch = events.splice(0, events.length);
-    try {
-      const r = await postProgress(job.id, batch);
-      if (r && r.aborted) abort.abort(new Error("Job aborted from the online admin"));
-    } catch (err) {
-      console.warn("Progress upload failed:", err.message);
-      if (!abort.signal.aborted) events.unshift(...batch);
-    } finally { flushing = false; }
+  const flush = () => {
+    flushChain = flushChain.then(async () => {
+      if (abort.signal.aborted || !events.length) return;
+      const batch = events.splice(0, events.length);
+      try {
+        const r = await postProgress(job.id, batch);
+        if (r && r.aborted) abort.abort(new Error("Job aborted from the online admin"));
+      } catch (err) {
+        console.warn("Progress upload failed:", err.message);
+        if (!abort.signal.aborted) events.unshift(...batch);
+      }
+    });
+    return flushChain;
   };
 
   const emit = (ev) => {
