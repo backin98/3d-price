@@ -391,6 +391,7 @@ function listenUrl() {
 }
 
 function startHttp() {
+  return new Promise((resolve, reject) => {
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url || "/", "http://worker.local");
     if (req.method === "OPTIONS") {
@@ -511,9 +512,9 @@ function startHttp() {
   });
   server.listen(WORKER_PORT, WORKER_HOST, () => {
     console.log("Worker listening at " + listenUrl());
+    resolve();
   });
-  server.on("error", (err) => {
-    console.error("Worker HTTP listen failed:", err.message);
+  server.once("error", reject);
   });
 }
 
@@ -521,7 +522,7 @@ let backoffMs = Number(process.env.POLL_MS || 5000);
 let pollFails = 0;
 
 async function main() {
-  startHttp();
+  await startHttp();
   if (hasToken && siteUrl) console.log("Polling site " + siteUrl);
   else console.log("Waiting for the admin to send the site address (AI connection).");
   detectModel({ modelUrl: process.env.LOCAL_AI_URL || "" }, { scan: true }).catch((err) => {

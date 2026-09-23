@@ -26,6 +26,20 @@ const os = require('node:os');
   });
   assert.equal(started, true);
   try {
+    const duplicate = spawn(process.execPath, [path.join('worker', 'online-worker.cjs')], {
+      env: { ...process.env, INGEST_TOKEN: 'test-token-long-enough', WORKER_PORT: String(port), WORKER_HOST: '127.0.0.1' },
+      cwd: path.join(__dirname, '..'), stdio: ['ignore', 'pipe', 'pipe']
+    });
+    let duplicateOut = '';
+    duplicate.stdout.on('data', (c) => { duplicateOut += c; });
+    duplicate.stderr.on('data', (c) => { duplicateOut += c; });
+    const duplicateCode = await new Promise((resolve, reject) => {
+      const t = setTimeout(() => { duplicate.kill(); reject(new Error('duplicate worker kept running')); }, 5000);
+      duplicate.on('exit', (code) => { clearTimeout(t); resolve(code); });
+    });
+    assert.notEqual(duplicateCode, 0, 'a worker that cannot own the port must exit');
+    assert.match(duplicateOut, /EADDRINUSE/);
+
     const pre = await fetch('http://127.0.0.1:' + port + '/health', { method: 'OPTIONS', headers: { Origin: 'https://example.com', 'Access-Control-Request-Method': 'GET' } });
     assert.equal(pre.status, 204);
     assert.equal(pre.headers.get('access-control-allow-origin'), 'https://example.com');
@@ -35,7 +49,7 @@ const os = require('node:os');
     assert.equal(body.ok, true);
     assert.equal(body.listen, 'http://127.0.0.1:' + port);
     assert.equal(body.site, 'https://example.com');
-    console.log('PASS: worker HTTP address is printed, CORS, health, site comes from admin not a hardcoded URL.');
+    console.log('PASS: worker owns one port, duplicate workers exit, CORS, health and site routing work.');
   } finally {
     child.kill();
   }
