@@ -197,6 +197,7 @@ const html = (body) => '<html><head><title>t</title></head><body>' + body + '<di
   };
   assert.equal(api.liveOffers(product).length, 2, 'the out-of-stock vendor is not in the comparison');
   assert.equal(api.bestOffer(product).store, 'live.example', 'verified in-stock beats a cheaper unknown or dead offer');
+  assert.equal(api.rankedOffers(product)[0].store, 'live.example', 'the expanded list puts the marked best offer first');
   assert.equal(api.isSellable({ id: 'x', offers: [{ stockStatus: 'out_of_stock' }] }), false, 'a product with no live vendor leaves the site');
   assert.equal(api.isSellable({ id: 'x2', offers: [{ stock: 'out_of_stock' }] }), false, 'legacy stock fields cannot leak a dead offer');
   assert.equal(api.isSellable({ id: 'y', offers: [{ price: 10, stockStatus: 'unknown' }] }), true, 'unknown stock stays on the site when it has a real price');

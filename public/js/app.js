@@ -125,6 +125,11 @@
     return finalPool.sort((a, b) => a.price - b.price)[0];
   }
 
+  function rankedOffers(product) {
+    const best = bestOffer(product);
+    return liveOffers(product).slice().sort((a, b) => a === b ? 0 : a === best ? -1 : b === best ? 1 : a.price - b.price);
+  }
+
   function liveAisles() {
     return (C.live && C.live.aisles) || [{ id: "fdm", name: (C.live && C.live.aisle) || "FDM" }];
   }
@@ -1601,10 +1606,10 @@
     title.textContent = displayName(p);
     const best = bestOffer(p);
     // Only live vendors are compared; the ones that ran out are left out, not shown dead.
-    const compared = liveOffers(p).slice().sort((a, b) => a.price - b.price);
+    const compared = rankedOffers(p);
     const rows = compared
       .map((o) => {
-        const tag = o.url === best.url ? `<span class="off-pill">${escapeHtml(C.bestOffer)}</span>` : "";
+        const tag = o === best ? `<span class="off-pill">${escapeHtml(C.bestOffer)}</span>` : "";
         const preorder = isPreorderOffer(o);
         const pre = preorder
           ? `<span class="offer-preorder">${escapeHtml(C.live.preorder)}</span>`
@@ -1660,7 +1665,7 @@
   }
 
   window.__imgFail = imgFail;
-  window.__3dp = { state, bestOffer, liveOffers, isPreorderOffer, isSellable, productImages, imgFail, matchingProducts, matchingFilaments, searchRelevance, searchHaystack, foldText, setQuery, catalogIsStale, huntRhino };
+  window.__3dp = { state, bestOffer, rankedOffers, liveOffers, isPreorderOffer, isSellable, productImages, imgFail, matchingProducts, matchingFilaments, searchRelevance, searchHaystack, foldText, setQuery, catalogIsStale, huntRhino };
 
   function escapeHtml(str) {
     return String(str)
