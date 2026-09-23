@@ -27,6 +27,8 @@
     dupesOnly: false,
     dupes: null,
     reviewJobId: "",
+    uncertainShop: "",
+    uncertainEdit: new Map(),
     catalogUndo: null,
     // Which disclosures the user opened. The 5s poll rebuilds the page HTML, which would
     // otherwise slam every <details> shut while you are working in it.
@@ -331,10 +333,14 @@
     ];
   }
 
+  function catalogUpdateCount() {
+    return new Set([...state.editing.keys(), ...state.pendingImages.keys(), ...state.catalogSelected]).size;
+  }
+
   function showCatalogDirtyCount() {
     const btn = $("#update-catalog");
     if (!btn) return;
-    const changed = new Set([...state.editing.keys(), ...state.pendingImages.keys()]).size;
+    const changed = catalogUpdateCount();
     btn.disabled = !changed;
     btn.textContent = "Update catalog" + (changed ? " (" + changed + ")" : "");
   }
@@ -437,6 +443,7 @@
     if (!d) return;
     paint("#tab-overview", overviewHtml(d));
     paint("#tab-runs", runsHtml(d));
+    paint("#tab-uncertain", uncertainHtml(d));
     paint("#tab-catalog", catalogHtml(d));
     paint("#tab-baseline", baselineHtml(d));
     paint("#tab-shops", shopsHtml(d));
@@ -453,6 +460,7 @@
     baseline: ["Baseline", "Human-approved models, grouped by category. No shop offers. Survives a catalog wipe."],
     shops: ["Shops", "Manage the shops included in your price comparison."],
     runs: ["Shop runs", "Collect products from a shop and follow its progress."],
+    uncertain: ["Uncertain", "Unmatched shop cards and what Laya did with them. Edit, then force-publish."],
     merch: ["Storefront", "Manage homepage banners and featured products."],
     ai: ["AI connection", "Paste the LM Studio server URL. The local worker finds it automatically."],
     jobs: ["Job history", "Review queued, completed, and failed jobs."]
@@ -777,15 +785,18 @@
         ...(patch.card || {}),
         url,
         image: (patch.card && patch.card.image) || prev.card.image || "",
-        name: (patch.card && patch.card.name) || prev.card.name
+        name: (patch.card && patch.card.name) || prev.card.name,
+        price: (patch.card && patch.card.price != null && patch.card.price !== "") ? patch.card.price : prev.card.price
       },
         decision,
         compared: patch.compared || prev.compared,
-        error: patch.error || prev.error
+        error: patch.error || prev.error,
+        laya: patch.laya || prev.laya
       });
     };
     Object.values(job.cards || {}).forEach((c) => {
-      if (c && c.url) add(c.url, { card: c, decision: c.decision, compared: c.compared, error: c.error });
+      const row = (c && c.card) || c;
+      if (row && row.url) add(row.url, { card: row, decision: row.decision || c.decision, compared: row.compared || c.compared, error: row.error || c.error, laya: row.laya || c.laya });
     });
     (job.events || []).forEach((e) => {
       (e.urls || []).forEach((u) => add(u, { card: { name: titleFromUrl(u), url: u } }));
@@ -840,6 +851,11 @@
 
   function catalogProduct(id) {
     if (!id || !state.data) return null;
+    if (String(id).startsWith("baseline:")) {
+      const bid = String(id).slice(9);
+      const it = ((state.data.baseline && state.data.baseline.items) || []).find((x) => x.id === bid);
+      if (it) return { id, name: it.name, brand: it.brand, image: it.image, offers: [], baseline: true };
+    }
     const bags = [state.data.candidate, currentCatalog()];
     for (const bag of bags) {
       if (!bag) continue;
@@ -850,36 +866,45 @@
   }
 
   function placementOptions(card, decision, query) {
+    const q = adminFold(query || "");
+    const kind = card.kind === "filament" ? "filaments" : "printers";
+    const models = ((state.data && state.data.baseline && state.data.baseline.items) || []).filter((it) => {
+      if (kind === "filaments" ? it.category !== "filaments" : it.category === "filaments") return false;
+      if (!q) return true;
+      return adminFold([it.name, it.brand, it.id].join(" ")).includes(q);
+    });
+    const list = models.map((it) => ({
+      id: "baseline:" + it.id,
+      name: it.name,
+      brand: it.brand,
+      image: it.image,
+      offers: [],
+      baseline: true
+    }));
     const live = currentCatalog();
     const cand = state.data && state.data.candidate;
-    const q = String(query || "").trim().toLowerCase();
-    const shelves = q || !card.kind
-      ? ["products", "filaments"]
-      : [card.kind === "filament" ? "filaments" : "products"];
-    const seen = new Set();
-    const list = [];
-    for (const shelf of shelves) {
-      for (const p of [...(live[shelf] || []), ...((cand && cand[shelf]) || [])]) {
-        if (!p || !p.id || seen.has(p.id)) continue;
+    const seen = new Set(list.map((p) => p.id));
+    const shelves = kind === "filaments" ? ["filaments"] : ["products"];
+    for (const shelf of (q ? ["products", "filaments"] : shelves)) {
+      for (const p of [...((live && live[shelf]) || []), ...((cand && cand[shelf]) || [])]) {
+        if (!p || !p.id || seen.has(p.id) || seen.has("baseline:" + p.id)) continue;
         seen.add(p.id);
+        if (q && !adminFold([p.id, p.name, p.brand].join(" ")).includes(q)) continue;
         list.push(p);
       }
     }
-    const brand = String(card.brand || "").toLowerCase();
-    let hits = list.filter((p) => {
-      if ((p.offers || []).length === 1 && p.offers[0].url === card.url) return false;
-      if (q) {
-        return [p.id, p.name, p.brand, p.color, p.polymer, p.variant].filter(Boolean).join(" ").toLowerCase().includes(q);
-      }
-      if (brand && String(p.brand || "").toLowerCase() !== brand) return false;
-      return true;
-    });
     if (decision.candidateId) {
       const picked = catalogProduct(decision.candidateId);
-      if (picked && !hits.some((h) => h.id === picked.id)) hits.unshift(picked);
+      if (picked && !list.some((h) => h.id === picked.id)) list.unshift(picked);
     }
-    hits.sort((a, b) => (a.id === decision.candidateId ? -1 : b.id === decision.candidateId ? 1 : 0));
-    return hits.slice(0, q ? 50 : 25);
+    list.sort((a, b) => {
+      if (a.id === decision.candidateId) return -1;
+      if (b.id === decision.candidateId) return 1;
+      if (a.baseline && !b.baseline) return -1;
+      if (!a.baseline && b.baseline) return 1;
+      return 0;
+    });
+    return list.slice(0, q ? 50 : 25);
   }
 
   function workerPlace(e) {
@@ -890,10 +915,72 @@
     return { action: "create", candidateId: d.candidateId || "" };
   }
 
+  function layaOf(e) {
+    return (e && e.laya) || (e && e.card && e.card.laya) || null;
+  }
+
+  function magellanUnsure(e) {
+    const a = e && e.decision && e.decision.action;
+    return a !== "merge" && a !== "updated" && a !== "create";
+  }
+
   function defaultPlace(e) {
     const url = e.card && e.card.url;
     if (url && state.reviewPlace.has(url)) return state.reviewPlace.get(url);
+    const laya = layaOf(e);
+    if (laya && laya.action === "merge" && laya.matchId) return { action: "merge", candidateId: laya.matchId };
+    if (laya && laya.action === "create") return { action: "create", candidateId: "" };
+    const d = e.decision || {};
+    if (d.baselineId) return { action: "merge", candidateId: String(d.baselineId).startsWith("baseline:") ? d.baselineId : "baseline:" + d.baselineId };
     return workerPlace(e);
+  }
+
+  function collectUncertain(d) {
+    const out = [];
+    const seen = new Set();
+    for (const job of (d && d.jobs) || []) {
+      const shopHost = hostOf(job.url) || job.site || "";
+      const shop = shopForUrl(d, job.url);
+      const shopName = (shop && (shop.name || shop.id)) || shopHost || job.id;
+      for (const ev of collectCards(job, d)) {
+        const url = ev.card && ev.card.url;
+        if (!url || seen.has(url)) continue;
+        const laya = layaOf(ev);
+        if (!magellanUnsure(ev) && !laya) continue;
+        seen.add(url);
+        out.push({ ...ev, laya, jobId: job.id, shopHost, shopName });
+      }
+    }
+    return out;
+  }
+
+  function layaLabel(laya) {
+    if (!laya) return "Laya has not looked at this card yet";
+    if (laya.action === "merge") return "Laya: merge → " + (laya.matchName || laya.matchId || "catalog row");
+    if (laya.action === "create") return "Laya: new product";
+    return "Laya: still unsure" + (laya.reason ? " — " + laya.reason : "");
+  }
+
+  async function forcePublishUrls(urls) {
+    const byUrl = new Map();
+    for (const job of (state.data && state.data.jobs) || []) {
+      collectCards(job, state.data).forEach((ev) => { if (ev.card && ev.card.url) byUrl.set(ev.card.url, ev); });
+    }
+    const placements = urls.map((url) => {
+      const ev = byUrl.get(url) || { card: { url } };
+      const edit = state.uncertainEdit.get(url) || {};
+      const card = {
+        ...(ev.card || {}),
+        url,
+        name: edit.name != null ? edit.name : (ev.card && ev.card.name),
+        brand: edit.brand != null ? edit.brand : (ev.card && ev.card.brand)
+      };
+      const place = defaultPlace(ev);
+      return { url, action: place.action === "merge" ? "merge" : "create", candidateId: place.candidateId, card };
+    });
+    const res = await action({ action: "publishSelected", placements });
+    urls.forEach((u) => state.uncertainEdit.delete(u));
+    return res;
   }
 
   function placeValue(place) {
@@ -913,16 +1000,22 @@
     return [`<option value="create"${selected === "create" ? " selected" : ""}>New product — not compared yet</option>`]
       .concat(options.map((p) => {
         const stores = [...new Set(otherOffers(p, url).map((o) => o.store))];
-        const label = p.name + (stores.length ? " — vs " + stores.join(", ") : " — no other shops yet");
+        const label = (p.baseline ? "Baseline · " : "") + p.name + (p.brand ? " — " + p.brand : "") + (stores.length ? " — vs " + stores.join(", ") : p.baseline ? "" : " — no other shops yet");
         const val = "merge:" + p.id;
         return `<option value="${esc(val)}"${selected === val ? " selected" : ""}>${esc(label)}</option>`;
       })).join("");
   }
 
   function cardEvent(url) {
+    const fromAll = collectUncertain(state.data || {}).find((x) => x.card && x.card.url === url);
+    if (fromAll) return fromAll;
     const job = reviewJob(state.data || { jobs: [] });
     if (!job) return { card: { url }, decision: {}, compared: [] };
     return collectCards(job, state.data).find((x) => x.card && x.card.url === url) || { card: { url }, decision: {}, compared: [] };
+  }
+
+  function placeCard(el) {
+    return el && (el.closest(".uncertain-card") || el.closest(".review-card"));
   }
 
   function applyPlace(wrap, url, place) {
@@ -941,13 +1034,20 @@
     if (q) q.value = "";
   }
 
-  function fillPlaceHits(wrap, url, query) {
+  function fillPlaceHits(wrap, url, query, opts) {
     const box = wrap && wrap.querySelector(".place-hits");
-    if (!box) return;
-    const q = String(query || "").trim();
-    if (!q) { box.hidden = true; box.innerHTML = ""; return; }
+    const sel = wrap && wrap.querySelector("[data-review-place]");
     const ev = cardEvent(url);
-    const hits = placementOptions(ev.card || { url, kind: ev.card && ev.card.kind }, ev.decision || {}, q);
+    const place = defaultPlace(ev);
+    const q = String(query || "").trim();
+    const openAll = !!(opts && opts.openAll);
+    if (sel) {
+      sel.innerHTML = placeOptionsHtml(ev, place, q);
+      sel.value = placeValue(place);
+    }
+    if (!box) return;
+    if (!q && !openAll) { box.hidden = true; box.innerHTML = ""; return; }
+    const hits = placementOptions(ev.card || { url }, ev.decision || {}, q);
     const id = encodeURIComponent(url);
     const btns = [`<button type="button" class="place-hit" data-place-pick="${esc(id)}" data-place-val="create">New product — not compared yet</button>`]
       .concat(hits.map((p) => {
@@ -1170,19 +1270,75 @@
     </div>`;
   }
 
+  function uncertainHtml(d) {
+    const all = collectUncertain(d);
+    const shops = [...new Set(all.map((x) => x.shopHost).filter(Boolean))].sort();
+    const shop = state.uncertainShop || "";
+    const rows = shop ? all.filter((x) => x.shopHost === shop) : all;
+    return `<div class="panel">
+      <h2>Uncertain</h2>
+      <p class="muted">Shop cards Magellan could not place, plus what Laya did with them. Edit a card, pick where it goes, then force-publish — even if Laya is still unsure.</p>
+      <div class="form-row" style="flex-wrap:wrap;gap:8px">
+        <label class="muted" style="font-size:12px">Shop
+          <select id="uncertain-shop"><option value="">all shops</option>${shops.map((s) => `<option value="${esc(s)}" ${shop === s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>
+        </label>
+        <button type="button" class="btn-sm ok" id="uncertain-publish-all" ${rows.length ? "" : "disabled"}>Force publish all (${rows.length})</button>
+      </div>
+      <p class="muted">${rows.length} shown · ${all.length} uncertain</p>
+      <div class="catalog-results">${rows.map(uncertainCard).join("") || '<div class="empty">No unmatched cards. Run a shop, then Ask Laya on the review board.</div>'}</div>
+    </div>`;
+  }
+
+  function uncertainCard(ev) {
+    const c = ev.card || {};
+    const url = c.url || "";
+    const id = encodeURIComponent(url);
+    const edit = state.uncertainEdit.get(url) || {};
+    const name = edit.name != null ? edit.name : (c.name || "");
+    const brand = edit.brand != null ? edit.brand : (c.brand || "");
+    const laya = layaOf(ev);
+    const magellan = magellanUnsure(ev)
+      ? ((ev.decision && ev.decision.action) === "held" || (ev.decision && ev.decision.action) === "hold"
+        ? "Magellan: held" + (ev.decision.reason ? " — " + ev.decision.reason : "")
+        : "Magellan: unmatched")
+      : "Magellan: " + ((ev.decision && ev.decision.action) || "placed");
+    const place = defaultPlace(ev);
+    return `<div class="product-card baseline-card uncertain-card" data-uncertain-url="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">
+      <div class="catalog-thumb">${c.image ? productImg(c.image) : '<div class="catalog-thumb-empty"></div>'}</div>
+      <div class="meta"><span class="badge">${esc(ev.shopName || ev.shopHost || "shop")}</span></div>
+      <textarea aria-label="Listing name" data-uncertain-field="name" data-uncertain-url="${esc(url)}" rows="3">${esc(name)}</textarea>
+      <input aria-label="Brand" data-uncertain-field="brand" data-uncertain-url="${esc(url)}" value="${esc(brand)}" placeholder="Brand">
+      <p class="muted">${esc(magellan)}</p>
+      <p class="muted">${esc(layaLabel(laya))}${laya && laya.confidence != null ? " · " + Number(laya.confidence).toFixed(2) : ""}</p>
+      ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">open ↗</a>` : ""}
+      <div class="review-place-label">Goes to
+        <div class="place-combo">
+          <input type="search" data-review-place-q="${esc(id)}" placeholder="Type to search catalog…" autocomplete="off" aria-label="Search where ${esc(c.name || "this listing")} goes">
+          <button type="button" class="ghost place-arrow" data-place-open="${esc(id)}" aria-label="Show catalog matches">▾</button>
+        </div>
+        <div class="place-hits" hidden></div>
+        <select data-review-place="${esc(id)}" aria-label="Where ${esc(c.name || "this listing")} goes">${placeOptionsHtml(ev, place, "")}</select>
+      </div>
+      <div class="actions">
+        <button class="btn-sm" type="button" data-uncertain-save="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">Save</button>
+        <button class="btn-sm ok" type="button" data-uncertain-publish="${esc(url)}">Force publish</button>
+      </div>
+    </div>`;
+  }
+
   function catalogHtml(d) {
     const products = filteredProducts();
     const baselineModels = (d.baseline && d.baseline.items) || [];
     const baselineLabel = (x) => x.name + (x.brand ? " — " + x.brand : "");
     const savedAt = d.catalog && d.catalog.savedAt ? new Date(d.catalog.savedAt).toLocaleString() : "never";
-    const changed = new Set([...state.editing.keys(), ...state.pendingImages.keys()]).size;
+    const changed = catalogUpdateCount();
     return `
       ${stockPanelHtml(d)}
       <div class="panel">
         <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;align-items:center">
           <h2 style="margin:0">Saved catalog</h2>
           <span class="muted">Last saved: ${esc(savedAt)}</span>
-          <button class="btn-sm primary" type="button" id="update-catalog" ${changed ? "" : "disabled"}>Update catalog${changed ? ` (${changed})` : ""}</button>
+          <button class="btn-sm primary" type="button" id="update-catalog" ${changed ? "" : "disabled"} title="Writes the catalog back so the storefront picks it up. Select all enables this even without field edits.">Update catalog${changed ? ` (${changed})` : ""}</button>
           <button class="btn-sm ghost" type="button" id="select-all-catalog">Select all</button>
           <button class="btn-sm ghost" type="button" id="find-duplicates">Find duplicate groups</button>
           ${state.catalogUndo ? `<button class="btn-sm ghost" type="button" id="undo-merge">Undo last merge</button>` : ""}
@@ -1578,6 +1734,7 @@
       if (e.target.closest("#select-all-catalog")) {
         allProducts().forEach((p) => state.catalogSelected.add(p.id));
         paint("#tab-catalog", catalogHtml(state.data));
+        showCatalogDirtyCount();
         return;
       }
       if (e.target.closest("#collapse-duplicates")) {
@@ -1609,6 +1766,7 @@
           btn.disabled = !state.catalogSelected.size;
           btn.textContent = "Delete selected (" + state.catalogSelected.size + ")";
         }
+        showCatalogDirtyCount();
         return;
       }
       if (e.target.closest("#find-duplicates")) {
@@ -1814,7 +1972,19 @@
         const place = raw.startsWith("merge:")
           ? { action: "merge", candidateId: raw.slice(6) }
           : { action: "create", candidateId: "" };
-        applyPlace(btn.closest(".review-card"), url, place);
+        applyPlace(placeCard(btn), url, place);
+        return;
+      }
+      if (e.target.closest("[data-place-open]")) {
+        const btn = e.target.closest("[data-place-open]");
+        const wrap = placeCard(btn);
+        const url = decodeURIComponent(btn.dataset.placeOpen);
+        const box = wrap && wrap.querySelector(".place-hits");
+        const q = ((wrap && wrap.querySelector("[data-review-place-q]")) || {}).value || "";
+        if (box && !box.hidden && !String(q).trim()) { box.hidden = true; box.innerHTML = ""; return; }
+        fillPlaceHits(wrap, url, q, { openAll: true });
+        const search = wrap && wrap.querySelector("[data-review-place-q]");
+        if (search) search.focus();
         return;
       }
       if (e.target.closest("[data-restore-place]")) {
@@ -1863,24 +2033,28 @@
       }
       if (e.target.closest("#update-catalog")) {
         const btn = e.target.closest("#update-catalog");
-        const ids = [...new Set([...state.editing.keys(), ...state.pendingImages.keys()])];
-        if (!ids.length) return;
+        const edited = [...new Set([...state.editing.keys(), ...state.pendingImages.keys()])];
+        if (!edited.length && !state.catalogSelected.size) return;
         btn.disabled = true;
         btn.textContent = "Updating…";
         try {
-          const items = ids.map((id) => {
-            const image = state.pendingImages.get(id);
-            return { id, patch: state.editing.get(id) || {}, imageUpload: image ? { type: image.type, data: image.data } : null };
-          });
-          await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateProducts", items }) });
-          state.editing.clear();
-          state.pendingImages.clear();
+          if (edited.length) {
+            const items = edited.map((id) => {
+              const image = state.pendingImages.get(id);
+              return { id, patch: state.editing.get(id) || {}, imageUpload: image ? { type: image.type, data: image.data } : null };
+            });
+            await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateProducts", items }) });
+            state.editing.clear();
+            state.pendingImages.clear();
+          }
+          await action({ action: "republishCatalog" });
+          state.catalogSelected.clear();
           await loadData();
-          toast("Catalog updated. The website now uses these changes.");
+          toast("Catalog written. The storefront should show it after a refresh.");
         } catch (err) {
           toast(err.message);
           btn.disabled = false;
-          btn.textContent = "Update catalog (" + ids.length + ")";
+          showCatalogDirtyCount();
         }
         return;
       }
@@ -2009,13 +2183,43 @@
             else if (r.action === "create") { state.reviewPlace.set(r.url, { action: "create", candidateId: "" }); created += 1; }
             else held += 1;
           }
-          toast("Laya answered " + data.asked + " of " + targets.length + ": " + merged + " merge, " + created + " new, " + held + " still unsure. Check the board, then publish.");
+          try { await action({ action: "saveLayaOpinions", results: data.results || [] }); } catch (_) { /* board still has local placements */ }
+          painted.delete("#tab-uncertain");
+          toast("Laya answered " + data.asked + " of " + targets.length + ": " + merged + " merge, " + created + " new, " + held + " still unsure. Open Uncertain, then force-publish.");
         } catch (err) {
           toast(err.message);
         } finally {
           btn.disabled = false;
           btn.textContent = label;
         }
+        return;
+      }
+      if (e.target.closest("[data-uncertain-save]")) {
+        const btn = e.target.closest("[data-uncertain-save]");
+        const url = btn.dataset.uncertainSave;
+        const jobId = btn.dataset.uncertainJob;
+        const card = e.target.closest(".uncertain-card");
+        const name = ((card && card.querySelector('[data-uncertain-field="name"]')) || {}).value;
+        const brand = ((card && card.querySelector('[data-uncertain-field="brand"]')) || {}).value;
+        try {
+          await action({ action: "updateUncertainCard", jobId, url, patch: { name, brand } });
+          state.uncertainEdit.delete(url);
+          toast("Card saved.");
+        } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("[data-uncertain-publish]") || e.target.closest("#uncertain-publish-all")) {
+        const one = e.target.closest("[data-uncertain-publish]");
+        const shop = state.uncertainShop || "";
+        const urls = one
+          ? [one.dataset.uncertainPublish]
+          : collectUncertain(state.data).filter((x) => !shop || x.shopHost === shop).map((x) => x.card && x.card.url).filter(Boolean);
+        if (!urls.length) return;
+        if (!confirm("Force-publish " + urls.length + " listing" + (urls.length === 1 ? "" : "s") + " to the live catalog?")) return;
+        try {
+          const res = await forcePublishUrls(urls);
+          toast("Published " + (res.published || urls.length) + " to the live catalog and site search. Refresh the website.");
+        } catch (err) { toast(err.message); }
         return;
       }
       if (e.target.closest("#publish-selected")) {
@@ -2498,7 +2702,7 @@
     document.addEventListener("input", (e) => {
       const placeQ = e.target.getAttribute && e.target.getAttribute("data-review-place-q");
       if (placeQ != null) {
-        fillPlaceHits(e.target.closest(".review-card"), decodeURIComponent(placeQ), e.target.value);
+        fillPlaceHits(placeCard(e.target) || e.target.closest(".review-place-label"), decodeURIComponent(placeQ), e.target.value);
         return;
       }
       if (e.target.dataset.baselineField && e.target.dataset.baselineId) {
@@ -2507,12 +2711,24 @@
         state.baselineEdit.set(e.target.dataset.baselineId, cur);
         return;
       }
+      if (e.target.dataset.uncertainField && e.target.dataset.uncertainUrl) {
+        const cur = state.uncertainEdit.get(e.target.dataset.uncertainUrl) || {};
+        cur[e.target.dataset.uncertainField] = e.target.value;
+        state.uncertainEdit.set(e.target.dataset.uncertainUrl, cur);
+        return;
+      }
       if (e.target.id === "review-job-select") {
         state.reviewJobId = e.target.value;
         state.reviewSelected.clear();
         state.reviewPlace.clear();
         render();
         toast(state.reviewJobId ? "Showing run " + state.reviewJobId + " — collected cards are visible again." : "Showing the newest run with cards.");
+        return;
+      }
+      if (e.target.id === "uncertain-shop") {
+        state.uncertainShop = e.target.value;
+        painted.delete("#tab-uncertain");
+        paint("#tab-uncertain", uncertainHtml(state.data));
         return;
       }
       if (e.target.id === "catalog-shop" || e.target.id === "catalog-variant" || e.target.id === "dupes-only") {

@@ -233,7 +233,10 @@ async function runClaimedJob(job, desk) {
     const catalogFile = process.env.ONLINE_CATALOG_FILE || path.join(__dirname, "..", "data", "online-catalog.json");
     fs.mkdirSync(path.dirname(catalogFile), { recursive: true });
     fs.writeFileSync(catalogFile, JSON.stringify(baseline.catalog));
-    emit({ type: "log", stage: "compare", text: "Loaded current online catalog: " + baseline.catalog.products.length + " products and " + baseline.catalog.filaments.length + " filaments" });
+    const baselineFile = path.join(path.dirname(catalogFile), "online-baseline.json");
+    fs.writeFileSync(baselineFile, JSON.stringify(baseline.baseline || { items: [] }));
+    const baselineCount = ((baseline.baseline && baseline.baseline.items) || []).length;
+    emit({ type: "log", stage: "compare", text: "Loaded current online catalog: " + baseline.catalog.products.length + " products and " + baseline.catalog.filaments.length + " filaments. Human baseline: " + baselineCount + " models." });
     const shopHost = (() => { try { return new URL(job.url).hostname.replace(/^www\./, "").toLowerCase(); } catch { return ""; } })();
     const shop = (desk.shops || []).find((s) => s.id === shopHost || (s.url && (() => { try { return new URL(s.url).hostname.replace(/^www\./, "").toLowerCase() === shopHost; } catch { return false; } })()));
     const summary = await runWebsiteJob({
@@ -467,8 +470,15 @@ function startHttp() {
               image: String(card.image || "")
             };
             if (!listing.name || !listing.url) continue;
-            const pool = (listing.kind === "filament" ? catalog.filaments : catalog.products) || [];
+            const boardLib = require("../lib/baseline-board.cjs");
+            const board = boardLib.loadHumanBoard(catalogFile);
+            const boardPool = boardLib.asMatchProducts(board, listing.kind);
+            const pool = boardPool.length ? boardPool : ((listing.kind === "filament" ? catalog.filaments : catalog.products) || []);
             const pick = await layaPick(listing, pool, { dir });
+            if (boardPool.length && pick.matchId) {
+              pick.matchId = String(pick.matchId).startsWith("baseline:") ? pick.matchId : "baseline:" + pick.matchId;
+              pick.matchName = (boardPool.find((p) => p.id === String(pick.matchId).replace(/^baseline:/, "")) || {}).name || pick.matchName;
+            }
             results.push({ url: card.url, ...pick });
             console.log("[rematch] " + listing.name.slice(0, 46) + " -> " + pick.action + (pick.matchId ? " " + pick.matchId : "") + (pick.reason ? " — " + pick.reason : ""));
           }

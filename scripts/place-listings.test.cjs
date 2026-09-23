@@ -128,6 +128,41 @@ const { unionCatalog } = require('../lib/catalog-union.cjs');
     });
     assert.equal(tl.products[0].currency.code, 'TRY');
     assert.ok(tl.products[0].offers[0].price > 100);
+
+    const humanDir = fs.mkdtempSync(path.join(os.tmpdir(), '3d-human-bl-'));
+    const humanCatalog = path.join(humanDir, 'catalog.json');
+    fs.writeFileSync(humanCatalog, JSON.stringify({ products: [], filaments: [] }));
+    fs.writeFileSync(path.join(humanDir, 'baseline.json'), JSON.stringify({
+      items: [{ id: 'bl-a1', name: 'Bambu Lab A1', brand: 'Bambu Lab', category: 'printers' }]
+    }));
+    const ontoBaseline = await placeListings({
+      listings: [{
+        name: 'Bambu Lab A1 3D Yazıcı',
+        brand: 'Bambu Lab',
+        kind: 'printer',
+        price: 18000,
+        url: 'https://shop.example/a1'
+      }],
+      site: 'example',
+      catalogFile: humanCatalog,
+      apply: false
+    });
+    assert.equal(ontoBaseline.run.created, 1, 'a listing that matches the human baseline is created onto that model');
+    assert.equal(ontoBaseline.audit[0].baselineId, 'bl-a1');
+    const unknown = await placeListings({
+      listings: [{
+        name: 'Totally Unknown Laser Cutter',
+        brand: 'NoBrand',
+        kind: 'printer',
+        price: 9000,
+        url: 'https://shop.example/mystery-laser'
+      }],
+      site: 'example',
+      catalogFile: humanCatalog,
+      apply: false
+    });
+    assert.equal(unknown.run.held, 1, 'a listing with no human baseline model is held for Uncertain');
+    assert.match(unknown.audit[0].reason, /human baseline/i);
   } finally {
     global.fetch = origFetch;
     fs.rmSync(dir, { recursive: true, force: true });

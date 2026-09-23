@@ -7,8 +7,8 @@ import boardLib from "../../lib/baseline-board.cjs";
 
 const { readJSON, writeJSON, writeBytes, deleteKey } = store;
 const { ownerFromHeaders, authReady } = auth;
-const { withVat, withoutVat } = money;
-const { emptyBoard, fromProduct, fromRunCard, upsertItems, loadBackupPrinters, isIdentityStyleBoard, sanitizeBoard, addCategory, renameCategory, patchItem, addItem, itemForProduct, applyBaselineImages } = boardLib;
+const { withVat, withoutVat, parseMoney } = money;
+const { emptyBoard, fromProduct, fromRunCard, upsertItems, loadBackupPrinters, isIdentityStyleBoard, sanitizeBoard, addCategory, renameCategory, patchItem, addItem, itemForProduct, applyBaselineImages, catalogProductForItem } = boardLib;
 
 function sameOriginUrl(req) {
   const origin = req.headers.get("origin");
@@ -352,9 +352,35 @@ function offerStore(url, card) {
   try { return new URL(url).hostname.replace(/^www\./, ""); } catch (_) { return ""; }
 }
 
-function applySelectedListings(live, candidate, items) {
+function coercePrice(value) {
+  if (value == null || value === "") return null;
+  if (typeof value === "number" && Number.isFinite(value) && value > 0) return value;
+  const n = Number(value);
+  if (Number.isFinite(n) && n > 0 && String(value).trim() !== "") return n;
+  const parsed = parseMoney(value);
+  return parsed && parsed.amount > 0 ? parsed.amount : null;
+}
+
+function priceFromJobs(jobs, url) {
+  for (const job of jobs || []) {
+    const raw = job.cards && (job.cards[url] || Object.values(job.cards).find((c) => (((c && c.card) || c) || {}).url === url));
+    const inner = raw && ((raw.card) || raw);
+    const fromCard = coercePrice(inner && inner.price);
+    if (fromCard) return fromCard;
+    for (const e of job.events || []) {
+      if (e.card && e.card.url === url) {
+        const fromEv = coercePrice(e.card.price);
+        if (fromEv) return fromEv;
+      }
+    }
+  }
+  return null;
+}
+
+function applySelectedListings(live, candidate, items, jobs) {
   const next = cloneCatalog(live || { products: [], filaments: [] });
   let applied = 0;
+  const appliedUrls = [];
   for (const item of items || []) {
     const card = item.card && typeof item.card === "object" ? item.card : {};
     const url = String(item.url || card.url || "");
@@ -363,9 +389,10 @@ function applySelectedListings(live, candidate, items) {
     // The scraped title travels with the offer so the catalog can show where it came from
     // and offer a regroup/branch when the matcher grouped it wrong.
     const scrapedTitle = String(card.name || "").trim();
+    const price = coercePrice(card.price) || coercePrice(found?.offer?.price) || priceFromJobs(jobs, url);
     const offer = found?.offer
-      ? { ...found.offer, sourceTitle: found.offer.sourceTitle || scrapedTitle }
-      : { store: offerStore(url, card), price: card.price, url, image: card.image || "", sourceTitle: scrapedTitle,
+      ? { ...found.offer, price: coercePrice(found.offer.price) || price || found.offer.price, sourceTitle: found.offer.sourceTitle || scrapedTitle, url }
+      : { store: offerStore(url, card), price, url, image: card.image || "", sourceTitle: scrapedTitle,
           priceSuspect: card.priceSuspect === true ? "harvest" : undefined, priceCurrency: card.currency || undefined };
     if (!Number.isFinite(Number(offer.price)) || Number(offer.price) <= 0) continue;
     const shelf = found?.shelf || (card.kind === "filament" ? "filaments" : "products");
@@ -383,6 +410,7 @@ function applySelectedListings(live, candidate, items) {
       if (target) {
         if (!target.offers.some((o) => o.url === url)) target.offers.push(offer);
         applied += 1;
+        appliedUrls.push(url);
         continue;
       }
     }
@@ -396,6 +424,29 @@ function applySelectedListings(live, candidate, items) {
       if (!already.offers) already.offers = [];
       if (!already.offers.some((o) => o.url === url)) already.offers.push(offer);
       applied += 1;
+      appliedUrls.push(url);
+      continue;
+    }
+    if (item.baselineModel) {
+      const model = item.baselineModel;
+      const id = model.id;
+      let target = dest.find((p) => p.id === id || p.baselineId === id);
+      if (!target) {
+        target = {
+          id,
+          name: model.name,
+          brand: model.brand || "",
+          kind: model.category === "filaments" ? "filament" : "printer",
+          image: model.image || card.image || "",
+          aisle: model.category === "filaments" ? "filament" : "fdm",
+          baselineId: id,
+          offers: []
+        };
+        dest.push(target);
+      }
+      if (!target.offers.some((o) => o.url === url)) target.offers.push(offer);
+      applied += 1;
+      appliedUrls.push(url);
       continue;
     }
     const srcId = found?.product?.id;
@@ -408,6 +459,7 @@ function applySelectedListings(live, candidate, items) {
       if (!twin.offers) twin.offers = [];
       if (!twin.offers.some((o) => o.url === url)) twin.offers.push(offer);
       applied += 1;
+      appliedUrls.push(url);
       continue;
     }
     const inLive = !!(srcId && dest.some((p) => p.id === srcId));
@@ -435,11 +487,14 @@ function applySelectedListings(live, candidate, items) {
     }
     if (!target.offers.some((o) => o.url === url)) target.offers.push(offer);
     applied += 1;
+    appliedUrls.push(url);
   }
   next.savedAt = new Date().toISOString();
+  next.source = next.source || { id: "desk", name: "Published catalog" };
   next.productCount = next.products.length;
   next.filamentCount = next.filaments.length;
   next._applied = applied;
+  next._appliedUrls = appliedUrls;
   return next;
 }
 
@@ -735,17 +790,33 @@ export default async (req) => {
 
       case "publishSelected": {
         candidate = candidate || (await readJSON("candidate.json", null)) || { products: [], filaments: [] };
-        const items = Array.isArray(body.placements) && body.placements.length
+        const board = await ensureBaseline();
+        const rawItems = Array.isArray(body.placements) && body.placements.length
           ? body.placements
           : (Array.isArray(body.ids) ? body.ids.map((id) => ({ url: String(id), action: "create" })) : []);
-        if (!items.length) throw new Error("Select at least one product");
-        const next = applySelectedListings(catalog, candidate, items);
+        if (!rawItems.length) throw new Error("Select at least one product");
+        const items = rawItems.map((it) => {
+          const cid = String(it.candidateId || "");
+          if (cid.startsWith("baseline:")) {
+            const model = (board.items || []).find((i) => i.id === cid.slice(9));
+            if (!model) return { ...it, action: "create", candidateId: "" };
+            const live = catalogProductForItem(catalog, model) || catalogProductForItem(candidate, model);
+            if (live) return { ...it, action: "merge", candidateId: live.id };
+            return { ...it, action: "create", candidateId: "", baselineModel: model };
+          }
+          return it;
+        });
+        const next = applySelectedListings(catalog, candidate, items, jobs);
         const applied = next._applied || 0;
+        const appliedUrls = next._appliedUrls || [];
         delete next._applied;
-        if (!applied) throw new Error("None of the selected products could be published");
-        const createdUrls = new Set(items.filter((it) => (it.action || "create") === "create").map((it) => String(it.url || (it.card && it.card.url) || "")));
+        delete next._appliedUrls;
+        if (!applied) throw new Error("None of the selected products could be published — they need a price from the shop run");
+        const createdUrls = new Set(appliedUrls.filter((url) => {
+          const it = items.find((x) => String(x.url || (x.card && x.card.url) || "") === url);
+          return !it || (it.action || "create") === "create";
+        }));
         if (createdUrls.size) {
-          const board = await ensureBaseline();
           const created = [...(next.products || []), ...(next.filaments || [])].filter((p) => (p.offers || []).some((o) => createdUrls.has(o.url)));
           if (created.length) {
             upsertItems(board, created.map((p) => fromProduct(p, "catalog")));
@@ -754,11 +825,15 @@ export default async (req) => {
         }
         await writeJSON("catalog.json", next);
         await writeJSON("last-publish.json", { publishedAt: new Date().toISOString(), savedAt: next.savedAt });
-        const urls = items.map((it) => String(it.url || (it.card && it.card.url) || "")).filter(Boolean);
-        jobs = jobs.map((j) => ({ ...j, published: [...new Set([...(j.published || []), ...urls])] }));
+        jobs = jobs.map((j) => ({ ...j, published: [...new Set([...(j.published || []), ...appliedUrls])] }));
         await saveJobList(jobs);
         catalog = next;
-        return json(200, { ok: true, publishedAt: new Date().toISOString(), counts: { products: next.products.length, filaments: next.filaments.length } });
+        return json(200, {
+          ok: true,
+          publishedAt: new Date().toISOString(),
+          published: appliedUrls.length,
+          counts: { products: next.products.length, filaments: next.filaments.length }
+        });
       }
 
       case "collapseDuplicates": {
@@ -1233,6 +1308,58 @@ export default async (req) => {
         return json(200, { ok: true, product });
       }
 
+      case "saveLayaOpinions": {
+        const results = Array.isArray(body.results) ? body.results : [];
+        const at = new Date().toISOString();
+        jobs = jobs.map((j) => {
+          const known = new Set(listingUrlsFromJob(j));
+          const cards = { ...(j.cards || {}) };
+          let changed = false;
+          for (const r of results) {
+            const url = String(r.url || "");
+            if (!url || !known.has(url)) continue;
+            const prev = (cards[url] && ((cards[url].card) || cards[url])) || { url };
+            const hit = r.matchId ? findById(catalog, r.matchId) : null;
+            const named = r.matchName || (hit && hit.product && hit.product.name) || "";
+            const laya = {
+              action: r.action || "hold",
+              matchId: r.matchId || "",
+              matchName: named,
+              reason: r.reason || "",
+              confidence: r.confidence,
+              at
+            };
+            cards[url] = { ...prev, url, name: prev.name || "", laya, decision: prev.decision };
+            changed = true;
+          }
+          return changed ? { ...j, cards } : j;
+        });
+        await saveJobList(jobs);
+        return json(200, { ok: true });
+      }
+
+      case "updateUncertainCard": {
+        const url = String(body.url || "");
+        const job = jobs.find((j) => j.id === body.jobId);
+        if (!job || !url) throw new Error("Pick a card");
+        const cards = { ...(job.cards || {}) };
+        const prev = (cards[url] && ((cards[url].card) || cards[url])) || { url };
+        const inner = { ...prev, url };
+        if (body.patch && body.patch.name != null) inner.name = String(body.patch.name);
+        if (body.patch && body.patch.brand != null) inner.brand = String(body.patch.brand);
+        cards[url] = inner;
+        jobs = jobs.map((j) => (j.id === job.id ? { ...j, cards } : j));
+        await saveJobList(jobs);
+        return json(200, { ok: true });
+      }
+
+      case "republishCatalog": {
+        catalog.savedAt = new Date().toISOString();
+        await writeJSON("catalog.json", catalog);
+        await writeJSON("last-publish.json", { publishedAt: catalog.savedAt, savedAt: catalog.savedAt, republished: true });
+        return json(200, { ok: true, savedAt: catalog.savedAt, counts: { products: (catalog.products || []).length, filaments: (catalog.filaments || []).length } });
+      }
+
       case "updateProducts": {
         const items = Array.isArray(body.items) ? body.items : [];
         if (!items.length || items.length > 500) throw new Error("Choose between 1 and 500 products to update");
@@ -1249,6 +1376,7 @@ export default async (req) => {
         if (baselineChanged) await writeJSON("baseline.json", board);
         catalog.savedAt = new Date().toISOString();
         await writeJSON("catalog.json", catalog);
+        await writeJSON("last-publish.json", { publishedAt: catalog.savedAt, savedAt: catalog.savedAt });
         return json(200, { ok: true, updated: items.length });
       }
 

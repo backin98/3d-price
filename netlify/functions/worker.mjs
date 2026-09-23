@@ -115,7 +115,8 @@ export default async (req) => {
       const catalog = await readJSON("catalog.json", null);
       if (!catalog || !Array.isArray(catalog.products) || !Array.isArray(catalog.filaments)) return json(503, { error: "Online catalog unavailable; matching cannot proceed" });
       const candidate = await readJSON("candidate.json", null);
-      return json(200, { catalog: unionCatalog(catalog, candidate) });
+      const baseline = await readJSON("baseline.json", { items: [] });
+      return json(200, { catalog: unionCatalog(catalog, candidate), baseline });
     }
     if (req.method === "GET" && action === "stock-catalog") {
       const catalog = await readJSON("catalog.json", null);
