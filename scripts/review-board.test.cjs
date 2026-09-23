@@ -109,6 +109,26 @@ assert.doesNotMatch(heldHtml, /Ambiguous P1S[\s\S]{0,400}waiting for match/, 'a 
 assert.match(mismatchHtml, /Discard/);
 assert.doesNotMatch(mismatchHtml, /Dropshipping/);
 
+// Baseline selections must compare against the same live offers shown in the dropdown.
+const originalData = context.test.state.data;
+for (const shelf of ['products', 'filaments']) {
+  for (const linkedId of [false, true]) {
+    const model = { id: 'base-model', name: 'Reference model', brand: 'Example', category: shelf === 'filaments' ? 'filaments' : 'printers' };
+    const offers = Array.from({ length: 6 }, (_, i) => ({ store: 'Shop ' + i, price: 1000 + i, url: 'https://shop' + i + '.example/model' }));
+    const incoming = 'https://new-shop.example/model';
+    const fixture = { ...data, candidate: null, baseline: { items: [model] }, catalog: { products: [], filaments: [], [shelf]: [{
+      id: linkedId ? 'live-row' : model.id, baselineId: linkedId ? model.id : undefined, name: model.name, offers
+    }] } };
+    context.test.state.data = fixture;
+    context.test.state.reviewPlace.set(incoming, { action: 'merge', candidateId: 'baseline:' + model.id });
+    const board = context.test.reviewBoardHtml({ events: [{ type: 'gather', items: [{ url: incoming, name: 'Incoming listing', kind: shelf === 'filaments' ? 'filament' : 'printer' }] }] });
+    for (let i = 0; i < 6; i++) assert.ok(board.includes('Shop ' + i + ' ' + (1000 + i) + ' TL'), 'comparison includes every live baseline offer');
+    assert.doesNotMatch(board, /On the catalog, but no other shop offers yet/);
+    context.test.state.reviewPlace.delete(incoming);
+  }
+}
+context.test.state.data = originalData;
+
 let saved;
 const apiContext = {
   URL, Response, crypto: require('node:crypto'),

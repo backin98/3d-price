@@ -920,7 +920,11 @@
     if (String(id).startsWith("baseline:")) {
       const bid = String(id).slice(9);
       const it = ((state.data.baseline && state.data.baseline.items) || []).find((x) => x.id === bid);
-      if (it) return { id, name: it.name, brand: it.brand, image: it.image, offers: [], baseline: true };
+      if (it) {
+        const live = currentCatalog();
+        const product = [...(live.products || []), ...(live.filaments || [])].find((p) => p.id === bid || p.baselineId === bid);
+        return { id, name: it.name, brand: it.brand, image: it.image, offers: product?.offers || [], baseline: true };
+      }
     }
     const bags = [state.data.candidate, currentCatalog()];
     for (const bag of bags) {
@@ -940,18 +944,7 @@
       if (!q) return true;
       return adminFold([it.name, it.brand, it.id].join(" ")).includes(q);
     });
-    const liveRows = [...((currentCatalog().products) || []), ...((currentCatalog().filaments) || [])];
-    const list = models.map((it) => {
-      const live = liveRows.find((p) => p.id === it.id || p.baselineId === it.id);
-      return {
-        id: "baseline:" + it.id,
-        name: it.name,
-        brand: it.brand,
-        image: it.image,
-        offers: (live && live.offers) || [],
-        baseline: true
-      };
-    });
+    const list = models.map((it) => catalogProduct("baseline:" + it.id));
     if (!baselineOnly) {
       const live = currentCatalog();
       const cand = state.data && state.data.candidate;
