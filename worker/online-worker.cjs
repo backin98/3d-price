@@ -239,8 +239,12 @@ async function runClaimedJob(job, desk) {
     emit({ type: "log", stage: "compare", text: "Loaded current online catalog: " + baseline.catalog.products.length + " products and " + baseline.catalog.filaments.length + " filaments. Human baseline: " + baselineCount + " models." });
     const shopHost = (() => { try { return new URL(job.url).hostname.replace(/^www\./, "").toLowerCase(); } catch { return ""; } })();
     const shop = (desk.shops || []).find((s) => s.id === shopHost || (s.url && (() => { try { return new URL(s.url).hostname.replace(/^www\./, "").toLowerCase() === shopHost; } catch { return false; } })()));
+    const cat = ((shop && shop.categories) || []).find((c) => {
+      try { return new URL(c.url).href === new URL(job.url).href; } catch { return c.url === job.url; }
+    });
     const summary = await runWebsiteJob({
       url: job.url,
+      page2Url: job.page2Url || (cat && cat.page2Url) || "",
       kind: job.kind,
       site: desk && desk.id ? desk.id : undefined,
       vat: job.vat || (shop && shop.vat) || "included",
@@ -298,23 +302,30 @@ async function refreshLiveStock({ limit = 24, staleHours = 2 } = {}) {
   }
 }
 
+const finishedIds = new Set();
+
 async function claimAndRun() {
   if (busy || stockBusy || !siteUrl || !hasToken) return false;
+  busy = true;
   let data;
   try {
     data = await poll();
   } catch (err) {
+    busy = false;
     // Rethrow so the poll loop sees the failure and backs off. Swallowing it here is why a dead site
     // produced a flat, endless wall of "Poll failed" lines: the loop never observed an error, so its
     // backoff could not run, and every 5s it tried again at full speed. The loop owns logging now.
     throw err;
   }
   const job = data.job;
-  if (!job || job.status === "aborted") return false;
-  busy = true;
+  if (!job || job.status === "aborted" || finishedIds.has(job.id)) {
+    busy = false;
+    return false;
+  }
   try {
     console.log(`[${job.id}] Claimed ${job.status} ${job.kind} ${job.url}`);
     await runClaimedJob(job, data.desk || {});
+    finishedIds.add(job.id);
     return true;
   } finally {
     busy = false;

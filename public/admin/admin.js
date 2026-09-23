@@ -29,6 +29,10 @@
     reviewJobId: "",
     uncertainShop: "",
     uncertainEdit: new Map(),
+    uncertainSaved: new Set(),
+    uncertainPublished: new Map(),
+    // Cards deleted this page view. They stay in the grid, covered, until a full refresh.
+    uncertainHeld: new Map(),
     catalogUndo: null,
     // Which disclosures the user opened. The 5s poll rebuilds the page HTML, which would
     // otherwise slam every <details> shut while you are working in it.
@@ -482,7 +486,12 @@
   }
 
   function activeJob(d) {
-    return (d.jobs || []).find((j) => ["queued", "running"].includes(j.status));
+    const jobs = d.jobs || [];
+    const running = jobs.filter((j) => j.status === "running");
+    if (running.length) {
+      return running.slice().sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")))[0];
+    }
+    return jobs.find((j) => j.status === "queued") || null;
   }
 
   function heartbeatLabel(d) {
@@ -721,6 +730,7 @@
         </form>
         <p class="muted">AI help off (default): Magellan decides and close calls wait for you. No AI server is needed either way. On: one short AI ask, text only, only when Magellan is in the gray band. Hard conflicts (AMS, Combo, mini, laser) are never merged either way.<br>Visual match: on — thumbnails are fingerprinted locally when titles are a close call, and a matching photo is flagged for you to confirm. Vision never merges on its own.</p>
         ${job ? `<p><span class="badge ${job.status}">${esc(job.status)}</span> ${esc(job.progress || "")}</p>` : "<p class='muted'>No active run.</p>"}
+        ${runTimingHtml(d)}
         <h3>Live review board</h3>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0">
           <label class="muted" style="font-size:12px">Run
@@ -741,6 +751,62 @@
         <div class="tape">${events.length ? events.map((ev) => `<div><time>${esc(String(ev.at || "").slice(11, 19))}</time>${esc(ev.text || ev.error || JSON.stringify(ev))}</div>`).join("") : '<div class="empty">Waiting for worker events…</div>'}</div>
       </div>
     `;
+  }
+
+  function formatDuration(ms) {
+    if (!Number.isFinite(ms) || ms < 0) return "—";
+    const s = Math.round(ms / 1000);
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    if (h) return h + "h " + m + "m " + String(sec).padStart(2, "0") + "s";
+    if (m) return m + "m " + String(sec).padStart(2, "0") + "s";
+    return sec + "s";
+  }
+
+  function jobSiteLabel(j) {
+    if (j.site) return j.site;
+    try { return new URL(j.url).hostname.replace(/^www\./, ""); } catch (_) { return j.url || j.id || "shop"; }
+  }
+
+  function jobElapsedMs(j, now) {
+    const start = Date.parse(j.startedAt || "");
+    if (!Number.isFinite(start)) return null;
+    let end = Date.parse(j.finishedAt || "");
+    if (!Number.isFinite(end)) end = j.status === "running" ? now : Date.parse(j.updatedAt || "");
+    if (!Number.isFinite(end)) return null;
+    return Math.max(0, end - start);
+  }
+
+  function runTimingHtml(d) {
+    const jobs = d.jobs || [];
+    const newest = jobs.slice().sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")))[0];
+    const focus = reviewJob(d);
+    const anchor = focus && focus.id && focus.id !== "candidate" && jobs.some((j) => j.id === focus.id)
+      ? jobs.find((j) => j.id === focus.id)
+      : newest;
+    if (!anchor) return `<h3>Shop run time</h3><p class="muted">No shop run yet. The total, then each website, shows up here.</p>`;
+    const batch = anchor.batchId ? jobs.filter((j) => j.batchId === anchor.batchId) : [anchor];
+    batch.sort((a, b) => String(a.createdAt || "").localeCompare(String(b.createdAt || "")));
+    const now = Date.now();
+    const running = batch.some((j) => ["running", "queued"].includes(j.status));
+    const starts = batch.map((j) => Date.parse(j.startedAt || "")).filter(Number.isFinite);
+    const ends = batch.map((j) => {
+      if (j.finishedAt) return Date.parse(j.finishedAt);
+      if (["running", "queued"].includes(j.status)) return now;
+      const updated = Date.parse(j.updatedAt || "");
+      return Number.isFinite(updated) ? updated : NaN;
+    }).filter(Number.isFinite);
+    const total = starts.length && ends.length ? Math.max(...ends) - Math.min(...starts) : 0;
+    return `<h3>Shop run time</h3>
+      <p style="margin:4px 0 8px"><strong>${formatDuration(total)}</strong> <span class="muted">${running ? "still running — this is the whole run so far" : "whole run, from the first website starting to the last one finishing"}</span></p>
+      <ul class="run-times" style="list-style:none;padding:0;margin:0 0 12px">
+        ${batch.map((j) => {
+          const ms = jobElapsedMs(j, now);
+          const shown = ms == null ? (j.status === "queued" ? "waiting" : "—") : formatDuration(ms);
+          return `<li style="display:flex;gap:10px;align-items:baseline;padding:2px 0"><span>${esc(jobSiteLabel(j))}</span><strong>${esc(shown)}</strong><span class="muted">${esc(j.status || "")}</span></li>`;
+        }).join("")}
+      </ul>`;
   }
 
   function titleFromUrl(url) {
@@ -865,37 +931,44 @@
     return null;
   }
 
-  function placementOptions(card, decision, query) {
+  function placementOptions(card, decision, query, opts) {
     const q = adminFold(query || "");
+    const baselineOnly = !!(opts && opts.baselineOnly);
     const kind = card.kind === "filament" ? "filaments" : "printers";
     const models = ((state.data && state.data.baseline && state.data.baseline.items) || []).filter((it) => {
       if (kind === "filaments" ? it.category !== "filaments" : it.category === "filaments") return false;
       if (!q) return true;
       return adminFold([it.name, it.brand, it.id].join(" ")).includes(q);
     });
-    const list = models.map((it) => ({
-      id: "baseline:" + it.id,
-      name: it.name,
-      brand: it.brand,
-      image: it.image,
-      offers: [],
-      baseline: true
-    }));
-    const live = currentCatalog();
-    const cand = state.data && state.data.candidate;
-    const seen = new Set(list.map((p) => p.id));
-    const shelves = kind === "filaments" ? ["filaments"] : ["products"];
-    for (const shelf of (q ? ["products", "filaments"] : shelves)) {
-      for (const p of [...((live && live[shelf]) || []), ...((cand && cand[shelf]) || [])]) {
-        if (!p || !p.id || seen.has(p.id) || seen.has("baseline:" + p.id)) continue;
-        seen.add(p.id);
-        if (q && !adminFold([p.id, p.name, p.brand].join(" ")).includes(q)) continue;
-        list.push(p);
+    const liveRows = [...((currentCatalog().products) || []), ...((currentCatalog().filaments) || [])];
+    const list = models.map((it) => {
+      const live = liveRows.find((p) => p.id === it.id || p.baselineId === it.id);
+      return {
+        id: "baseline:" + it.id,
+        name: it.name,
+        brand: it.brand,
+        image: it.image,
+        offers: (live && live.offers) || [],
+        baseline: true
+      };
+    });
+    if (!baselineOnly) {
+      const live = currentCatalog();
+      const cand = state.data && state.data.candidate;
+      const seen = new Set(list.map((p) => p.id));
+      const shelves = kind === "filaments" ? ["filaments"] : ["products"];
+      for (const shelf of (q ? ["products", "filaments"] : shelves)) {
+        for (const p of [...((live && live[shelf]) || []), ...((cand && cand[shelf]) || [])]) {
+          if (!p || !p.id || seen.has(p.id) || seen.has("baseline:" + p.id)) continue;
+          seen.add(p.id);
+          if (q && !adminFold([p.id, p.name, p.brand].join(" ")).includes(q)) continue;
+          list.push(p);
+        }
       }
     }
     if (decision.candidateId) {
       const picked = catalogProduct(decision.candidateId);
-      if (picked && !list.some((h) => h.id === picked.id)) list.unshift(picked);
+      if (picked && (!baselineOnly || picked.baseline) && !list.some((h) => h.id === picked.id)) list.unshift(picked);
     }
     list.sort((a, b) => {
       if (a.id === decision.candidateId) return -1;
@@ -978,20 +1051,18 @@
       const place = defaultPlace(ev);
       return { url, action: place.action === "merge" ? "merge" : "create", candidateId: place.candidateId, card };
     });
-    const res = await action({ action: "publishSelected", placements });
-    urls.forEach((u) => state.uncertainEdit.delete(u));
-    return res;
+    return api("/api/admin", { method: "POST", body: JSON.stringify({ action: "publishSelected", placements }) });
   }
 
   function placeValue(place) {
     return place.action === "merge" && place.candidateId ? "merge:" + place.candidateId : "create";
   }
 
-  function placeOptionsHtml(e, place, query) {
+  function placeOptionsHtml(e, place, query, baselineOnly) {
     const c = e.card || {};
     const url = c.url || "";
     const dec = e.decision || {};
-    const options = placementOptions(c, dec, query);
+    const options = placementOptions(c, dec, query, { baselineOnly: !!baselineOnly });
     if (place.action === "merge" && place.candidateId && !options.some((p) => p.id === place.candidateId)) {
       const extra = catalogProduct(place.candidateId);
       if (extra) options.unshift(extra);
@@ -1023,7 +1094,8 @@
     const ev = cardEvent(url);
     const sel = wrap && wrap.querySelector("[data-review-place]");
     if (sel) {
-      sel.innerHTML = placeOptionsHtml(ev, place, "");
+      const baselineOnly = !!(wrap && wrap.classList && wrap.classList.contains("uncertain-card"));
+      sel.innerHTML = placeOptionsHtml(ev, place, "", baselineOnly);
       sel.value = placeValue(place);
     }
     const line = wrap && wrap.querySelector(".review-compare");
@@ -1041,21 +1113,23 @@
     const place = defaultPlace(ev);
     const q = String(query || "").trim();
     const openAll = !!(opts && opts.openAll);
+    const baselineOnly = !!(wrap && wrap.classList && wrap.classList.contains("uncertain-card"));
     if (sel) {
-      sel.innerHTML = placeOptionsHtml(ev, place, q);
+      sel.innerHTML = placeOptionsHtml(ev, place, q, baselineOnly);
       sel.value = placeValue(place);
     }
     if (!box) return;
     if (!q && !openAll) { box.hidden = true; box.innerHTML = ""; return; }
-    const hits = placementOptions(ev.card || { url }, ev.decision || {}, q);
+    const hits = placementOptions(ev.card || { url }, ev.decision || {}, q, { baselineOnly });
     const id = encodeURIComponent(url);
     const btns = [`<button type="button" class="place-hit" data-place-pick="${esc(id)}" data-place-val="create">New product — not compared yet</button>`]
       .concat(hits.map((p) => {
         const stores = [...new Set(otherOffers(p, url).map((o) => o.store))];
-        return `<button type="button" class="place-hit" data-place-pick="${esc(id)}" data-place-val="merge:${esc(p.id)}">${esc(p.name || p.id)}${stores.length ? ` <small>${esc(stores.join(" · "))}</small>` : ""}</button>`;
+        const name = (baselineOnly && p.baseline ? "Baseline · " : "") + (p.name || p.id);
+        return `<button type="button" class="place-hit" data-place-pick="${esc(id)}" data-place-val="merge:${esc(p.id)}">${esc(name)}${stores.length ? ` <small>${esc(stores.join(" · "))}</small>` : ""}</button>`;
       }));
     box.hidden = false;
-    box.innerHTML = btns.join("") || '<span class="muted">No catalog match</span>';
+    box.innerHTML = btns.join("") || `<span class="muted">${baselineOnly ? "No baseline match" : "No catalog match"}</span>`;
   }
 
   function otherOffers(product, skipUrl) {
@@ -1213,18 +1287,13 @@
     const cats = board.categories && board.categories.length ? board.categories : [{ id: "printers", name: "3D Printers" }];
     const q = adminFold(state.baselineQuery || "");
     const all = board.items || [];
-    const jobs = d.jobs || [];
-    const importJobs = jobs.filter((j) => j.status === "complete" || (j.cards && Object.keys(j.cards).length));
     const match = (it) => !q || adminFold([it.name, it.brand].join(" ")).includes(q);
     return `<div class="panel">
       <h2>Baseline</h2>
-      <p class="muted">Human-approved models. No shop offers. Categories are global: create once, then every card can use it. Rename a category below — the id stays, so models keep their parent.</p>
+      <p class="muted">Your models only. A shop run never writes here. Add one with the button on an Uncertain card, or by branching an offer into its own product in the catalog. You can also add a model on this page.</p>
+      ${recommendationHtml(d)}
       <div class="form-row" style="flex-wrap:wrap;gap:8px">
         <input id="baseline-q" type="search" placeholder="Search models…" value="${esc(state.baselineQuery || "")}" style="min-width:200px">
-        <button type="button" class="btn-sm primary" id="baseline-from-catalog">Import from catalog</button>
-        <button type="button" class="btn-sm" id="baseline-from-candidate">Import from draft</button>
-        <select id="baseline-run">${importJobs.map((j) => `<option value="${esc(j.id)}">${esc((j.site || j.url || j.id) + " · " + (j.kind || ""))}</option>`).join("") || '<option value="">No shop runs yet</option>'}</select>
-        <button type="button" class="btn-sm" id="baseline-from-run">Import from shop run</button>
       </div>
       <div class="form-row" style="flex-wrap:wrap;gap:8px;margin-top:8px">
         <input id="baseline-new-cat" type="text" placeholder="New category name" style="min-width:180px">
@@ -1249,6 +1318,25 @@
     </div>`;
   }
 
+  function recommendationHtml(d) {
+    const items = (d.recommendations && d.recommendations.items) || [];
+    return `<div class="panel" style="margin:12px 0;background:#f8fafc">
+      <h3 style="margin-top:0">Recommended by the worker</h3>
+      <p class="muted">New products the worker would add. They stay off the baseline until you confirm one.</p>
+      ${items.length ? items.map((it) => `<div class="product-card baseline-card" data-rec-id="${esc(it.id)}">
+        <div class="catalog-thumb">${it.image ? productImg(it.image) : '<div class="catalog-thumb-empty"></div>'}</div>
+        <strong>${esc(it.name)}</strong>
+        <p class="muted">${esc(it.brand || "No brand")} · ${esc(it.site || "shop")}</p>
+        <p class="muted">${esc(it.reason || "")}</p>
+        ${it.url ? `<a href="${esc(it.url)}" target="_blank" rel="noopener noreferrer">open ↗</a>` : ""}
+        <div class="actions">
+          <button class="btn-sm primary" type="button" data-rec-confirm="${esc(it.id)}">Add to baseline</button>
+          <button class="btn-sm ghost" type="button" data-rec-dismiss="${esc(it.id)}">Dismiss</button>
+        </div>
+      </div>`).join("") : '<p class="muted">Nothing waiting. A shop run that finds a product you do not already have will leave it here.</p>'}
+    </div>`;
+  }
+
   function baselineCard(it, cats) {
     const edit = state.baselineEdit.get(it.id) || {};
     const name = edit.name != null ? edit.name : (it.name || "");
@@ -1270,11 +1358,25 @@
     </div>`;
   }
 
-  function uncertainHtml(d) {
+  function uncertainRows(d) {
     const all = collectUncertain(d);
+    const shop = state.uncertainShop || "";
+    const visible = shop ? all.filter((x) => x.shopHost === shop) : all;
+    const live = visible.filter((x) => !state.uncertainHeld.has(x.card && x.card.url) && !state.uncertainPublished.has(x.card && x.card.url));
+    const rows = live.slice();
+    const spots = [...state.uncertainHeld.values(), ...state.uncertainPublished.values()].sort((a, b) => a.index - b.index);
+    for (const spot of spots) {
+      if (shop && spot.ev.shopHost && spot.ev.shopHost !== shop) continue;
+      const at = Math.max(0, Math.min(spot.index, rows.length));
+      rows.splice(at, 0, spot.ev);
+    }
+    return { all, rows, live };
+  }
+
+  function uncertainHtml(d) {
+    const { all, rows, live } = uncertainRows(d);
     const shops = [...new Set(all.map((x) => x.shopHost).filter(Boolean))].sort();
     const shop = state.uncertainShop || "";
-    const rows = shop ? all.filter((x) => x.shopHost === shop) : all;
     return `<div class="panel">
       <h2>Uncertain</h2>
       <p class="muted">Shop cards Magellan could not place, plus what Laya did with them. Edit a card, pick where it goes, then force-publish — even if Laya is still unsure.</p>
@@ -1282,7 +1384,7 @@
         <label class="muted" style="font-size:12px">Shop
           <select id="uncertain-shop"><option value="">all shops</option>${shops.map((s) => `<option value="${esc(s)}" ${shop === s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>
         </label>
-        <button type="button" class="btn-sm ok" id="uncertain-publish-all" ${rows.length ? "" : "disabled"}>Force publish all (${rows.length})</button>
+        <button type="button" class="btn-sm ok" id="uncertain-publish-all" ${live.length ? "" : "disabled"}>Force publish all (${live.length})</button>
       </div>
       <p class="muted">${rows.length} shown · ${all.length} uncertain</p>
       <div class="catalog-results">${rows.map(uncertainCard).join("") || '<div class="empty">No unmatched cards. Run a shop, then Ask Laya on the review board.</div>'}</div>
@@ -1303,7 +1405,15 @@
         : "Magellan: unmatched")
       : "Magellan: " + ((ev.decision && ev.decision.action) || "placed");
     const place = defaultPlace(ev);
-    return `<div class="product-card baseline-card uncertain-card" data-uncertain-url="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">
+    const held = !!(ev.held || state.uncertainHeld.has(url));
+    const saved = state.uncertainSaved.has(url);
+    const published = state.uncertainPublished.has(url);
+    return `<div class="product-card baseline-card uncertain-card${held ? " is-held" : ""}${saved ? " is-saved" : ""}${published ? " is-published" : ""}" data-uncertain-url="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">
+      ${held ? '<div class="uncertain-hold" aria-hidden="true">Removed</div>' : ""}
+      ${published ? '<div class="uncertain-check" aria-label="Published">✓</div>' : ""}
+      <button class="uncertain-trash" type="button" data-uncertain-delete="${esc(url)}" aria-label="Delete this card" title="Delete this card">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9z"/></svg>
+      </button>
       <div class="catalog-thumb">${c.image ? productImg(c.image) : '<div class="catalog-thumb-empty"></div>'}</div>
       <div class="meta"><span class="badge">${esc(ev.shopName || ev.shopHost || "shop")}</span></div>
       <textarea aria-label="Listing name" data-uncertain-field="name" data-uncertain-url="${esc(url)}" rows="3">${esc(name)}</textarea>
@@ -1313,14 +1423,15 @@
       ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">open ↗</a>` : ""}
       <div class="review-place-label">Goes to
         <div class="place-combo">
-          <input type="search" data-review-place-q="${esc(id)}" placeholder="Type to search catalog…" autocomplete="off" aria-label="Search where ${esc(c.name || "this listing")} goes">
-          <button type="button" class="ghost place-arrow" data-place-open="${esc(id)}" aria-label="Show catalog matches">▾</button>
+          <input type="search" data-review-place-q="${esc(id)}" placeholder="Type to search baseline…" autocomplete="off" aria-label="Search baseline for where ${esc(c.name || "this listing")} goes">
+          <button type="button" class="ghost place-arrow" data-place-open="${esc(id)}" aria-label="Show baseline matches">▾</button>
         </div>
         <div class="place-hits" hidden></div>
-        <select data-review-place="${esc(id)}" aria-label="Where ${esc(c.name || "this listing")} goes">${placeOptionsHtml(ev, place, "")}</select>
+        <select data-review-place="${esc(id)}" aria-label="Where ${esc(c.name || "this listing")} goes">${placeOptionsHtml(ev, place, "", true)}</select>
       </div>
       <div class="actions">
         <button class="btn-sm" type="button" data-uncertain-save="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">Save</button>
+        <button class="btn-sm primary" type="button" data-uncertain-baseline="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">Add to baseline</button>
         <button class="btn-sm ok" type="button" data-uncertain-publish="${esc(url)}">Force publish</button>
       </div>
     </div>`;
@@ -1503,10 +1614,11 @@
             <label class="muted" style="font-size:12px">Select category
               <select data-shop-cat-name="${esc(s.id)}" aria-label="Category names for ${esc(s.name || s.id)}">${nameOptionsHtml(names, "")}</select>
             </label>
-            <ul class="shop-cats">${mine.map((c) => `<li><span><b>${esc(c.name)}</b><br><small class="muted">${esc(c.url || "")}</small></span><button class="btn-sm danger" type="button" data-delete-shop-cat="${esc(c.id || c.url)}" data-shop="${esc(s.id)}">Delete</button></li>`).join("") || '<li class="muted">No categories on this shop yet.</li>'}</ul>
+            <ul class="shop-cats">${mine.map((c) => `<li><span><b>${esc(c.name)}</b><br><small class="muted">${esc(c.url || "")}</small>${c.page2Url ? `<br><small class="muted">page 2: ${esc(c.page2Url)}</small>` : '<br><small class="muted">Add the second listing page so the scraper can count n, n+1, …</small>'}</span><button class="btn-sm danger" type="button" data-delete-shop-cat="${esc(c.id || c.url)}" data-shop="${esc(s.id)}">Delete</button></li>`).join("") || '<li class="muted">No categories on this shop yet.</li>'}</ul>
             <form class="form-row add-shop-cat" data-add-shop-cat="${esc(s.id)}">
               <div class="field"><label>Category name</label><input name="name" type="text" required placeholder="Filament"></div>
               <div class="field" style="flex:2"><label>Category URL</label><input name="url" type="url" required placeholder="https://this-shop.com/filament"></div>
+              <div class="field" style="flex:2"><label>Second page URL</label><input name="page2" type="url" placeholder="https://this-shop.com/filament?page=2"></div>
               <button class="btn-sm" type="submit">Add category</button>
             </form>
             <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
@@ -1673,6 +1785,7 @@
         const original = btn.textContent;
         const maxProducts = Number(($("#shop-max") || {}).value || 200);
         const llmValue = $("#run-llm") ? $("#run-llm").checked : undefined;
+        const batchId = "batch-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
         state.runAllActive = true;
         state.runAllStop = false;
         painted.delete("#tab-runs");
@@ -1689,7 +1802,7 @@
             liveBtn.textContent = "Running " + (i + 1) + "/" + rows.length + " — " + who;
             try {
               if (state.runAllStop) { stopped = true; break; }
-              const created = await action({ action: "createJob", type: "shop", url: r.url, kind: kindForCategory(r.cat), maxProducts, autoLlmMatch: llmValue });
+              const created = await action({ action: "createJob", type: "shop", url: r.url, kind: kindForCategory(r.cat), maxProducts, autoLlmMatch: llmValue, batchId });
               if (state.runAllStop) {
                 stopped = true;
                 if (created && created.job) try { await action({ action: "abortJob", id: created.job.id }); } catch (_) { /* already stopping */ }
@@ -2194,32 +2307,140 @@
         }
         return;
       }
+      if (e.target.closest("[data-uncertain-delete]")) {
+        const btn = e.target.closest("[data-uncertain-delete]");
+        const url = btn.dataset.uncertainDelete;
+        const card = btn.closest(".uncertain-card");
+        if (!url || !card || card.classList.contains("is-held") || state.uncertainHeld.has(url)) return;
+        const grid = card.parentElement;
+        const index = grid ? Array.prototype.indexOf.call(grid.children, card) : 0;
+        const ev = collectUncertain(state.data).find((x) => x.card && x.card.url === url) || { card: { url }, held: true };
+        state.uncertainHeld.set(url, { index, ev: { ...ev, held: true } });
+        card.classList.add("is-held");
+        if (!card.querySelector(".uncertain-hold")) card.insertAdjacentHTML("afterbegin", '<div class="uncertain-hold" aria-hidden="true">Removed</div>');
+        state.uncertainEdit.delete(url);
+        action({ action: "deleteFlagged", urls: [url] }).catch((err) => {
+          state.uncertainHeld.delete(url);
+          card.classList.remove("is-held");
+          const cover = card.querySelector(".uncertain-hold");
+          if (cover) cover.remove();
+          toast(err.message);
+        });
+        return;
+      }
+      if (e.target.closest("[data-uncertain-baseline]")) {
+        const btn = e.target.closest("[data-uncertain-baseline]");
+        const url = btn.dataset.uncertainBaseline;
+        const jobId = btn.dataset.uncertainJob;
+        const card = btn.closest(".uncertain-card");
+        if (!url || !card || state.uncertainHeld.has(url)) return;
+        const name = ((card.querySelector('[data-uncertain-field="name"]')) || {}).value;
+        const brand = ((card.querySelector('[data-uncertain-field="brand"]')) || {}).value;
+        const grid = card.parentElement;
+        const index = grid ? Array.prototype.indexOf.call(grid.children, card) : 0;
+        const ev = collectUncertain(state.data).find((x) => x.card && x.card.url === url) || { card: { url, name, brand } };
+        state.uncertainPublished.set(url, { index, ev });
+        state.uncertainEdit.set(url, { ...(state.uncertainEdit.get(url) || {}), name, brand });
+        card.classList.add("is-published");
+        if (!card.querySelector(".uncertain-check")) card.insertAdjacentHTML("afterbegin", '<div class="uncertain-check" aria-label="Published">✓</div>');
+        const sel = card.querySelector("[data-review-place]");
+        if (sel) {
+          let opt = sel.querySelector("option[data-self='1']");
+          if (!opt) {
+            opt = document.createElement("option");
+            opt.dataset.self = "1";
+            sel.insertBefore(opt, sel.firstChild);
+          }
+          opt.value = "merge:baseline:self";
+          opt.textContent = "Baseline · " + (name || "this model");
+          sel.value = opt.value;
+        }
+        const note = card.querySelector(".uncertain-note");
+        if (note) note.remove();
+        api("/api/admin", { method: "POST", body: JSON.stringify({ action: "addUncertainToBaseline", jobId, url, name, brand, price: ev.card && ev.card.price }) }).then((res) => {
+          const item = res && res.item;
+          if (!item) throw new Error("Baseline model was not created");
+          if (state.data) {
+            const board = state.data.baseline || { items: [], categories: [] };
+            if (!(board.items || []).some((i) => i.id === item.id)) board.items = [...(board.items || []), item];
+            state.data.baseline = board;
+          }
+          applyPlace(card, url, { action: "merge", candidateId: "baseline:" + item.id });
+        }).catch((err) => {
+          state.uncertainPublished.delete(url);
+          card.classList.remove("is-published");
+          const mark = card.querySelector(".uncertain-check");
+          if (mark) mark.remove();
+          const self = card.querySelector("option[data-self='1']");
+          if (self) self.remove();
+          let line = card.querySelector(".uncertain-note");
+          if (!line) {
+            line = document.createElement("p");
+            line.className = "uncertain-note";
+            card.appendChild(line);
+          }
+          line.textContent = err.message;
+          toast(err.message);
+        });
+        return;
+      }
       if (e.target.closest("[data-uncertain-save]")) {
         const btn = e.target.closest("[data-uncertain-save]");
         const url = btn.dataset.uncertainSave;
         const jobId = btn.dataset.uncertainJob;
-        const card = e.target.closest(".uncertain-card");
-        const name = ((card && card.querySelector('[data-uncertain-field="name"]')) || {}).value;
-        const brand = ((card && card.querySelector('[data-uncertain-field="brand"]')) || {}).value;
-        try {
-          await action({ action: "updateUncertainCard", jobId, url, patch: { name, brand } });
-          state.uncertainEdit.delete(url);
-          toast("Card saved.");
-        } catch (err) { toast(err.message); }
+        const card = btn.closest(".uncertain-card");
+        if (!url || !card) return;
+        const name = ((card.querySelector('[data-uncertain-field="name"]')) || {}).value;
+        const brand = ((card.querySelector('[data-uncertain-field="brand"]')) || {}).value;
+        state.uncertainSaved.add(url);
+        state.uncertainEdit.set(url, { ...(state.uncertainEdit.get(url) || {}), name, brand });
+        card.classList.add("is-saved");
+        for (const job of (state.data && state.data.jobs) || []) {
+          if (jobId && job.id !== jobId) continue;
+          const raw = job.cards && job.cards[url];
+          if (!raw) continue;
+          const inner = raw.card || raw;
+          inner.name = name;
+          inner.brand = brand;
+        }
+        api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateUncertainCard", jobId, url, patch: { name, brand } }) }).catch((err) => {
+          state.uncertainSaved.delete(url);
+          card.classList.remove("is-saved");
+          toast(err.message);
+        });
         return;
       }
       if (e.target.closest("[data-uncertain-publish]") || e.target.closest("#uncertain-publish-all")) {
         const one = e.target.closest("[data-uncertain-publish]");
-        const shop = state.uncertainShop || "";
         const urls = one
           ? [one.dataset.uncertainPublish]
-          : collectUncertain(state.data).filter((x) => !shop || x.shopHost === shop).map((x) => x.card && x.card.url).filter(Boolean);
+          : uncertainRows(state.data).live.map((x) => x.card && x.card.url).filter((u) => u && !state.uncertainHeld.has(u) && !state.uncertainPublished.has(u));
         if (!urls.length) return;
-        if (!confirm("Force-publish " + urls.length + " listing" + (urls.length === 1 ? "" : "s") + " to the live catalog?")) return;
-        try {
-          const res = await forcePublishUrls(urls);
-          toast("Published " + (res.published || urls.length) + " to the live catalog and site search. Refresh the website.");
-        } catch (err) { toast(err.message); }
+        if (!one && !confirm("Force-publish " + urls.length + " listing" + (urls.length === 1 ? "" : "s") + " to the live catalog?")) return;
+        const marked = [];
+        for (const url of urls) {
+          const card = one
+            ? one.closest(".uncertain-card")
+            : $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url);
+          if (!url || !card || state.uncertainPublished.has(url) || state.uncertainHeld.has(url)) continue;
+          const grid = card.parentElement;
+          const index = grid ? Array.prototype.indexOf.call(grid.children, card) : 0;
+          const ev = collectUncertain(state.data).find((x) => x.card && x.card.url === url) || { card: { url } };
+          state.uncertainPublished.set(url, { index, ev });
+          card.classList.add("is-published");
+          if (!card.querySelector(".uncertain-check")) card.insertAdjacentHTML("afterbegin", '<div class="uncertain-check" aria-label="Published">✓</div>');
+          marked.push({ url, card });
+        }
+        if (!marked.length) return;
+        forcePublishUrls(marked.map((m) => m.url)).catch((err) => {
+          for (const item of marked) {
+            state.uncertainPublished.delete(item.url);
+            item.card.classList.remove("is-published");
+            const mark = item.card.querySelector(".uncertain-check");
+            if (mark) mark.remove();
+          }
+          toast(err.message);
+        });
         return;
       }
       if (e.target.closest("#publish-selected")) {
@@ -2371,35 +2592,23 @@
         state.pendingImages.delete(id);
         render();
       }
-      if (e.target.closest("#baseline-from-catalog")) {
+      if (e.target.closest("[data-rec-confirm]")) {
+        const id = e.target.closest("[data-rec-confirm]").dataset.recConfirm;
         try {
-          const res = await action({ action: "importBaselineFromCatalog" });
-          if (res.baseline) state.data.baseline = res.baseline;
+          await action({ action: "confirmBaselineRecommendation", id });
           painted.delete("#tab-baseline");
           render();
-          toast("Imported catalog: +" + res.added + " new, " + res.updated + " updated.");
+          toast("Added to the baseline.");
         } catch (err) { toast(err.message); }
         return;
       }
-      if (e.target.closest("#baseline-from-candidate")) {
+      if (e.target.closest("[data-rec-dismiss]")) {
+        const id = e.target.closest("[data-rec-dismiss]").dataset.recDismiss;
         try {
-          const res = await action({ action: "importBaselineFromCatalog", from: "candidate" });
-          if (res.baseline) state.data.baseline = res.baseline;
+          await action({ action: "dismissBaselineRecommendation", id });
           painted.delete("#tab-baseline");
           render();
-          toast("Imported draft: +" + res.added + " new, " + res.updated + " updated.");
-        } catch (err) { toast(err.message); }
-        return;
-      }
-      if (e.target.closest("#baseline-from-run")) {
-        const jobId = ($("#baseline-run") || {}).value;
-        if (!jobId) { toast("No shop run to import."); return; }
-        try {
-          const res = await action({ action: "importBaselineFromRun", jobId });
-          if (res.baseline) state.data.baseline = res.baseline;
-          painted.delete("#tab-baseline");
-          render();
-          toast("Imported run: +" + res.added + " new, " + res.updated + " updated.");
+          toast("Recommendation dismissed.");
         } catch (err) { toast(err.message); }
         return;
       }
@@ -2521,11 +2730,12 @@
         const llmValue = $("#run-llm") ? $("#run-llm").checked : undefined;
         const problems = [];
         let queued = 0;
+        const batchId = "batch-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
         for (const r of rows) {
           const problem = isQuick ? "" : runRowProblem(r);
           if (problem) { problems.push(problem); continue; }
           try {
-            const created = await action({ action: "createJob", type: "shop", url: r.url, kind: isQuick ? quickKind : kindForCategory(r.cat), maxProducts, autoLlmMatch: llmValue });
+            const created = await action({ action: "createJob", type: "shop", url: r.url, kind: isQuick ? quickKind : kindForCategory(r.cat), maxProducts, autoLlmMatch: llmValue, batchId });
             queued += 1;
             try { await notifyWorker(created.job); } catch (kickErr) { console.warn(kickErr); }
           } catch (err) { problems.push(err.message); }
@@ -2540,10 +2750,19 @@
         const shopId = form.dataset.addShopCat;
         const name = (form.querySelector('[name="name"]') || {}).value.trim();
         const raw = (form.querySelector('[name="url"]') || {}).value.trim();
+        const raw2 = ((form.querySelector('[name="page2"]') || {}).value || "").trim();
         if (!name || !raw) return;
         try {
           const u = new URL(raw);
           if (u.protocol !== "https:") { toast("Category URL must be HTTPS."); return; }
+          let page2 = "";
+          if (raw2) {
+            const u2 = new URL(raw2);
+            if (u2.protocol !== "https:") { toast("Second page URL must be HTTPS."); return; }
+            if (urlHostOf(u2.href) !== urlHostOf(u.href)) { toast("Second page URL must be the same shop."); return; }
+            if (u2.href === u.href) { toast("Second page URL must be a different page (usually page 2)."); return; }
+            page2 = u2.href;
+          }
           const desk = state.data.desk;
           const shop = (desk.shops || []).find((s) => s.id === shopId);
           if (!shop) return;
@@ -2557,13 +2776,14 @@
           const sameName = shop.categories.find((c) => foldCatName(c.name) === foldCatName(name));
           if (sameName) {
             sameName.url = u.href;
+            sameName.page2Url = page2;
           } else {
-            const cat = { id: "cat-" + Date.now().toString(36), name, url: u.href };
+            const cat = { id: "cat-" + Date.now().toString(36), name, url: u.href, page2Url: page2 };
             shop.categories.push(cat);
             shop.categoryIds = [...new Set([...(shop.categoryIds || []), cat.id])];
           }
           await action({ action: "saveDesk", desk });
-          toast(name + " saved for " + (shop.name || shop.id) + ".");
+          toast(name + " saved for " + (shop.name || shop.id) + (page2 ? ". Scraper will step page 2, 3, 4… and stop on heavy Tükendi." : ". Add the second page URL so paging is known.") + ".");
         } catch (err) { toast("Invalid category URL"); }
         return;
       }

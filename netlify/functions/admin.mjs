@@ -7,8 +7,8 @@ import boardLib from "../../lib/baseline-board.cjs";
 
 const { readJSON, writeJSON, writeBytes, deleteKey } = store;
 const { ownerFromHeaders, authReady } = auth;
-const { withVat, withoutVat, parseMoney } = money;
-const { emptyBoard, fromProduct, fromRunCard, upsertItems, loadBackupPrinters, isIdentityStyleBoard, sanitizeBoard, addCategory, renameCategory, patchItem, addItem, itemForProduct, applyBaselineImages, catalogProductForItem } = boardLib;
+const { withVat, withoutVat, parseMoney, pickPrice } = money;
+const { emptyBoard, fromProduct, upsertItems, loadBackupPrinters, sanitizeBoard, addCategory, renameCategory, patchItem, addItem, itemForProduct, applyBaselineImages, catalogProductForItem } = boardLib;
 
 function sameOriginUrl(req) {
   const origin = req.headers.get("origin");
@@ -115,7 +115,7 @@ async function seedBaselineFromBackup() {
 
 async function ensureBaseline() {
   const loaded = await loadBaselineBoard();
-  if (!loaded.items || !loaded.items.length || isIdentityStyleBoard(loaded)) return seedBaselineFromBackup();
+  if (!loaded.items || !loaded.items.length) return loaded.items ? loaded : emptyBoard();
   const dirty = (loaded.items || []).some((i) => i.offers || i.shops || i.runs);
   const board = sanitizeBoard(loaded);
   if (dirty) await writeJSON("baseline.json", board);
@@ -408,7 +408,12 @@ function applySelectedListings(live, candidate, items, jobs) {
         }
       }
       if (target) {
+        // The dropdown is an instruction to move this listing, even if an earlier publish
+        // left the same URL sitting on a different product.
+        if (!target.offers) target.offers = [];
         if (!target.offers.some((o) => o.url === url)) target.offers.push(offer);
+        stripOfferUrl(next, url, target.id);
+        if (item.stampBaselineId && !target.baselineId) target.baselineId = item.stampBaselineId;
         applied += 1;
         appliedUrls.push(url);
         continue;
@@ -697,6 +702,7 @@ export default async (req) => {
       jobs: data.jobs || [],
       backups: await readBackupIndex(),
       baseline,
+      recommendations: await readJSON("baseline-recommendations.json", { items: [] }),
       duplicateOffers: findDuplicateOfferUrls(catalog),
       heartbeat: await readJSON("heartbeat.json", null),
       counts: {
@@ -773,16 +779,6 @@ export default async (req) => {
       case "publishCandidate": {
         candidate = candidate || (await readJSON("candidate.json", null));
         if (!candidate) throw new Error("No candidate snapshot to publish");
-        const board = await ensureBaseline();
-        const oldRows = [...(catalog.products || []), ...(catalog.filaments || [])];
-        const oldIds = new Set(oldRows.map((p) => p.id));
-        const oldUrls = new Set(oldRows.flatMap((p) => (p.offers || []).map((o) => o.url)).filter(Boolean));
-        const fresh = [...(candidate.products || []), ...(candidate.filaments || [])]
-          .filter((p) => !oldIds.has(p.id) && !(p.offers || []).some((o) => oldUrls.has(o.url)));
-        if (fresh.length) {
-          upsertItems(board, fresh.map((p) => fromProduct(p, "candidate")));
-          await writeJSON("baseline.json", board);
-        }
         await writeJSON("catalog.json", candidate);
         await writeJSON("last-publish.json", { publishedAt: new Date().toISOString(), savedAt: candidate.savedAt });
         return json(200, { ok: true, publishedAt: new Date().toISOString() });
@@ -801,7 +797,7 @@ export default async (req) => {
             const model = (board.items || []).find((i) => i.id === cid.slice(9));
             if (!model) return { ...it, action: "create", candidateId: "" };
             const live = catalogProductForItem(catalog, model) || catalogProductForItem(candidate, model);
-            if (live) return { ...it, action: "merge", candidateId: live.id };
+            if (live) return { ...it, action: "merge", candidateId: live.id, stampBaselineId: model.id };
             return { ...it, action: "create", candidateId: "", baselineModel: model };
           }
           return it;
@@ -812,17 +808,6 @@ export default async (req) => {
         delete next._applied;
         delete next._appliedUrls;
         if (!applied) throw new Error("None of the selected products could be published — they need a price from the shop run");
-        const createdUrls = new Set(appliedUrls.filter((url) => {
-          const it = items.find((x) => String(x.url || (x.card && x.card.url) || "") === url);
-          return !it || (it.action || "create") === "create";
-        }));
-        if (createdUrls.size) {
-          const created = [...(next.products || []), ...(next.filaments || [])].filter((p) => (p.offers || []).some((o) => createdUrls.has(o.url)));
-          if (created.length) {
-            upsertItems(board, created.map((p) => fromProduct(p, "catalog")));
-            await writeJSON("baseline.json", board);
-          }
-        }
         await writeJSON("catalog.json", next);
         await writeJSON("last-publish.json", { publishedAt: new Date().toISOString(), savedAt: next.savedAt });
         jobs = jobs.map((j) => ({ ...j, published: [...new Set([...(j.published || []), ...appliedUrls])] }));
@@ -948,25 +933,35 @@ export default async (req) => {
         return json(200, { ok: true, baseline: board, seeded: board.items.length });
       }
 
-      case "importBaselineFromCatalog": {
+      case "importBaselineFromCatalog":
+      case "importBaselineFromRun":
+        throw new Error("The baseline is not filled from the catalog or a shop run. Confirm a worker recommendation, or add the model yourself.");
+
+      case "confirmBaselineRecommendation": {
         const board = await ensureBaseline();
-        const cat = body.from === "candidate" && candidate ? candidate : catalog;
-        const rows = body.category === "filaments" ? (cat.filaments || []) : (cat.products || []);
-        const incoming = rows.map((p) => fromProduct(p, body.from === "candidate" ? "candidate" : "catalog"));
-        const stats = upsertItems(board, incoming);
-        await writeJSON("baseline.json", board);
-        return json(200, { ok: true, baseline: board, ...stats });
+        const file = await readJSON("baseline-recommendations.json", { items: [] });
+        const id = String(body.id || "");
+        const rec = (file.items || []).find((it) => it.id === id);
+        if (!rec) throw new Error("That recommendation is no longer here");
+        file.items = (file.items || []).filter((it) => it.id !== id);
+        try {
+          addItem(board, { name: rec.name, brand: rec.brand, category: rec.category, image: rec.image });
+          await writeJSON("baseline.json", board);
+        } catch (err) {
+          if (!/already on the baseline/i.test(err.message || "")) throw err;
+        }
+        await writeJSON("baseline-recommendations.json", file);
+        return json(200, { ok: true, baseline: board, recommendations: file });
       }
 
-      case "importBaselineFromRun": {
-        const board = await ensureBaseline();
-        const job = jobs.find((j) => j.id === body.jobId);
-        if (!job) throw new Error("Pick a shop run");
-        const cards = Object.values(job.cards || {}).map((c) => (c && c.card) || c).filter((c) => c && c.name);
-        const incoming = cards.map((c) => fromRunCard(c, job));
-        const stats = upsertItems(board, incoming);
-        await writeJSON("baseline.json", board);
-        return json(200, { ok: true, baseline: board, ...stats });
+      case "dismissBaselineRecommendation": {
+        const file = await readJSON("baseline-recommendations.json", { items: [] });
+        const id = String(body.id || "");
+        const before = (file.items || []).length;
+        file.items = (file.items || []).filter((it) => it.id !== id);
+        if (file.items.length === before) throw new Error("That recommendation is no longer here");
+        await writeJSON("baseline-recommendations.json", file);
+        return json(200, { ok: true, recommendations: file });
       }
 
       case "deleteBaselineItem": {
@@ -1052,10 +1047,14 @@ export default async (req) => {
         if (!/^https:\/\//i.test(url)) throw new Error("Job URL must be HTTPS");
         const jobHost = (() => { try { return new URL(url).hostname.replace(/^www\./, "").toLowerCase(); } catch { return ""; } })();
         const shop = (desk.shops || []).find((s) => s.id === jobHost || (s.url && (() => { try { return new URL(s.url).hostname.replace(/^www\./, "").toLowerCase() === jobHost; } catch { return false; } })()));
+        const cat = ((shop && shop.categories) || []).find((c) => {
+          try { return new URL(c.url).href === new URL(url).href; } catch { return c.url === url; }
+        });
         const job = {
           id: "job-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8),
           type: String(body.type || "shop"),
           url,
+          page2Url: String((cat && cat.page2Url) || body.page2Url || "").trim(),
           vat: shop && shop.vat === "excluded" ? "excluded" : "included",
           kind: ["printer", "filament", "both"].includes(body.kind) ? body.kind : "both",
           status: "queued",
@@ -1067,7 +1066,8 @@ export default async (req) => {
           maxPages: Number(body.maxPages) || 40,
           maxProducts: Number(body.maxProducts) || 400,
           autoLlmMatch: body.autoLlmMatch === undefined ? desk.autoLlmMatch === true : body.autoLlmMatch === true,
-          visualMatch: body.visualMatch === undefined ? true : body.visualMatch !== false
+          visualMatch: body.visualMatch === undefined ? true : body.visualMatch !== false,
+          batchId: /^batch-[a-z0-9-]{4,48}$/i.test(String(body.batchId || "")) ? String(body.batchId) : ""
         };
         jobs.push(job);
         await saveJobList(jobs);
@@ -1295,17 +1295,9 @@ export default async (req) => {
 
       case "updateProduct": {
         const product = await updateCatalogProduct(catalog, body);
-        if (body.imageUpload) {
-          const board = await ensureBaseline();
-          const item = itemForProduct(board, product);
-          if (item) {
-            patchItem(board, item.id, { image: product.image });
-            await writeJSON("baseline.json", board);
-          }
-        }
         catalog.savedAt = new Date().toISOString();
         await writeJSON("catalog.json", catalog);
-        return json(200, { ok: true, product });
+        return json(200, { ok: true, product, baseline: await loadBaselineBoard() });
       }
 
       case "saveLayaOpinions": {
@@ -1338,6 +1330,67 @@ export default async (req) => {
         return json(200, { ok: true });
       }
 
+      case "addUncertainToBaseline": {
+        const url = String(body.url || "");
+        const job = jobs.find((j) => j.id === body.jobId) || jobs.find((j) => j.cards && j.cards[url]);
+        if (!job || !url) throw new Error("Pick a card");
+        const raw = job.cards && job.cards[url];
+        const prev = (raw && (raw.card || raw)) || {};
+        const name = String(body.name != null ? body.name : prev.name || "").trim();
+        const brand = String(body.brand != null ? body.brand : prev.brand || "").trim();
+        if (!name) throw new Error("Name required");
+        const kind = prev.kind || job.kind || "printer";
+        const listing = { name, brand, kind: kind === "filament" ? "filament" : "printer" };
+        let price = coercePrice(body.price) || coercePrice(prev.price) || coercePrice(raw && raw.price) || priceFromJobs(jobs, url);
+        if (!price && /^https:\/\//i.test(url)) {
+          try {
+            const page = await fetch(url, {
+              redirect: "follow",
+              signal: AbortSignal.timeout(12000),
+              headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.7" }
+            });
+            if (page.ok) {
+              const picked = pickPrice(await page.text());
+              price = picked && picked.price;
+              if (price && picked.plusVat) price = withVat(price, "excluded");
+            }
+          } catch { /* the card price is enough when the shop page cannot be read */ }
+        }
+        if (!price) throw new Error("No price on this card, so it was not added or published");
+        const board = await ensureBaseline();
+        const category = listing.kind === "filament" && (board.categories || []).some((c) => c.id === "filaments") ? "filaments" : "printers";
+        const sameName = (it) => foldName(it.name) === foldName(name) && foldName(it.brand || "") === foldName(brand);
+        let created = (board.items || []).find((it) => sameName(it) && (it.category === "filaments") === (category === "filaments"));
+        if (!created) created = addItem(board, { name, brand, category, image: prev.image || "" });
+        stripOfferUrl(catalog, url, created.id);
+        const next = applySelectedListings(catalog, candidate, [{
+          url,
+          action: "create",
+          baselineModel: created,
+          card: { ...prev, url, name, brand, kind: listing.kind, price, image: prev.image || "" }
+        }], jobs);
+        const applied = next._applied || 0;
+        const appliedUrls = next._appliedUrls || [];
+        delete next._applied;
+        delete next._appliedUrls;
+        if (!applied) throw new Error("Could not publish this card");
+        await writeJSON("baseline.json", board);
+        await writeJSON("catalog.json", next);
+        await writeJSON("last-publish.json", { publishedAt: new Date().toISOString(), savedAt: next.savedAt });
+        const cards = { ...(job.cards || {}) };
+        cards[url] = {
+          ...prev,
+          url,
+          name,
+          brand,
+          decision: { action: "merge", candidateId: "baseline:" + created.id, baselineId: created.id, candidateName: created.name }
+        };
+        jobs = jobs.map((j) => (j.id === job.id ? { ...j, cards, published: [...new Set([...(j.published || []), ...appliedUrls])] } : j));
+        await saveJobList(jobs);
+        catalog = next;
+        return json(200, { ok: true, baseline: board, item: created, published: applied });
+      }
+
       case "updateUncertainCard": {
         const url = String(body.url || "");
         const job = jobs.find((j) => j.id === body.jobId);
@@ -1363,17 +1416,7 @@ export default async (req) => {
       case "updateProducts": {
         const items = Array.isArray(body.items) ? body.items : [];
         if (!items.length || items.length > 500) throw new Error("Choose between 1 and 500 products to update");
-        const board = await ensureBaseline();
-        let baselineChanged = false;
-        for (const item of items) {
-          const product = await updateCatalogProduct(catalog, item || {});
-          const baselineItem = item.imageUpload && itemForProduct(board, product);
-          if (baselineItem) {
-            patchItem(board, baselineItem.id, { image: product.image });
-            baselineChanged = true;
-          }
-        }
-        if (baselineChanged) await writeJSON("baseline.json", board);
+        for (const item of items) await updateCatalogProduct(catalog, item || {});
         catalog.savedAt = new Date().toISOString();
         await writeJSON("catalog.json", catalog);
         await writeJSON("last-publish.json", { publishedAt: catalog.savedAt, savedAt: catalog.savedAt });

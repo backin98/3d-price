@@ -21,6 +21,7 @@ for(const id of [...ids,'invalid','toString']) {
  assert.equal(links.filter(l=>l['aria-current']==='page')[0].dataset.tab,expected);
 }
 assert.match(context.test.shopsHtml(data),/add-shop-form/);
+assert.match(context.test.shopsHtml({desk:{shops:[{id:'s1',name:'Robolink',url:'https://shop.example',categories:[]}]}}),/name="page2"/);
 assert.match(context.test.shopsHtml({desk:{shops:[{id:'s1',name:'Robolink',url:'https://shop.example',categories:[]}]}}),/shop-card/);
 assert.match(context.test.runsHtml(data),/id="run-cat"/);
 assert.match(context.test.runsHtml(data),/id="run-shop"/);
@@ -56,8 +57,10 @@ assert.match(context.test.runsHtml({...mixed, jobs:[]}), /id="add-all-shops"/);
 const rhinoJobRuns=context.test.runsHtml({...mixed,jobs:[{id:'j1',status:'queued',url:'https://www.rhino3dprinter.com/3d-yazicilar',kind:'printer'}]});
 assert.match(rhinoJobRuns,/rhino3dprinter.com\/3d-yazicilar/);
 assert.doesNotMatch(rhinoJobRuns,/robolinkmarket.com\/filament/);
-assert.match(context.test.baselineHtml(data),/id="baseline-from-catalog"/);
-assert.match(context.test.baselineHtml(data),/id="baseline-from-run"/);
+assert.match(context.test.baselineHtml(data),/Recommended by the worker/);
+assert.doesNotMatch(context.test.baselineHtml(data),/id="baseline-from-catalog"/);
+assert.doesNotMatch(context.test.baselineHtml(data),/id="baseline-from-run"/);
+assert.match(context.test.runsHtml(data),/Shop run time/);
 assert.match(context.test.baselineHtml(data),/id="baseline-add-cat"/);
 assert.doesNotMatch(context.test.baselineHtml(data),/id="baseline-shop"/);
 const bl=context.test.baselineHtml({baseline:{categories:[{id:'printers',name:'3D Printers'},{id:'filaments',name:'Filament'}],items:[{id:'p1',name:'P1S',brand:'Bambu Lab',category:'printers'}]}});
@@ -82,10 +85,15 @@ context.test.state.data.baseline={items:[{id:'bl-p1s',name:'Bambu Lab P1S',brand
 const uh=context.test.uncertainHtml({desk:{shops:[]},catalog:{products:[],filaments:[]},jobs:[{id:'j1',url:'https://www.rhino3dprinter.com/3d',cards:{'https://shop.example/mystery':{url:'https://shop.example/mystery',name:'Unmatched mystery',kind:'printer',decision:{action:'held',reason:'gray band'},laya:{action:'hold',reason:'still unsure'}}}}]});
 assert.match(uh,/Unmatched mystery/);
 assert.match(uh,/Force publish/);
+assert.match(uh,/Add to baseline/);
+assert.match(uh,/data-uncertain-baseline=/);
+assert.match(uh,/aria-label="Delete this card"/);
 assert.match(uh,/data-review-place-q=/);
 assert.match(uh,/data-place-open=/);
 assert.match(uh,/data-review-place=/);
 assert.match(uh,/Baseline · Bambu Lab P1S/);
+assert.match(uh,/Type to search baseline/);
+assert.doesNotMatch(uh,/merge:p1/, 'Uncertain goes to baseline models, not catalog rows');
 assert.match(uh,/Laya: still unsure/);
 assert.match(uh,/rhino3dprinter.com/);
 assert.match(fs.readFileSync('public/admin/admin.js','utf8'),/id="ai-url"/);

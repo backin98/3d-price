@@ -101,6 +101,30 @@ const send = async (b) => (await sandbox.handler(post(b))).json();
   storeState['catalog.json'].products.find((p) => p.id === 'qwen-k2').offers.push({ store: 'rhino3dprinter.com', price: 34000, url: 'https://www.rhino3dprinter.com/p1s-combo' });
   assert.match(await bad({ action: 'retargetOffer', url: 'https://www.rhino3dprinter.com/p1s-combo', from: 'qwen-p1s', to: 'qwen-k2' }), /Target already has that offer/);
 
+  // An Uncertain choice of the K2 Pro baseline joins the catalog row the other K2 Pros already use,
+  // and leaves the row it was sitting on.
+  storeState['baseline.json'].items.push({ id: 'bl-k2pro', category: 'printers', name: 'Creality K2 Pro Combo', brand: 'Creality' });
+  storeState['catalog.json'] = {
+    products: [
+      { id: 'qwen-k2pro', name: 'Creality K2 Pro Combo 3D Yazıcı', brand: 'Creality', kind: 'printer', offers: [{ store: 'rhino', price: 70000, url: 'https://rhino/k2pro' }] },
+      { id: 'wrong', name: 'Creality K2 Combo', brand: 'Creality', kind: 'printer', offers: [{ store: 'shop', price: 71000, url: 'https://shop.example/k2pro-listing' }] }
+    ],
+    filaments: []
+  };
+  const placed = await send({
+    action: 'publishSelected',
+    placements: [{
+      url: 'https://shop.example/k2pro-listing',
+      action: 'merge',
+      candidateId: 'baseline:bl-k2pro',
+      card: { url: 'https://shop.example/k2pro-listing', name: 'Creality K2 Pro Combo', brand: 'Creality', kind: 'printer', price: 71000 }
+    }]
+  });
+  assert.equal(placed.ok, true, JSON.stringify(placed));
+  const k2pro = storeState['catalog.json'].products.find((p) => p.id === 'qwen-k2pro');
+  assert.ok(k2pro.offers.some((o) => o.url === 'https://shop.example/k2pro-listing'), 'the scraped listing joins the K2 Pro row');
+  assert.equal(storeState['catalog.json'].products.some((p) => p.id === 'wrong'), false, 'it is taken off the row it did not belong on');
+
   // 4. The duplicates inbox: exact and near-dupes cluster, a hard axis difference blocks.
   const dupeCatalog = {
     savedAt: '2026-01-01T00:00:00.000Z',

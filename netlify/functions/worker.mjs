@@ -2,8 +2,10 @@
 import store from "../../lib/netlify-store.cjs";
 import auth from "../../lib/netlify-auth.cjs";
 import stock from "../../lib/stock-refresh.cjs";
+import boardLib from "../../lib/baseline-board.cjs";
 
 const { readJSON, writeJSON } = store;
+const { absorbWorkerCreates } = boardLib;
 const { workerAuth } = auth;
 const { rollupProductStock } = stock;
 
@@ -28,6 +30,22 @@ async function getJobs() {
 async function saveJobs(jobs) {
   jobs.sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || ""));
   await writeJSON("jobs.json", jobs);
+}
+
+// Read-modify-write loses to a slower save. A progress flush was putting a finished
+// shop back to "running", so the worker crawled it again. Retry until this write is the one on disk.
+async function updateJob(id, mutator) {
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const jobs = await getJobs();
+    const job = jobs.find((j) => j.id === id);
+    if (!job) return { missing: true };
+    if (mutator(job) === false) return { job, skipped: true };
+    job.updatedAt = new Date().toISOString();
+    await saveJobs(jobs);
+    const cur = (await getJobs()).find((j) => j.id === id);
+    if (cur && cur.updatedAt === job.updatedAt) return { job: cur };
+  }
+  return { error: true };
 }
 
 function nameFromUrl(url) {
@@ -134,17 +152,22 @@ export default async (req) => {
           dirty = true;
         }
       }
-      const queued = jobs.find((j) => j.status === "queued");
       const running = jobs.find((j) => j.status === "running");
-      const job = queued || running || null;
-      if (queued) {
-        queued.status = "running";
-        queued.startedAt = queued.startedAt || new Date().toISOString();
-        queued.updatedAt = new Date().toISOString();
-        queued.progress = "Claimed by the local worker";
-        queued.events = queued.events || [];
-        queued.events.push({ type: "log", at: new Date().toISOString(), text: "Worker claimed this job." });
-        dirty = true;
+      // One shop at a time. Claiming the next queued job while one is already running
+      // made two shops look busy and left the activity log on a job that had not started.
+      let job = running || null;
+      if (!running) {
+        const queued = jobs.find((j) => j.status === "queued");
+        if (queued) {
+          queued.status = "running";
+          queued.startedAt = queued.startedAt || new Date().toISOString();
+          queued.updatedAt = new Date().toISOString();
+          queued.progress = "Claimed by the local worker";
+          queued.events = queued.events || [];
+          queued.events.push({ type: "log", at: new Date().toISOString(), text: "Worker claimed this job." });
+          job = queued;
+          dirty = true;
+        }
       }
       if (dirty) await saveJobs(jobs);
       const desk = await readJSON("desk.json", { modelUrl: "", workerUrl: "", shops: [], banners: [], promoted: [] });
@@ -190,73 +213,76 @@ export default async (req) => {
     }
 
     if (req.method === "POST" && (action === "progress" || url.pathname.endsWith("/progress"))) {
-      const jobs = await getJobs();
-      const job = jobs.find((j) => j.id === body.jobId);
-      if (!job) return json(404, { error: "Job not found" });
-      if (job.status === "aborted") return json(200, { ok: true, aborted: true });
-      if (!["queued", "running"].includes(job.status)) return json(200, { ok: true });
       if (!body.events?.length && !body.event && !body.progress) return json(200, { ok: true });
-      job.status = "running";
-      job.events = job.events || [];
-      const incoming = Array.isArray(body.events) ? body.events : body.event ? [body.event] : [];
-      job.events.push(...incoming);
-      if (job.events.length > 2000) job.events = job.events.slice(-2000);
-      mergeCards(job, incoming);
-      if (body.progress) job.progress = String(body.progress).slice(0, 500);
-      job.updatedAt = new Date().toISOString();
-      await saveJobs(jobs);
+      const saved = await updateJob(body.jobId, (job) => {
+        if (job.status === "aborted") return false;
+        if (!["queued", "running"].includes(job.status)) return false;
+        job.status = "running";
+        job.events = job.events || [];
+        const incoming = Array.isArray(body.events) ? body.events : body.event ? [body.event] : [];
+        job.events.push(...incoming);
+        if (job.events.length > 2000) job.events = job.events.slice(-2000);
+        mergeCards(job, incoming);
+        if (body.progress) job.progress = String(body.progress).slice(0, 500);
+      });
+      if (saved.missing) return json(404, { error: "Job not found" });
+      if (saved.job && saved.job.status === "aborted") return json(200, { ok: true, aborted: true });
       return json(200, { ok: true });
     }
 
     if (req.method === "POST" && (action === "complete" || url.pathname.endsWith("/complete"))) {
-      const jobs = await getJobs();
-      const job = jobs.find((j) => j.id === body.jobId);
-      if (!job) return json(404, { error: "Job not found" });
-      if (job.status === "aborted") return json(200, { ok: true, aborted: true });
-      if (body.error) {
-        job.status = "failed";
-        job.error = String(body.error).slice(0, 2000);
-        job.progress = "Failed";
-      } else {
-        job.status = "complete";
-        job.progress = "Complete — ready to review/publish";
-        job.summary = body.summary || null;
-        if (body.candidate) {
-          await writeJSON("candidate.json", body.candidate);
-          const live = await readJSON("catalog.json", { products: [], filaments: [] });
-          const liveUrls = new Set();
-          const liveIds = new Set();
-          [...(live.products || []), ...(live.filaments || [])].forEach((p) => {
-            if (p.id) liveIds.add(p.id);
-            (p.offers || []).forEach((o) => { if (o.url) liveUrls.add(o.url); });
-          });
-          job.cards = job.cards && typeof job.cards === "object" ? job.cards : {};
-          const extras = [];
-          for (const p of [...(body.candidate.products || []), ...(body.candidate.filaments || [])]) {
-            for (const o of p.offers || []) {
-              if (!o.url) continue;
-              if (!job.cards[o.url] && liveUrls.has(o.url)) continue;
-              extras.push({
-                card: {
-                  name: p.name, brand: p.brand, kind: p.kind, price: o.price, url: o.url,
-                  image: o.image || p.image, polymer: p.polymer, variant: p.variant, color: p.color,
-                  weight: p.weight, diameter: p.diameter, packaging: p.packaging
-                },
-                // Merge or new is decided by the ROW the offer landed on, not by whether this
-                // shop's offer URL is new: a first-time offer on an existing printer is a
-                // merge, and calling it "new" made the review board contradict the placement.
-                decision: { action: liveIds.has(p.id) ? "merge" : "create", candidateId: p.id, candidateName: p.name, shelf: p.kind }
-              });
-            }
+      const candidate = body.candidate || null;
+      let extras = [];
+      if (candidate && !body.error) {
+        const live = await readJSON("catalog.json", { products: [], filaments: [] });
+        const liveUrls = new Set();
+        const liveIds = new Set();
+        [...(live.products || []), ...(live.filaments || [])].forEach((p) => {
+          if (p.id) liveIds.add(p.id);
+          (p.offers || []).forEach((o) => { if (o.url) liveUrls.add(o.url); });
+        });
+        for (const p of [...(candidate.products || []), ...(candidate.filaments || [])]) {
+          for (const o of p.offers || []) {
+            if (!o.url) continue;
+            extras.push({
+              card: {
+                name: p.name, brand: p.brand, kind: p.kind, price: o.price, url: o.url,
+                image: o.image || p.image, polymer: p.polymer, variant: p.variant, color: p.color,
+                weight: p.weight, diameter: p.diameter, packaging: p.packaging
+              },
+              liveUrl: liveUrls.has(o.url),
+              decision: { action: liveIds.has(p.id) ? "merge" : "create", candidateId: p.id, candidateName: p.name, shelf: p.kind }
+            });
           }
-          mergeCards(job, extras);
         }
       }
-      job.events = job.events || [];
-      job.events.push({ type: "log", at: new Date().toISOString(), text: body.error ? `Failed: ${body.error}` : "Job finished and candidate uploaded." });
-      job.updatedAt = new Date().toISOString();
-      job.finishedAt = new Date().toISOString();
-      await saveJobs(jobs);
+      let aborted = false;
+      const saved = await updateJob(body.jobId, (job) => {
+        if (job.status === "aborted") { aborted = true; return false; }
+        if (body.error) {
+          job.status = "failed";
+          job.error = String(body.error).slice(0, 2000);
+          job.progress = "Failed";
+        } else {
+          job.status = "complete";
+          job.progress = "Complete — ready to review/publish";
+          job.summary = body.summary || null;
+          const known = new Set(Object.keys(job.cards || {}));
+          mergeCards(job, extras.filter((row) => known.has(row.card.url) || !row.liveUrl).map(({ liveUrl, ...row }) => row));
+        }
+        job.events = job.events || [];
+        job.events.push({ type: "log", at: new Date().toISOString(), text: body.error ? `Failed: ${body.error}` : "Job finished and candidate uploaded." });
+        job.finishedAt = new Date().toISOString();
+      });
+      if (saved.missing) return json(404, { error: "Job not found" });
+      if (aborted) return json(200, { ok: true, aborted: true });
+      if (candidate && !body.error) await writeJSON("candidate.json", candidate);
+      if (!body.error && saved.job) {
+        const board = await readJSON("baseline.json", { items: [] });
+        const file = await readJSON("baseline-recommendations.json", { items: [] });
+        const next = absorbWorkerCreates(board, file, saved.job);
+        if (next.added) await writeJSON("baseline-recommendations.json", { items: next.items });
+      }
       return json(200, { ok: true });
     }
 
