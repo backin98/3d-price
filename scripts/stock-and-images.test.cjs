@@ -120,6 +120,13 @@ const html = (body) => '<html><head><title>t</title></head><body>' + body + '<di
   });
   assert.equal(savedPolicy.price, 12000, 'a silent page keeps the offer\'s saved VAT policy');
 
+  const stockConflict = await checkOfferStock('https://shop.example/p1s', {
+    kind: 'printer',
+    fetchImpl: stub({ 'https://shop.example/p1s': { body: '<script type="application/ld+json">{"@type":"Product","name":"Bambu Lab P1S","brand":"Bambu Lab","offers":{"price":"25000","priceCurrency":"TRY","availability":"https://schema.org/InStock"}}</script><h1>Bambu Lab P1S</h1><div>Sepete Ekle Tükendi</div>' } })
+  });
+  assert.equal(stockConflict.status, 'unknown');
+  assert.equal(stockConflict.price, 25000, 'a stock conflict cannot discard an independently parsed price');
+
   // --- a whole shop going dead in one pass is a parsing failure, not reality --------
   const guardCat = {
     products: [{ id: 'g1', name: 'Shop wide', offers: [
