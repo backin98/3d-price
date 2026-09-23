@@ -240,6 +240,11 @@ const KEEP = new Set(RHINO.slice(7));
   assert.equal(microdataCurrency.product.price, 159001.88);
   assert.equal(microdataCurrency.product.priceCurrency, "TRY", "microdata price keeps its declared currency despite unrelated foreign-currency text");
 
+  const pairedVat = extractProductPage(`<script type="application/ld+json">{"@type":"Product","name":"Snapmaker U1 3D Yazıcı","brand":"Snapmaker","offers":{"price":"49918.50","priceCurrency":"TRY"}}</script>
+    <h1>Snapmaker U1 3D Yazıcı</h1><div>41598.75 TL + KDV</div><del>63.408,00 TL</del><div class="sale-price">49.918,50 TL</div><button>Sepete Ekle</button>`, "https://shop.example/snapmaker-u1", "printer");
+  assert.equal(pairedVat.product.price, 49918.5);
+  assert.equal(pairedVat.product.vatStatus, "included", "a payable price equal to the visible net price plus VAT is not taxed twice");
+
   const plusVat = extractProductPage(`
     <h1>Creality K1 Max 3D Yazıcı</h1>
     <div class="brand">Creality</div>
