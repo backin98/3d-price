@@ -18,6 +18,7 @@ const path = require("node:path");
 const { runWebsiteJob } = require("../lib/qwen-website-job.cjs");
 const { fetchHtml } = require("../lib/ai-scraper.cjs");
 const { refreshStock } = require("../lib/stock-refresh.cjs");
+const { loadRates } = require("../lib/compare-products.cjs");
 const laya = require("../lib/laya-match.cjs");
 
 function loadDotEnv() {
@@ -289,12 +290,14 @@ async function refreshLiveStock({ limit = 24, staleHours = 2 } = {}) {
   stockBusy = true;
   try {
     const live = await api("stock-catalog");
+    const rates = await loadRates();
     const result = await refreshStock({
       catalog: live.catalog,
       limit: Math.max(1, Math.min(Number(limit) || 24, 100)),
       staleHours: Math.max(0, Number(staleHours) || 0),
       budgetMs: 240000,
       timeoutMs: 10000,
+      rates,
       renderHtml: (url) => fetchHtml(url, null, { scroll: false, waitForStock: true })
     });
     const saved = await api("stock", { method: "POST", body: JSON.stringify({ results: result.results }) });

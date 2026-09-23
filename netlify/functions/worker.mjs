@@ -197,6 +197,11 @@ export default async (req) => {
             stockCheckMethod: String(result.method || "worker").slice(0, 80),
             stockPolicyVersion: 3
           });
+          if (Number.isFinite(result.price) && result.price > 0) {
+            offer.price = result.price;
+            offer.priceSource = String(result.priceSource || "page").slice(0, 80);
+            offer.priceCheckedAt = result.priceCheckedAt || new Date(now).toISOString();
+          }
           touched = true;
           updated += 1;
         }

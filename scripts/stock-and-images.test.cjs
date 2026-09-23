@@ -108,6 +108,18 @@ const html = (body) => '<html><head><title>t</title></head><body>' + body + '<di
   assert.equal(renderedResult.status, 'in_stock');
   assert.equal(rendered, 1, 'unknown static pages are retried with a browser');
 
+  const grossPrice = await checkOfferStock('https://shop.example/snapmaker-u1', {
+    kind: 'printer', vatAdded: true,
+    fetchImpl: stub({ 'https://shop.example/snapmaker-u1': { body: '<h1>Snapmaker U1 3D Yazıcı</h1><script>var x={"urunSepetFiyatiStr":"₺43.124,26"}</script><div>Fiyat: $883.33 + KDV</div><div>KDV Dahil: ₺51.749,11</div><button>Sepete Ekle</button>' } })
+  });
+  assert.equal(grossPrice.price, 51749.11, 'the background refresh stores the visible customer-payable price');
+
+  const savedPolicy = await checkOfferStock('https://shop.example/a1', {
+    kind: 'printer', vatAdded: true,
+    fetchImpl: stub({ 'https://shop.example/a1': { body: '<h1>Bambu Lab A1 3D Yazıcı</h1><div class="product-price">10.000,00 TL</div><button>Sepete Ekle</button>' } })
+  });
+  assert.equal(savedPolicy.price, 12000, 'a silent page keeps the offer\'s saved VAT policy');
+
   // --- a whole shop going dead in one pass is a parsing failure, not reality --------
   const guardCat = {
     products: [{ id: 'g1', name: 'Shop wide', offers: [
