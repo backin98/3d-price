@@ -1040,7 +1040,7 @@
       collectCards(job, state.data).forEach((ev) => { if (ev.card && ev.card.url) byUrl.set(ev.card.url, ev); });
     }
     const placements = urls.map((url) => {
-      const ev = byUrl.get(url) || { card: { url } };
+      const ev = byUrl.get(url) || state.uncertainPublished.get(url)?.ev || { card: { url } };
       const edit = state.uncertainEdit.get(url) || {};
       const card = {
         ...(ev.card || {}),
@@ -1430,7 +1430,7 @@
         <select data-review-place="${esc(id)}" aria-label="Where ${esc(c.name || "this listing")} goes">${placeOptionsHtml(ev, place, "", true)}</select>
       </div>
       <div class="actions">
-        <button class="btn-sm" type="button" data-uncertain-save="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">Save</button>
+        <button class="btn-sm" type="button" data-uncertain-save="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">Save &amp; publish</button>
         <button class="btn-sm primary" type="button" data-uncertain-baseline="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">Add to baseline</button>
         <button class="btn-sm ok" type="button" data-uncertain-publish="${esc(url)}">Force publish</button>
       </div>
@@ -2403,63 +2403,36 @@
         });
         return;
       }
-      if (e.target.closest("[data-uncertain-save]")) {
-        const btn = e.target.closest("[data-uncertain-save]");
-        const url = btn.dataset.uncertainSave;
-        const jobId = btn.dataset.uncertainJob;
-        const card = btn.closest(".uncertain-card");
-        if (!url || !card) return;
-        const name = ((card.querySelector('[data-uncertain-field="name"]')) || {}).value;
-        const brand = ((card.querySelector('[data-uncertain-field="brand"]')) || {}).value;
-        state.uncertainSaved.add(url);
-        state.uncertainEdit.set(url, { ...(state.uncertainEdit.get(url) || {}), name, brand });
-        card.classList.add("is-saved");
-        for (const job of (state.data && state.data.jobs) || []) {
-          if (jobId && job.id !== jobId) continue;
-          const raw = job.cards && job.cards[url];
-          if (!raw) continue;
-          const inner = raw.card || raw;
-          inner.name = name;
-          inner.brand = brand;
-        }
-        api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateUncertainCard", jobId, url, patch: { name, brand } }) }).catch((err) => {
-          state.uncertainSaved.delete(url);
-          card.classList.remove("is-saved");
-          toast(err.message);
-        });
-        return;
-      }
-      if (e.target.closest("[data-uncertain-publish]") || e.target.closest("#uncertain-publish-all")) {
-        const one = e.target.closest("[data-uncertain-publish]");
-        const urls = one
-          ? [one.dataset.uncertainPublish]
-          : uncertainRows(state.data).live.map((x) => x.card && x.card.url).filter((u) => u && !state.uncertainHeld.has(u) && !state.uncertainPublished.has(u));
-        if (!urls.length) return;
-        if (!one && !confirm("Force-publish " + urls.length + " listing" + (urls.length === 1 ? "" : "s") + " to the live catalog?")) return;
-        const marked = [];
+      if (e.target.closest("[data-uncertain-save], [data-uncertain-publish], #uncertain-publish-all")) {
+        const btn = e.target.closest("[data-uncertain-save], [data-uncertain-publish], #uncertain-publish-all");
+        const singleUrl = btn.dataset.uncertainSave || btn.dataset.uncertainPublish;
+        const urls = singleUrl ? [singleUrl] : uncertainRows(state.data).live
+          .map((x) => x.card && x.card.url).filter((u) => u && !state.uncertainHeld.has(u) && !state.uncertainPublished.has(u));
+        if (!urls.length || btn.disabled) return;
+        if (!singleUrl && !confirm("Force-publish " + urls.length + " listings to the live catalog?")) return;
+        const pending = new Map();
         for (const url of urls) {
-          const card = one
-            ? one.closest(".uncertain-card")
-            : $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url);
-          if (!url || !card || state.uncertainPublished.has(url) || state.uncertainHeld.has(url)) continue;
-          const grid = card.parentElement;
-          const index = grid ? Array.prototype.indexOf.call(grid.children, card) : 0;
-          const ev = collectUncertain(state.data).find((x) => x.card && x.card.url === url) || { card: { url } };
-          state.uncertainPublished.set(url, { index, ev });
-          card.classList.add("is-published");
-          if (!card.querySelector(".uncertain-check")) card.insertAdjacentHTML("afterbegin", '<div class="uncertain-check" aria-label="Published">✓</div>');
-          marked.push({ url, card });
+          const card = singleUrl ? btn.closest(".uncertain-card") : $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url);
+          if (!card || state.uncertainHeld.has(url)) continue;
+          const name = card.querySelector('[data-uncertain-field="name"]')?.value;
+          const brand = card.querySelector('[data-uncertain-field="brand"]')?.value;
+          state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), name, brand });
+          const ev = collectUncertain(state.data).find((x) => x.card?.url === url) || state.uncertainPublished.get(url)?.ev;
+          pending.set(url, { index: card.parentElement ? Array.prototype.indexOf.call(card.parentElement.children, card) : 0, ev });
         }
-        if (!marked.length) return;
-        forcePublishUrls(marked.map((m) => m.url)).catch((err) => {
-          for (const item of marked) {
-            state.uncertainPublished.delete(item.url);
-            item.card.classList.remove("is-published");
-            const mark = item.card.querySelector(".uncertain-check");
-            if (mark) mark.remove();
+        if (!pending.size) return;
+        btn.disabled = true;
+        try {
+          const result = await forcePublishUrls([...pending.keys()]);
+          if (!result.published || !Array.isArray(result.appliedUrls)) throw new Error("No listings were confirmed published. Refresh and try again.");
+          for (const url of result.appliedUrls) {
+            if (pending.has(url)) state.uncertainPublished.set(url, pending.get(url));
           }
-          toast(err.message);
-        });
+          await loadData();
+          const skipped = pending.size - result.appliedUrls.length;
+          toast(result.published + " published to Catalog." + (skipped ? " " + skipped + " skipped: missing a valid price." : ""));
+        } catch (err) { toast(err.message); }
+        finally { btn.disabled = false; }
         return;
       }
       if (e.target.closest("#publish-selected")) {

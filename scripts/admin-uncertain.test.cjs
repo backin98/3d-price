@@ -82,5 +82,22 @@ const req = (body) => ({ method: 'POST', url: 'https://3d-price.netlify.app/api/
   assert.equal(forcedBody.published, 1);
   assert.ok(files['catalog.json'].products.some((p) => (p.offers || []).some((o) => o.url === 'https://shop.example/force-me' && o.price === 21999)), 'force publish writes the listing into the live catalog');
   assert.ok(files['last-publish.json'].savedAt, 'site hunt reads this catalog after last-publish');
+  assert.deepEqual(forcedBody.appliedUrls, ['https://shop.example/force-me']);
+  files['catalog.json'].products.find(p => p.offers.some(o => o.url === 'https://shop.example/force-me')).offers[0].stockStatus = 'preorder';
+  const editedPublish = await sandbox.handler(req({ action: 'publishSelected', placements: [{
+    url: 'https://shop.example/force-me', action: 'create', card: { name: 'Edited name', brand: 'Edited brand', price: 21999 }
+  }] }));
+  assert.equal(editedPublish.status, 200);
+  const editedRow = files['catalog.json'].products.find(p => p.offers.some(o => o.url === 'https://shop.example/force-me'));
+  assert.equal(editedRow.name, 'Edited name');
+  assert.equal(editedRow.offers[0].stockStatus, 'preorder', 'editing preserves existing offer evidence');
+  assert.equal(editedRow.offers[0].sourceTitle, 'Edited name');
+  const partial = await sandbox.handler(req({ action: 'publishSelected', placements: [
+    { url: 'https://shop.example/force-me', card: { name: 'Edited name', price: 21999 } },
+    { url: 'https://shop.example/no-price', card: { name: 'No price' } }
+  ] }));
+  assert.deepEqual((await partial.json()).appliedUrls, ['https://shop.example/force-me']);
+  const noPrice = await sandbox.handler(req({ action: 'publishSelected', placements: [{ url: 'https://shop.example/no-price' }] }));
+  assert.notEqual(noPrice.status, 200);
   console.log('PASS: uncertain Laya opinions persist, cards edit, catalog republish, force publish hits live catalog.');
 })().catch((e) => { console.error(e); process.exitCode = 1; });

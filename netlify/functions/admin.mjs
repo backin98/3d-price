@@ -384,13 +384,13 @@ function applySelectedListings(live, candidate, items, jobs) {
     const card = item.card && typeof item.card === "object" ? item.card : {};
     const url = String(item.url || card.url || "");
     if (!url) continue;
-    const found = findByUrl(candidate || {}, url);
+    const found = findByUrl(candidate || {}, url) || findByUrl(next, url);
     // The scraped title travels with the offer so the catalog can show where it came from
     // and offer a regroup/branch when the matcher grouped it wrong.
     const scrapedTitle = String(card.name || "").trim();
     const price = coercePrice(card.price) || coercePrice(found?.offer?.price) || priceFromJobs(jobs, url);
     const offer = found?.offer
-      ? { ...found.offer, price: coercePrice(found.offer.price) || price || found.offer.price, sourceTitle: found.offer.sourceTitle || scrapedTitle, url }
+      ? { ...found.offer, price: coercePrice(found.offer.price) || price || found.offer.price, sourceTitle: scrapedTitle || found.offer.sourceTitle, url }
       : { store: offerStore(url, card), price, url, image: card.image || "", sourceTitle: scrapedTitle,
           priceSuspect: card.priceSuspect === true ? "harvest" : undefined, priceCurrency: card.currency || undefined };
     if (!Number.isFinite(Number(offer.price)) || Number(offer.price) <= 0) continue;
@@ -410,7 +410,8 @@ function applySelectedListings(live, candidate, items, jobs) {
         // The dropdown is an instruction to move this listing, even if an earlier publish
         // left the same URL sitting on a different product.
         if (!target.offers) target.offers = [];
-        if (!target.offers.some((o) => o.url === url)) target.offers.push(offer);
+        target.offers = target.offers.filter((o) => o.url !== url);
+        target.offers.push(offer);
         stripOfferUrl(next, url, target.id);
         if (item.stampBaselineId && !target.baselineId) target.baselineId = item.stampBaselineId;
         applied += 1;
@@ -426,7 +427,12 @@ function applySelectedListings(live, candidate, items, jobs) {
       // there — otherwise the same listing is compared twice on the storefront.
       stripOfferUrl(next, url, already.id);
       if (!already.offers) already.offers = [];
-      if (!already.offers.some((o) => o.url === url)) already.offers.push(offer);
+      already.offers = already.offers.filter((o) => o.url !== url);
+      already.offers.push(offer);
+      if (!already.baselineId && already.offers.length === 1) {
+        if (card.name) already.name = card.name;
+        if (card.brand != null) already.brand = card.brand;
+      }
       applied += 1;
       appliedUrls.push(url);
       continue;
@@ -816,6 +822,7 @@ export default async (req) => {
           ok: true,
           publishedAt: new Date().toISOString(),
           published: appliedUrls.length,
+          appliedUrls,
           counts: { products: next.products.length, filaments: next.filaments.length }
         });
       }
