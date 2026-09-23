@@ -1,5 +1,5 @@
 const assert = require("node:assert/strict");
-const { harvestCategory, isLikelyProductUrl, slugToTitle, readStockFromHtml, extractProductPage, transactionPrice, vatIncludedPrice, isJunkAmount } = require("../lib/harvest.js");
+const { harvestCategory, isLikelyProductUrl, slugToTitle, readStockFromHtml, extractProductPage, transactionPrice, vatIncludedPrice, preferredPriceSource, isJunkAmount } = require("../lib/harvest.js");
 const { discoverInStockFilter } = require("../lib/harvest-guards.cjs");
 const { listingFromHarvest, shouldAddVat } = require("../lib/qwen-website-job.cjs");
 
@@ -239,6 +239,13 @@ const KEEP = new Set(RHINO.slice(7));
     <script type="application/ld+json">{"@type":"Product","name":"Creality K2 Pro Combo 3D Yazıcı","offers":{"price":"52999","priceCurrency":"TRY"}}</script><button>Sepete Ekle</button>`;
   assert.equal(vatIncludedPrice(priceBeforeVatLabel).price, 52999, "a price immediately before the VAT label wins over a later installment");
   assert.equal(extractProductPage(priceBeforeVatLabel, "https://shop.example/creality-k2-pro-combo", "printer").product.price, 52999);
+
+  const competingPrices = `<h1>Example Printer</h1><div>KDV Dahil: 55.000,00 TL</div>
+    <script>window.product={"urunSepetFiyatiStr":"₺50.500,00"}</script>
+    <script type="application/ld+json">{"@type":"Product","name":"Example Printer","offers":{"price":"50500","priceCurrency":"TRY"}}</script><button>Sepete Ekle</button>`;
+  assert.equal(extractProductPage(competingPrices, "https://www.3dultra.com.tr/example-printer", "printer").product.price, 50500, "3D Ultra uses its cart-price variable");
+  assert.equal(extractProductPage(competingPrices, "https://www.valment.com.tr/example-printer", "printer").product.price, 55000, "Valment uses its visible KDV-included buy-box price");
+  assert.equal(preferredPriceSource("https://www.urhanshop.com/example"), "structured");
 
   const microdataCurrency = extractProductPage(`<h1>Bambu Lab X1E Combo</h1>
     <meta itemprop="price" content="159001.88"><meta itemprop="priceCurrency" content="TRY">
