@@ -108,6 +108,8 @@ fs.rmSync(db, { force: true });
   assert.equal(relNext[0], 'https://shop.example/3d-yazicilar?page=2');
   const sonraki = listingPageUrls('https://shop.example/kategori/yazici', '<a href="/kategori/yazici?sayfa=2">Sonraki</a>');
   assert.ok(sonraki.some((u) => u.includes('sayfa=2')));
+  const legalFooter = listingPageUrls('https://shop.example/kategori/yazici', '<a href="/UyelikSozlesme.aspx?sozlemeTipi=5">Kişisel Verileri Koruma</a>');
+  assert.deepEqual(legalFooter, [], 'verileri is not the İleri pagination control');
   const shopify = listingPageUrls('https://shop.example/collections/printers', '<a href="/collections/printers?page=2">2</a>');
   assert.ok(shopify.some((u) => u.includes('page=2')));
   const noPager = listingPageUrls('https://shop.example/about', '<p>No products here</p>');
