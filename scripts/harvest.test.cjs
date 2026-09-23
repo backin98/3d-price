@@ -234,6 +234,12 @@ const KEEP = new Set(RHINO.slice(7));
   assert.equal(vatIncludedPrice(robotizmoGross).price, 51749.11, "script settings cannot hide the visible KDV-included total");
   assert.equal(extractProductPage(robotizmoGross, "https://shop.example/snapmaker-u1-3d-yazici", "printer").product.price, 51749.11);
 
+  const microdataCurrency = extractProductPage(`<h1>Bambu Lab X1E Combo</h1>
+    <meta itemprop="price" content="159001.88"><meta itemprop="priceCurrency" content="TRY">
+    <div>$2,700.00 €2,500.00</div><button>Sepete Ekle</button>`, "https://shop.example/bambu-lab-x1e-combo", "printer");
+  assert.equal(microdataCurrency.product.price, 159001.88);
+  assert.equal(microdataCurrency.product.priceCurrency, "TRY", "microdata price keeps its declared currency despite unrelated foreign-currency text");
+
   const plusVat = extractProductPage(`
     <h1>Creality K1 Max 3D Yazıcı</h1>
     <div class="brand">Creality</div>
