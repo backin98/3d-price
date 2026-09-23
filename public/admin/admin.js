@@ -871,7 +871,7 @@
         mismatch: it.mismatch || e.mismatch,
         error: it.mismatch ? "category_mismatch" : undefined
       }));
-      if (e.card && e.card.url) add(e.card.url, e);
+      if (e.card && e.card.url) add(e.card.url, { ...e, error: e.error || (e.type === "extract" ? e.text : undefined) });
       else if (e.url) add(e.url, { card: { name: e.name || titleFromUrl(e.url), url: e.url }, error: e.error || e.text, mismatch: e.mismatch });
       if (e.type === "mismatch" && (e.items || []).length) {
         e.items.forEach((it) => it && it.url && add(it.url, {
@@ -986,6 +986,7 @@
   }
 
   function magellanUnsure(e) {
+    if (e && e.error) return false;
     const a = e && e.decision && e.decision.action;
     return a !== "merge" && a !== "updated" && a !== "create";
   }
@@ -1161,7 +1162,7 @@
     // Cards the deterministic pass could not place: no merge, no new row, no update.
     const unmatched = cards.filter((e) => {
       const a = e.decision && e.decision.action;
-      return !!(e.card && e.card.url) && a !== "merge" && a !== "updated" && a !== "create";
+      return !e.error && !!(e.card && e.card.url) && a !== "merge" && a !== "updated" && a !== "create";
     }).length;
     return `
       <div class="review-toolbar">
@@ -1392,7 +1393,7 @@
     const name = edit.name != null ? edit.name : (c.name || "");
     const brand = edit.brand != null ? edit.brand : (c.brand || "");
     const laya = layaOf(ev);
-    const magellan = magellanUnsure(ev)
+    const magellan = ev.error ? "Harvest blocked: " + ev.error : magellanUnsure(ev)
       ? ((ev.decision && ev.decision.action) === "held" || (ev.decision && ev.decision.action) === "hold"
         ? "Magellan: held" + (ev.decision.reason ? " — " + ev.decision.reason : "")
         : "Magellan: unmatched")
@@ -1412,6 +1413,7 @@
       <textarea aria-label="Listing name" data-uncertain-field="name" data-uncertain-url="${esc(url)}" rows="3">${esc(name)}</textarea>
       <input aria-label="Brand" data-uncertain-field="brand" data-uncertain-url="${esc(url)}" value="${esc(brand)}" placeholder="Brand">
       <p class="muted">${esc(magellan)}</p>
+      ${Number(c.price) > 0 ? `<p class="muted">Shop price: ${esc(c.price)} TL</p>` : '<p class="error">No shop price was harvested. Re-run this shop with the updated worker before publishing.</p>'}
       <p class="muted">${esc(layaLabel(laya))}${laya && laya.confidence != null ? " · " + Number(laya.confidence).toFixed(2) : ""}</p>
       ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">open ↗</a>` : ""}
       <div class="review-place-label">Goes to
@@ -2277,7 +2279,7 @@
         const job = reviewJob(state.data || { jobs: [] });
         const targets = collectCards(job, state.data).filter((ev) => {
           const url = ev.card && ev.card.url;
-          if (!url) return false;
+          if (!url || ev.error) return false;
           if (onlySelected) return state.reviewSelected.has(url);
           const a = ev.decision && ev.decision.action;
           return a !== "merge" && a !== "updated" && a !== "create";

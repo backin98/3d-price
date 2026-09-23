@@ -48,6 +48,11 @@ const KEEP = new Set(RHINO.slice(7));
   assert.equal(readStockFromHtml("<div>Ön Sipariş</div><button>Sepete Ekle</button>").status, "preorder");
   assert.equal(readStockFromHtml("<div>Ön Sipariş 10.000,00 TL</div>").status, "out_of_stock", "preorder text without a buy control is unavailable");
   assert.equal(readStockFromHtml("<div>10.000,00 TL</div><button disabled>Sepete Ekle</button>").status, "out_of_stock", "a disabled cart control is not buyable");
+  const themeNoise = '<script>{"out-of-stock":"Stokta Yok","addToCart":"Sepete Ekle"}</script><style>.out-of-stock {color:red}</style><template><div class="out-of-stock">Tükendi</div></template>';
+  assert.equal(readStockFromHtml(themeNoise + '<div>20.000 TL</div><button>Sepete Ekle</button>').status, 'in_stock', 'theme dictionaries cannot reject a buyable product');
+  assert.equal(readStockFromHtml(themeNoise + '<div>Ön Sipariş 20.000 TL</div><button>Sepete Ekle</button>').status, 'preorder');
+  assert.equal(readStockFromHtml(themeNoise + '<div>20.000 TL</div>').status, 'out_of_stock', 'script cart translations are not buy controls');
+  assert.equal(readStockFromHtml(themeNoise + '<div class="out-of-stock">Tükendi</div>').status, 'out_of_stock', 'real stock markers still reject');
   const preorderCard = await harvestCategory({
     categoryUrl: "https://store.metatechtr.com/3d-yazicilar",
     kind: "printers",

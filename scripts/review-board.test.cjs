@@ -129,6 +129,10 @@ for (const shelf of ['products', 'filaments']) {
 }
 context.test.state.data = originalData;
 
+const legacyRejected = context.test.reviewBoardHtml({ events: [{ type: 'extract', text: 'out_of_stock', card: { name: 'Rejected listing', url: 'https://rejected.example/p' } }] });
+assert.match(legacyRejected, /Held: out_of_stock/);
+assert.doesNotMatch(legacyRejected, /Rejected listing[\s\S]{0,400}waiting for match/);
+
 let saved;
 const apiContext = {
   URL, Response, crypto: require('node:crypto'),

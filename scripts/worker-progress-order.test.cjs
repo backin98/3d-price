@@ -38,8 +38,9 @@ const vm = require('node:vm');
     }
   };
   const source = fs.readFileSync('worker/online-worker.cjs', 'utf8')
-    .replace(/main\(\)\.catch\([\s\S]*$/, 'globalThis.run = runClaimedJob;');
+    .replace(/main\(\)\.catch\([\s\S]*$/, 'globalThis.run = runClaimedJob; globalThis.compact = compactEvent;');
   vm.runInNewContext(source, context);
+  assert.equal(context.compact({ type: 'extract', url: 'https://shop.example/p', error: 'out_of_stock' }).error, 'out_of_stock');
   await context.run({ id: 'job', url: 'https://example.com/list', kind: 'printer' }, { shops: [] });
   assert.deepEqual(calls, ['progress-start', 'progress-end', 'complete']);
   console.log('PASS: final completion waits for every in-flight progress upload.');

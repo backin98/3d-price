@@ -130,7 +130,7 @@ function nameFromUrl(url) {
 function compactEvent(ev) {
   const out = { type: ev.type || "log", at: ev.at || new Date().toISOString() };
   if (ev.text) out.text = String(ev.text).slice(0, 1000);
-  if (ev.error) out.text = String(ev.error || ev.text || "").slice(0, 1000);
+  if (ev.error) out.error = out.text = String(ev.error).slice(0, 1000);
   if (ev.stage) out.stage = ev.stage;
   if (ev.url) out.url = ev.url;
   if (Array.isArray(ev.urls)) out.urls = ev.urls.filter((u) => typeof u === "string").slice(0, 80);
