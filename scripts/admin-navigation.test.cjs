@@ -129,6 +129,7 @@ assert.match(cat, /worker: Creality K2 Combo/, 'the worker title is shown');
 assert.match(cat, /urun\/creality-k2-plus-combo/, 'the source url slug is shown');
 assert.match(cat, /data-offer-branch="https:\/\/www.rhino3dprinter.com\/urun\/creality-k2-plus-combo"/);
 assert.match(cat, /data-offer-move="https:\/\/www.rhino3dprinter.com\/urun\/creality-k2-plus-combo"/);
+assert.match(cat, /data-offer-delete="https:\/\/www.rhino3dprinter.com\/urun\/creality-k2-plus-combo"/);
 assert.match(cat, /id="catalog-targets"/, 'one shared target list for the whole page');
 assert.match(cat, /id="catalog-refresh"/, 'and a refresh button');
 assert.match(cat, /data-product-image="qwen-k2"/, 'each catalog card has a manual thumbnail upload');

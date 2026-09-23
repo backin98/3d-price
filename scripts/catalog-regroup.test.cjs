@@ -92,6 +92,15 @@ const send = async (b) => (await sandbox.handler(post(b))).json();
   assert.equal(a1.image, '/baseline-a1.webp');
   assert.equal(a1.offers.length, 1);
 
+  // 2c. Delete removes only that listing; an empty catalog row disappears but baseline stays.
+  const deleted = await send({ action: 'deleteOffer', url: 'https://www.rhino3dprinter.com/urun/creality-k2-plus-combo', from: 'qwen-p1s' });
+  assert.equal(deleted.removedProduct, false);
+  assert.equal(storeState['catalog.json'].products.find((p) => p.id === 'qwen-p1s').offers.length, 1, 'the other listing stays on its card');
+  const deletedOnly = await send({ action: 'deleteOffer', url: 'https://shop.example/a1-combo', from: 'base-a1' });
+  assert.equal(deletedOnly.removedProduct, true);
+  assert.equal(storeState['catalog.json'].products.some((p) => p.id === 'base-a1'), false, 'an empty catalog card is removed');
+  assert.equal(storeState['baseline.json'].items.some((p) => p.id === 'base-a1'), true, 'deleting a listing does not delete its baseline model');
+
   // 3. Refusals stay honest (the handler answers with an error body, not a throw).
   const bad = async (b) => String((await send(b)).error || "");
   assert.match(await bad({ action: 'retargetOffer', url: 'https://nope.example/x', from: 'qwen-p1s', to: 'new' }), /not on the source product/);

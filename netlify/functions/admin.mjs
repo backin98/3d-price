@@ -1277,6 +1277,31 @@ export default async (req) => {
         });
       }
 
+      case "deleteOffer": {
+        const url = String(body.url || "").trim();
+        const from = String(body.from || "").trim();
+        if (!url || !from) throw new Error("deleteOffer needs url and from");
+        const shelves = [catalog.products || [], catalog.filaments || []];
+        const found = shelves.flat().find((p) => p.id === from);
+        if (!found) throw new Error("Source product not found");
+        const before = (found.offers || []).length;
+        found.offers = (found.offers || []).filter((o) => o.url !== url);
+        if (found.offers.length === before) throw new Error("That offer is not on the source product");
+        const removedProduct = found.offers.length === 0;
+        if (removedProduct) {
+          catalog.products = (catalog.products || []).filter((p) => p.id !== from);
+          catalog.filaments = (catalog.filaments || []).filter((p) => p.id !== from);
+        } else {
+          const prices = found.offers.map((o) => Number(o.price)).filter((n) => Number.isFinite(n) && n > 0);
+          if (prices.length) found.price = Math.min(...prices);
+        }
+        catalog.productCount = (catalog.products || []).length;
+        catalog.filamentCount = (catalog.filaments || []).length;
+        catalog.savedAt = new Date().toISOString();
+        await writeJSON("catalog.json", catalog);
+        return json(200, { ok: true, removedProduct, counts: { products: catalog.products.length, filaments: catalog.filaments.length } });
+      }
+
       case "deleteAllCatalog": {
         const empty = {
           ...catalog,

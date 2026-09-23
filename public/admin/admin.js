@@ -1573,7 +1573,10 @@
         <div class="muted" title="url slug">${esc(slug)}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
           <input list="catalog-targets" data-offer-move-q="${esc(o.url)}" placeholder="Move to baseline model…" style="flex:1;min-width:140px">
-          <button class="btn-sm" type="button" data-offer-move="${esc(o.url)}" data-offer-from="${esc(p.id)}" data-offer-name="${esc(p.name || "")}">Move</button>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <button class="btn-sm" type="button" data-offer-move="${esc(o.url)}" data-offer-from="${esc(p.id)}" data-offer-name="${esc(p.name || "")}">Move</button>
+            <button class="btn-sm danger" type="button" data-offer-delete="${esc(o.url)}" data-offer-from="${esc(p.id)}" data-offer-store="${esc(o.store || "listing")}">Delete</button>
+          </div>
           <button class="btn-sm ghost" type="button" data-offer-branch="${esc(o.url)}" data-offer-from="${esc(p.id)}" title="Create a new catalog product and baseline model from the scraped title">Create new model</button>
         </div>
       </li>`;
@@ -2220,6 +2223,22 @@
         try {
           await action({ action: "retargetOffer", url, from, to: "baseline:" + target.id });
           toast("Moved onto " + (target.name || target.id) + ".");
+        } catch (err) {
+          toast(err.message);
+        } finally {
+          btn.disabled = false;
+        }
+        return;
+      }
+      if (e.target.closest("[data-offer-delete]")) {
+        const btn = e.target.closest("[data-offer-delete]");
+        const url = btn.dataset.offerDelete;
+        const from = btn.dataset.offerFrom;
+        if (!confirm("Delete this " + (btn.dataset.offerStore || "shop") + " listing from the catalog card?")) return;
+        btn.disabled = true;
+        try {
+          const res = await action({ action: "deleteOffer", url, from });
+          toast(res.removedProduct ? "Listing deleted; the empty product card was removed." : "Listing deleted.");
         } catch (err) {
           toast(err.message);
         } finally {
