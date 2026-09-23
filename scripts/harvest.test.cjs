@@ -244,7 +244,7 @@ const KEEP = new Set(RHINO.slice(7));
     <script>window.product={"urunSepetFiyatiStr":"₺50.500,00"}</script>
     <script type="application/ld+json">{"@type":"Product","name":"Example Printer","offers":{"price":"50500","priceCurrency":"TRY"}}</script><button>Sepete Ekle</button>`;
   assert.equal(extractProductPage(competingPrices, "https://www.3dultra.com.tr/example-printer", "printer").product.price, 50500, "3D Ultra uses its cart-price variable");
-  assert.equal(extractProductPage(competingPrices, "https://www.valment.com.tr/example-printer", "printer").product.price, 55000, "Valment uses its visible KDV-included buy-box price");
+  assert.equal(extractProductPage(competingPrices, "https://www.valment.com.tr/example-printer", "printer").product.price, 50500, "Valment uses its discounted cart variable instead of the old KDV-included list price");
   assert.equal(preferredPriceSource("https://www.urhanshop.com/example"), "structured");
 
   const microdataCurrency = extractProductPage(`<h1>Bambu Lab X1E Combo</h1>
