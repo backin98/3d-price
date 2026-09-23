@@ -228,6 +228,12 @@ const KEEP = new Set(RHINO.slice(7));
   assert.equal(grossPriced.product.price, 25105.83, "the displayed KDV-included total wins over the net JSON-LD price");
   assert.equal(grossPriced.product.priceSource, "vat-included-price");
 
+  const robotizmoGross = `<script>var settings={"urunKdvDahilGoster":true,"urunSepetFiyatiStr":"₺43.124,26"}</script>
+    <h1>Snapmaker U1 3D Yazıcı</h1><div>Fiyat: $883.33 + KDV</div>
+    <div><span>KDV Dahil</span>: <span>₺51.749,11</span></div><button>Sepete Ekle</button>`;
+  assert.equal(vatIncludedPrice(robotizmoGross).price, 51749.11, "script settings cannot hide the visible KDV-included total");
+  assert.equal(extractProductPage(robotizmoGross, "https://shop.example/snapmaker-u1-3d-yazici", "printer").product.price, 51749.11);
+
   const plusVat = extractProductPage(`
     <h1>Creality K1 Max 3D Yazıcı</h1>
     <div class="brand">Creality</div>
