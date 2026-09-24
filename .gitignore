@@ -14,6 +14,7 @@ work/*.log
 work/*.pid
 work/deploy/
 work/ai-heartbeat.json
+work/local-store/heartbeat.json
 work/desk-connection.json
 data/qwen-url-jobs/
 data/price-history.sqlite
