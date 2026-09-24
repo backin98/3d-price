@@ -25,6 +25,13 @@ production site. `scripts/worker-setup.sh` exists for pm2, but **pm2 crashes on 
 (`TypeError ... reading 'deploy'` inside pm2's own API), so `scripts/worker-supervise.cjs` is the
 working supervisor: it restarts the worker on exit with backoff and tees output to `work/worker.log`.
 
+### Cloudflare Pages preview
+
+The static site is ready for Cloudflare Pages with no framework or build command and `public` as the
+output directory. See [docs/CLOUDFLARE_PAGES.md](docs/CLOUDFLARE_PAGES.md) for the exact dashboard
+fields. The existing APIs still use Netlify Blobs; migrate them to Pages Functions plus KV/R2 before
+pointing the PC worker at the Pages URL.
+
 ### Tests
 
 ```
