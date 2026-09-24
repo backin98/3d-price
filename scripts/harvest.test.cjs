@@ -176,6 +176,7 @@ const KEEP = new Set(RHINO.slice(7));
 
   assert.equal(readStockFromHtml('<div class="out-of-stock">Tükendi</div>').status, "out_of_stock");
   assert.equal(readStockFromHtml("<div>Stokta Yok</div><button>Sepete Ekle</button>").status, "out_of_stock");
+  assert.equal(readStockFromHtml("<span class=\"out-of-stock\">Stokta Yok</span><button>Sepete Ekle</button>", { deferContradictoryCart: true }).status, "unknown", "a contradictory category card must be checked on its product page");
   const qty = readStockFromHtml("<div>Stok Miktarı: 4</div><button>Sepete Ekle</button>");
   assert.equal(qty.status, "in_stock");
   assert.equal(qty.quantity, 4);

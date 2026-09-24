@@ -81,5 +81,23 @@ const realUrl = 'https://www.urhanshop.com/fdm-3d-yazicilar-ka434';
   assert.equal(s.discovery, null, 'discovery must not run when the selectors already worked');
   assert.equal(discoverCards(shopify).length, 0, 'no id cluster on a /products/ grid: discovery stays out');
 
+  // Schema.org identifies the product even when a brand link appears first in the card.
+  const schemaCard = (slug, brand, title, price) => `<div class="productItem" itemscope itemtype="https://schema.org/Product">
+    <span itemprop="url" content="${slug}"></span><span itemprop="name" content="${title}"></span>
+    <a href="/${brand.toLowerCase()}">${brand}</a><a href="/${slug}">${title}</a>
+    <span itemprop="price" content="${price}">${price} TL</span><span>Sepete Ekle</span></div>`;
+  const schemaGrid = schemaCard('alpha-a1-combo-3d-printer', 'Alpha', 'Alpha A1 Combo 3D Printer', '20000')
+    + schemaCard('beta-k2-combo-3d-printer', 'Beta', 'Beta K2 Combo 3D Printer', '30000')
+    + schemaCard('gamma-u1-3d-printer', 'Gamma', 'Gamma U1 3D Printer', '40000');
+  const schemaResult = await harvestCategory({ categoryUrl: 'https://schema-shop.example/printers', kind: 'printer', html: schemaGrid });
+  assert.deepEqual(schemaResult.inScope.map((p) => p.url), [
+    'https://schema-shop.example/alpha-a1-combo-3d-printer',
+    'https://schema-shop.example/beta-k2-combo-3d-printer',
+    'https://schema-shop.example/gamma-u1-3d-printer'
+  ], 'schema product URLs beat earlier brand links');
+  assert.deepEqual(schemaResult.inScope.map((p) => p.name), [
+    'Alpha A1 Combo 3D Printer', 'Beta K2 Combo 3D Printer', 'Gamma U1 3D Printer'
+  ], 'schema product names beat brand text');
+
   console.log('PASS: product links are discovered from repeated priced cards — id/query shapes and clean slugs — while navigation and known platforms are unaffected.');
 })().catch((e) => { console.error(e); process.exitCode = 1; });
