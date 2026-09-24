@@ -908,7 +908,19 @@
         });
       });
     }
-    return [...byUrl.values()];
+    const exactTitles = new Map();
+    const quality = (e) => {
+      const c = e.card || {};
+      return (!e.error ? 16 : 0) + (Number(c.price) > 0 ? 8 : 0) + (rank(e.decision) * 2) + (c.image ? 2 : 0) + (!/[?#]/.test(c.url || "") ? 1 : 0);
+    };
+    for (const e of byUrl.values()) {
+      const c = e.card || {};
+      const title = adminFold(c.name || "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+      const key = title ? hostOf(c.url) + "\n" + title : c.url;
+      const prev = exactTitles.get(key);
+      if (!prev || quality(e) > quality(prev)) exactTitles.set(key, e);
+    }
+    return [...exactTitles.values()];
   }
 
   function hostOf(url) {

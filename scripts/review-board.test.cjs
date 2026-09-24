@@ -80,6 +80,14 @@ const withImg = context.test.reviewBoardHtml({
   events: [{ type: 'gather', items: [{ url: 'https://shop.example.com/x', name: 'PLA Black', image: 'https://cdn.example.com/x.jpg' }] }]
 });
 assert.match(withImg, /cdn\.example\.com\/x\.jpg/);
+const exactDuplicates = context.test.collectCards({ events: [
+  { card: { url: 'https://shop.example.com/p?id=1', name: 'Creality K2 Combo', kind: 'printer' } },
+  { card: { url: 'https://shop.example.com/creality-k2-combo', name: 'CREALITY K2-COMBO', kind: 'printer', price: 42000, image: 'https://cdn.example.com/k2.jpg' } },
+  { card: { url: 'https://shop.example.com/creality-k2-pro-combo', name: 'Creality K2 Pro Combo', kind: 'printer', price: 52000 } }
+] }, { catalog: { products: [], filaments: [] } });
+assert.equal(exactDuplicates.length, 2, 'same-shop titles that normalize letter-for-letter collapse to one card');
+assert.equal(exactDuplicates.find((e) => e.card.name.includes('K2-COMBO')).card.price, 42000, 'the richer exact duplicate survives');
+assert.ok(exactDuplicates.some((e) => e.card.name === 'Creality K2 Pro Combo'), 'a different model title remains visible');
 const mismatchHtml = context.test.reviewBoardHtml({
   events: [{
     type: "mismatch",
