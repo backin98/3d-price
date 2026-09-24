@@ -56,6 +56,9 @@ const KEEP = new Set(RHINO.slice(7));
   assert.equal(readStockFromHtml(themeNoise + '<div>Ön Sipariş 20.000 TL</div><button>Sepete Ekle</button>').status, 'preorder');
   assert.equal(readStockFromHtml(themeNoise + '<div>20.000 TL</div>').status, 'out_of_stock', 'script cart translations are not buy controls');
   assert.equal(readStockFromHtml(themeNoise + '<div class="out-of-stock">Tükendi</div>').status, 'out_of_stock', 'real stock markers still reject');
+  const recommendationNoise = `<main><div class="product-item"><h1>Maker Live 3D Printer</h1><div>20.000 TL</div><button>Sepete Ekle</button></div>
+    <section class="recommendations"><div class="product-card"><span>Tükendi</span><a class="btn disabled">Stokta Yok</a></div></section></main>`;
+  assert.equal(readStockFromHtml(recommendationNoise).status, 'in_stock', 'sold-out recommendation cards cannot override the primary buy box');
   const preorderCard = await harvestCategory({
     categoryUrl: "https://store.metatechtr.com/3d-yazicilar",
     kind: "printers",
