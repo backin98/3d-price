@@ -1,7 +1,10 @@
 const assert = require("node:assert/strict");
 const { harvestCategory, isLikelyProductUrl, slugToTitle, readStockFromHtml, extractProductPage, transactionPrice, vatIncludedPrice, preferredPriceSource, isJunkAmount } = require("../lib/harvest.js");
 const { discoverInStockFilter } = require("../lib/harvest-guards.cjs");
-const { listingFromHarvest, shouldAddVat } = require("../lib/qwen-website-job.cjs");
+const { listingFromHarvest, shouldAddVat, shouldScrollPage } = require("../lib/qwen-website-job.cjs");
+
+assert.equal(shouldScrollPage("https://shop.example/endustriyel-3d-yazici-printer", "https://shop.example/endustriyel-3d-yazici-printer"), true, "the submitted category always gets the listing-page scroll pass");
+assert.equal(shouldScrollPage("https://shop.example/model-x", "https://shop.example/endustriyel-3d-yazici-printer"), false, "product pages do not inherit category scrolling");
 
 const RHINO = [
   "https://www.rhino3dprinter.com/muhendislik-filamentleri",
