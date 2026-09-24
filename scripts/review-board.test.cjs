@@ -4,9 +4,10 @@ const vm = require('node:vm');
 
 const data = {
   desk: { shops: [], banners: [], promoted: [] },
+  baseline: { items: [{ id: 'base-a1', name: 'Bambu Lab A1 Combo', brand: 'Bambu Lab', category: 'printers' }] },
   catalog: {
     products: [{
-      id: 'p1', name: 'Bambu Lab A1 Combo', brand: 'Bambu Lab', kind: 'printer',
+      id: 'p1', baselineId: 'base-a1', name: 'Bambu Lab A1 Combo', brand: 'Bambu Lab', kind: 'printer',
       offers: [
         { store: 'Rhino 3D Printer', price: 18000, url: 'https://www.rhino3dprinter.com/a1' },
         { store: 'Metatech', price: 17500, url: 'https://store.metatechtr.com/a1' }
@@ -60,6 +61,10 @@ assert.match(html, /Restore default/);
 assert.match(html, /Compared with Rhino/);
 assert.match(html, /New product — not compared yet/);
 assert.match(html, /data-review-place/);
+const picker = html.match(/<select data-review-place=[\s\S]*?<\/select>/)[0];
+assert.match(picker, /Baseline · Bambu Lab A1 Combo/);
+assert.doesNotMatch(picker, /Rhino|Metatech|Creality K2|qwen-new/, 'shop-run destinations contain baseline models only');
+assert.match(html, /Search baseline…/);
 assert.doesNotMatch(html, /select-all-create/);
 const gathered = context.test.reviewBoardHtml({
   url: 'https://shop.example.com/filament',
@@ -158,13 +163,17 @@ const post = (body) => new Request('https://example.com/api/admin', { method: 'P
 (async () => {
   let result = await apiContext.handler(post({
     action: 'publishSelected',
-    placements: [{ url: 'https://shop.example.com/a1', action: 'merge', candidateId: 'p1' }]
+    placements: [{ url: 'https://shop.example.com/a1', action: 'merge', candidateId: 'p1' }],
+    deferred: [{ url: 'https://shop.example.com/k2', card: { name: 'Creality K2', brand: 'Creality', kind: 'printer', price: 22000 } }]
   }));
   assert.equal(result.status, 200);
+  const firstBody = await result.json();
+  assert.equal(firstBody.deferred, 1);
   const merged = saved.products.find((p) => p.id === 'p1');
   assert.equal(merged.offers.length, 3);
   assert.ok(merged.offers.some((o) => o.store === 'New Shop'));
   assert.equal(saved.products.some((p) => p.id === 'qwen-new'), false);
+  assert.equal(data.jobs[0].cards['https://shop.example.com/k2'].reviewState, 'uncertain', 'an unassigned shop-run card is persisted for Uncertain');
 
   result = await apiContext.handler(post({
     action: 'publishSelected',

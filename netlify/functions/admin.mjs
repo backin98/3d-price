@@ -792,10 +792,32 @@ export default async (req) => {
       case "publishSelected": {
         candidate = candidate || (await readJSON("candidate.json", null)) || { products: [], filaments: [] };
         const board = await ensureBaseline();
+        const deferredItems = Array.isArray(body.deferred) ? body.deferred : [];
         const rawItems = Array.isArray(body.placements) && body.placements.length
           ? body.placements
           : (Array.isArray(body.ids) ? body.ids.map((id) => ({ url: String(id), action: "create" })) : []);
-        if (!rawItems.length) throw new Error("Select at least one product");
+        if (!rawItems.length && !deferredItems.length) throw new Error("Select at least one product");
+        const deferredUrls = new Set();
+        jobs = jobs.map((job) => {
+          const known = new Set(listingUrlsFromJob(job));
+          const cards = { ...(job.cards || {}) };
+          let changed = false;
+          for (const item of deferredItems) {
+            const url = String(item.url || (item.card && item.card.url) || "");
+            if (!url || !known.has(url)) continue;
+            const raw = cards[url];
+            const prev = (raw && (raw.card || raw)) || item.card || { url };
+            cards[url] = { ...prev, ...(item.card || {}), url, reviewState: "uncertain" };
+            deferredUrls.add(url);
+            changed = true;
+          }
+          return changed ? { ...job, cards } : job;
+        });
+        if (!rawItems.length) {
+          await saveJobList(jobs);
+          return json(200, { ok: true, published: 0, appliedUrls: [], deferred: deferredUrls.size,
+            counts: { products: catalog.products.length, filaments: catalog.filaments.length } });
+        }
         const items = rawItems.map((it) => {
           const cid = String(it.candidateId || "");
           if (cid.startsWith("baseline:")) {
@@ -812,7 +834,7 @@ export default async (req) => {
         const appliedUrls = next._appliedUrls || [];
         delete next._applied;
         delete next._appliedUrls;
-        if (!applied) throw new Error("None of the selected products could be published — they need a price from the shop run");
+        if (!applied && !deferredUrls.size) throw new Error("None of the selected products could be published — they need a price from the shop run");
         await writeJSON("catalog.json", next);
         await writeJSON("last-publish.json", { publishedAt: new Date().toISOString(), savedAt: next.savedAt });
         jobs = jobs.map((j) => ({ ...j, published: [...new Set([...(j.published || []), ...appliedUrls])] }));
@@ -823,6 +845,7 @@ export default async (req) => {
           publishedAt: new Date().toISOString(),
           published: appliedUrls.length,
           appliedUrls,
+          deferred: deferredUrls.size,
           counts: { products: next.products.length, filaments: next.filaments.length }
         });
       }

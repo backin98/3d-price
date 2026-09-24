@@ -935,9 +935,8 @@
     return null;
   }
 
-  function placementOptions(card, decision, query, opts) {
+  function placementOptions(card, decision, query) {
     const q = adminFold(query || "");
-    const baselineOnly = !!(opts && opts.baselineOnly);
     const kind = card.kind === "filament" ? "filaments" : "printers";
     const models = ((state.data && state.data.baseline && state.data.baseline.items) || []).filter((it) => {
       if (kind === "filaments" ? it.category !== "filaments" : it.category === "filaments") return false;
@@ -945,29 +944,13 @@
       return adminFold([it.name, it.brand, it.id].join(" ")).includes(q);
     });
     const list = models.map((it) => catalogProduct("baseline:" + it.id));
-    if (!baselineOnly) {
-      const live = currentCatalog();
-      const cand = state.data && state.data.candidate;
-      const seen = new Set(list.map((p) => p.id));
-      const shelves = kind === "filaments" ? ["filaments"] : ["products"];
-      for (const shelf of (q ? ["products", "filaments"] : shelves)) {
-        for (const p of [...((live && live[shelf]) || []), ...((cand && cand[shelf]) || [])]) {
-          if (!p || !p.id || seen.has(p.id) || seen.has("baseline:" + p.id)) continue;
-          seen.add(p.id);
-          if (q && !adminFold([p.id, p.name, p.brand].join(" ")).includes(q)) continue;
-          list.push(p);
-        }
-      }
-    }
     if (decision.candidateId) {
       const picked = catalogProduct(decision.candidateId);
-      if (picked && (!baselineOnly || picked.baseline) && !list.some((h) => h.id === picked.id)) list.unshift(picked);
+      if (picked && picked.baseline && !list.some((h) => h.id === picked.id)) list.unshift(picked);
     }
     list.sort((a, b) => {
       if (a.id === decision.candidateId) return -1;
       if (b.id === decision.candidateId) return 1;
-      if (a.baseline && !b.baseline) return -1;
-      if (!a.baseline && b.baseline) return 1;
       return 0;
     });
     return list.slice(0, q ? 50 : 25);
@@ -979,6 +962,17 @@
       return { action: "merge", candidateId: d.candidateId };
     }
     return { action: "create", candidateId: d.candidateId || "" };
+  }
+
+  function baselinePlace(place) {
+    if (!place || place.action !== "merge" || !place.candidateId) return { action: "create", candidateId: "" };
+    const id = String(place.candidateId);
+    if (id.startsWith("baseline:")) return { action: "merge", candidateId: id };
+    const baseline = ((state.data && state.data.baseline && state.data.baseline.items) || []);
+    const bags = [currentCatalog(), state.data && state.data.candidate];
+    const row = bags.flatMap((bag) => [...((bag && bag.products) || []), ...((bag && bag.filaments) || [])]).find((p) => p.id === id);
+    const baselineId = (row && row.baselineId) || (baseline.some((it) => it.id === id) ? id : "");
+    return baselineId ? { action: "merge", candidateId: "baseline:" + baselineId } : { action: "create", candidateId: "" };
   }
 
   function layaOf(e) {
@@ -993,27 +987,29 @@
 
   function defaultPlace(e) {
     const url = e.card && e.card.url;
-    if (url && state.reviewPlace.has(url)) return state.reviewPlace.get(url);
+    if (url && state.reviewPlace.has(url)) return baselinePlace(state.reviewPlace.get(url));
+    if (e.card && e.card.reviewState === "uncertain") return { action: "create", candidateId: "" };
     const laya = layaOf(e);
-    if (laya && laya.action === "merge" && laya.matchId) return { action: "merge", candidateId: laya.matchId };
+    if (laya && laya.action === "merge" && laya.matchId) return baselinePlace({ action: "merge", candidateId: laya.matchId });
     if (laya && laya.action === "create") return { action: "create", candidateId: "" };
     const d = e.decision || {};
-    if (d.baselineId) return { action: "merge", candidateId: String(d.baselineId).startsWith("baseline:") ? d.baselineId : "baseline:" + d.baselineId };
-    return workerPlace(e);
+    if (d.baselineId) return baselinePlace({ action: "merge", candidateId: String(d.baselineId).startsWith("baseline:") ? d.baselineId : "baseline:" + d.baselineId });
+    return baselinePlace(workerPlace(e));
   }
 
   function collectUncertain(d) {
     const out = [];
     const seen = new Set();
     for (const job of (d && d.jobs) || []) {
+      const published = new Set(job.published || []);
       const shopHost = hostOf(job.url) || job.site || "";
       const shop = shopForUrl(d, job.url);
       const shopName = (shop && (shop.name || shop.id)) || shopHost || job.id;
       for (const ev of collectCards(job, d)) {
         const url = ev.card && ev.card.url;
-        if (!url || seen.has(url)) continue;
+        if (!url || seen.has(url) || published.has(url)) continue;
         const laya = layaOf(ev);
-        if (!magellanUnsure(ev) && !laya) continue;
+        if (defaultPlace(ev).action === "merge" && !magellanUnsure(ev) && !laya) continue;
         seen.add(url);
         out.push({ ...ev, laya, jobId: job.id, shopHost, shopName });
       }
@@ -1052,20 +1048,19 @@
     return place.action === "merge" && place.candidateId ? "merge:" + place.candidateId : "create";
   }
 
-  function placeOptionsHtml(e, place, query, baselineOnly) {
+  function placeOptionsHtml(e, place, query) {
     const c = e.card || {};
     const url = c.url || "";
     const dec = e.decision || {};
-    const options = placementOptions(c, dec, query, { baselineOnly: !!baselineOnly });
+    const options = placementOptions(c, dec, query);
     if (place.action === "merge" && place.candidateId && !options.some((p) => p.id === place.candidateId)) {
       const extra = catalogProduct(place.candidateId);
-      if (extra) options.unshift(extra);
+      if (extra && extra.baseline) options.unshift(extra);
     }
     const selected = placeValue(place);
     return [`<option value="create"${selected === "create" ? " selected" : ""}>New product — not compared yet</option>`]
       .concat(options.map((p) => {
-        const stores = [...new Set(otherOffers(p, url).map((o) => o.store))];
-        const label = (p.baseline ? "Baseline · " : "") + p.name + (p.brand ? " — " + p.brand : "") + (stores.length ? " — vs " + stores.join(", ") : p.baseline ? "" : " — no other shops yet");
+        const label = "Baseline · " + p.name + (p.brand ? " — " + p.brand : "");
         const val = "merge:" + p.id;
         return `<option value="${esc(val)}"${selected === val ? " selected" : ""}>${esc(label)}</option>`;
       })).join("");
@@ -1088,8 +1083,7 @@
     const ev = cardEvent(url);
     const sel = wrap && wrap.querySelector("[data-review-place]");
     if (sel) {
-      const baselineOnly = !!(wrap && wrap.classList && wrap.classList.contains("uncertain-card"));
-      sel.innerHTML = placeOptionsHtml(ev, place, "", baselineOnly);
+      sel.innerHTML = placeOptionsHtml(ev, place, "");
       sel.value = placeValue(place);
     }
     const line = wrap && wrap.querySelector(".review-compare");
@@ -1107,23 +1101,21 @@
     const place = defaultPlace(ev);
     const q = String(query || "").trim();
     const openAll = !!(opts && opts.openAll);
-    const baselineOnly = !!(wrap && wrap.classList && wrap.classList.contains("uncertain-card"));
     if (sel) {
-      sel.innerHTML = placeOptionsHtml(ev, place, q, baselineOnly);
+      sel.innerHTML = placeOptionsHtml(ev, place, q);
       sel.value = placeValue(place);
     }
     if (!box) return;
     if (!q && !openAll) { box.hidden = true; box.innerHTML = ""; return; }
-    const hits = placementOptions(ev.card || { url }, ev.decision || {}, q, { baselineOnly });
+    const hits = placementOptions(ev.card || { url }, ev.decision || {}, q);
     const id = encodeURIComponent(url);
     const btns = [`<button type="button" class="place-hit" data-place-pick="${esc(id)}" data-place-val="create">New product — not compared yet</button>`]
       .concat(hits.map((p) => {
-        const stores = [...new Set(otherOffers(p, url).map((o) => o.store))];
-        const name = (baselineOnly && p.baseline ? "Baseline · " : "") + (p.name || p.id);
-        return `<button type="button" class="place-hit" data-place-pick="${esc(id)}" data-place-val="merge:${esc(p.id)}">${esc(name)}${stores.length ? ` <small>${esc(stores.join(" · "))}</small>` : ""}</button>`;
+        const name = "Baseline · " + (p.name || p.id) + (p.brand ? " — " + p.brand : "");
+        return `<button type="button" class="place-hit" data-place-pick="${esc(id)}" data-place-val="merge:${esc(p.id)}">${esc(name)}</button>`;
       }));
     box.hidden = false;
-    box.innerHTML = btns.join("") || `<span class="muted">${baselineOnly ? "No baseline match" : "No catalog match"}</span>`;
+    box.innerHTML = btns.join("") || '<span class="muted">No baseline match</span>';
   }
 
   function otherOffers(product, skipUrl) {
@@ -1172,7 +1164,7 @@
         <button class="btn-sm ghost" type="button" id="clear-flags">Clear flags</button>
         <button class="btn-sm danger" type="button" id="delete-flagged" ${state.reviewFlags.size ? "" : "disabled"}>Delete flagged (${state.reviewFlags.size})</button>
         <button class="btn-sm danger" type="button" id="delete-all-review" title="Remove every gathered listing from every shop in this collect, no selection needed">Delete all</button>
-        <button class="btn-sm ok" type="button" id="publish-selected" ${selected ? "" : "disabled"}>Publish selected (${selected})</button>
+        <button class="btn-sm ok" type="button" id="publish-selected" ${selected ? "" : "disabled"}>Save &amp; publish selected (${selected})</button>
         <span class="muted">${cards.length} gathered</span>
       </div>
       <div class="review-toolbar">
@@ -1225,7 +1217,7 @@
               </span>
             </div>
             <div class="review-place-label">Goes to
-              <input type="search" data-review-place-q="${esc(id)}" placeholder="Search catalog…" autocomplete="off" aria-label="Search where ${esc(c.name || "this product")} goes">
+              <input type="search" data-review-place-q="${esc(id)}" placeholder="Search baseline…" autocomplete="off" aria-label="Search baseline for where ${esc(c.name || "this product")} goes">
               <div class="place-hits" hidden></div>
               <select data-review-place="${esc(id)}" aria-label="Where ${esc(c.name || "this product")} goes">${placeOptionsHtml(e, place, "")}</select>
               <button type="button" class="btn-sm ghost" data-restore-place="${esc(id)}">Restore default</button>
@@ -1243,7 +1235,7 @@
     if (pub) {
       const n = state.reviewSelected.size;
       pub.disabled = !n;
-      pub.textContent = "Publish selected (" + n + ")";
+      pub.textContent = "Save & publish selected (" + n + ")";
     }
     const del = $("#delete-flagged");
     if (del) {
@@ -1422,7 +1414,7 @@
           <button type="button" class="ghost place-arrow" data-place-open="${esc(id)}" aria-label="Show baseline matches">▾</button>
         </div>
         <div class="place-hits" hidden></div>
-        <select data-review-place="${esc(id)}" aria-label="Where ${esc(c.name || "this listing")} goes">${placeOptionsHtml(ev, place, "", true)}</select>
+        <select data-review-place="${esc(id)}" aria-label="Where ${esc(c.name || "this listing")} goes">${placeOptionsHtml(ev, place, "")}</select>
       </div>
       <div class="actions">
         <button class="btn-sm" type="button" data-uncertain-save="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">Save &amp; publish</button>
@@ -2102,7 +2094,7 @@
         const url = decodeURIComponent(e.target.closest("[data-restore-place]").dataset.restorePlace);
         state.reviewPlace.delete(url);
         const ev = cardEvent(url);
-        const place = workerPlace(ev);
+        const place = baselinePlace(workerPlace(ev));
         const wrap = e.target.closest(".review-card");
         const q = wrap && wrap.querySelector("[data-review-place-q]");
         const sel = wrap && wrap.querySelector("[data-review-place]");
@@ -2433,19 +2425,21 @@
       if (e.target.closest("#publish-selected")) {
         const ids = [...state.reviewSelected];
         if (!ids.length) return;
-        if (!confirm("Publish the selected products to the live catalog?")) return;
+        if (!confirm("Publish baseline matches and send unassigned products to Uncertain?")) return;
         const job = reviewJob(state.data || { jobs: [] });
         const byUrl = new Map();
         collectCards(job, state.data).forEach((ev) => { if (ev.card?.url) byUrl.set(ev.card.url, ev); });
-        const placements = ids.map((url) => {
+        const chosen = ids.map((url) => {
           const ev = byUrl.get(url) || cardEvent(url);
           const place = defaultPlace(ev);
           return { url, action: place.action, candidateId: place.candidateId, card: ev.card };
         });
+        const placements = chosen.filter((it) => it.action === "merge" && String(it.candidateId || "").startsWith("baseline:"));
+        const deferred = chosen.filter((it) => !placements.includes(it));
         try {
-          await action({ action: "publishSelected", ids, placements });
+          const result = await action({ action: "publishSelected", placements, deferred });
           state.reviewSelected.clear();
-          toast("Selected products published.");
+          toast((result.published || 0) + " published to Catalog" + (result.deferred ? " · " + result.deferred + " sent to Uncertain." : "."));
         } catch (err) { toast(err.message); }
       }
       if (e.target.matches("[data-review-select]")) {
@@ -2900,8 +2894,7 @@
         ? { action: "merge", candidateId: raw.slice(6) }
         : { action: "create", candidateId: "" };
       state.reviewPlace.set(url, place);
-      const job = reviewJob(state.data || { jobs: [] });
-      const ev = (job?.events || []).find((x) => x.card?.url === url) || { card: { url }, compared: [] };
+      const ev = cardEvent(url);
       const line = e.target.closest(".review-card")?.querySelector(".review-compare");
       if (line) line.textContent = compareText(ev, place);
     });
