@@ -1,0 +1,42 @@
+# MY RETAILER WEBSITES
+# One website URL per line. Blank lines and lines starting with # are ignored.
+# Add a line to add a retailer. Remove a line to stop searching that retailer.
+# Save, then redeploy the website for changes to go live.
+# New websites use generic discovery; some need a custom parser to return results.
+
+https://www.3dteknomarket.com
+https://store.metatechtr.com
+https://www.rhino3dprinter.com
+https://www.robotzade.com
+https://3dcim.com
+https://3dtedariktr.com
+https://3dprintpazar.com
+https://www.pusula3d.com
+https://www.urhanshop.com
+https://www.valment.com.tr
+https://www.robotistan.com
+https://www.robolinkmarket.com
+https://www.ozdisan.com
+https://robiz.net
+https://www.roboshop.com.tr
+https://hobimekatronik.com
+https://www.robo90.com
+https://www.robotizmo.net
+https://market.samm.com
+https://www.print3d.com.tr
+https://www.3boyutshop.com
+https://www.3eksen.com
+https://shop.3dortgen.com
+https://www.robomil.com.tr
+https://fixx3d.com
+https://www.porima3d.com
+https://www.mikron3d.com
+https://www.hobitronik.com.tr
+https://www.bisiparisver.com
+https://makerpazar.com
+https://www.nmosphere.com.tr
+https://www.3dprinterankara.com
+https://www.hepsivar.com
+https://store.3dream.com.tr
+https://www.teknikfilament3d.com
+https://www.robotsepeti.com

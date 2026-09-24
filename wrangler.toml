@@ -1,5 +1,0 @@
-name = "3d-price"
-pages_build_output_dir = "./public"
-compatibility_date = "2026-09-24"
-compatibility_flags = ["nodejs_compat"]
-

@@ -2,6 +2,13 @@
 .netlify
 .env
 .env.*
+# Wrangler local secrets - never commit
+.dev.vars
+.dev.vars.*
+# Wrangler local dev state (miniflare KV, caches)
+.wrangler/
+# Data snapshots - large binaries, keep out of git
+work/backups/
 node_modules/
 work/*.log
 work/*.pid
@@ -18,3 +25,14 @@ data/image-phash.json
 work/d.json
 work/poll.json
 work/sup.out
+work/_shopmine.json
+work/patch-run-all.cjs
+work/patch-run-all-v3.cjs
+
+# build/tooling output and local backups - not repo content
+.cf-build/
+Thumbs/
+graphify-out/
+debug.log
+22222.jpeg
+wrangler.toml.pages-backup

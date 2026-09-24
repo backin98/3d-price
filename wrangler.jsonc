@@ -1,0 +1,39 @@
+{
+  // Cloudflare Workers config for the 3d Price storefront + online API.
+  //
+  // This replaces the previous wrangler.toml, which described a Pages project
+  // (`pages_build_output_dir`). That Pages project was never created, so this
+  // is a greenfield Workers deployment using Static Assets.
+  //
+  // Deploy with `wrangler deploy` — never `wrangler pages deploy`.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "3d-price",
+  "main": "src/index.js",
+  "compatibility_date": "2026-09-24",
+  // nodejs_compat gives us node:crypto (auth), Buffer, and an auto-populated
+  // process.env for vars/secrets, which the existing server code already reads.
+  "compatibility_flags": ["nodejs_compat"],
+
+  // The static storefront and admin UI. Unmatched paths fall through to the
+  // Worker, which serves /api/*.
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    "not_found_handling": "none"
+  },
+
+  // Replaces Netlify Blobs (lib/netlify-store.cjs talks to this binding).
+  "kv_namespaces": [{ "binding": "STORE", "id": "41f0affe05a745b0a010a2a25c0b8265" }],
+
+  "observability": {
+    "enabled": true,
+    "traces": { "enabled": true }
+  }
+
+  // Secrets are NOT stored here. Set them with:
+  //   npx wrangler secret put OWNER_PASSWORD_HASH
+  //   npx wrangler secret put SESSION_SECRET
+  //   npx wrangler secret put INGEST_TOKEN
+  // For local dev they live in .dev.vars (gitignored).
+}

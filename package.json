@@ -4,5 +4,16 @@
   "description": "Local worker + Netlify storefront. Playwright is for infinite-scroll category pages on this PC, not Netlify.",
   "dependencies": {
     "playwright": "^1.63.0"
+  },
+  "devDependencies": {
+    "wrangler": "^4.138.0"
+  },
+  "scripts": {
+    "local": "node scripts/local-server.mjs",
+    "owner-password": "node scripts/set-owner-password.mjs",
+    "pull-blobs": "node scripts/pull-netlify-blobs.mjs",
+    "backup": "node scripts/backup-data.mjs",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
   }
 }
