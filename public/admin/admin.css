@@ -157,6 +157,13 @@ button, .ghost { min-height: 38px; }
 .product-card input, .product-card select, .product-card textarea { padding: 9px; max-width: 100%; }
 .product-card .actions { margin-top: 14px; }
 .baseline-card { min-width: 0; overflow: hidden; }
+.baseline-nav { display: flex; gap: 12px; align-items: end; flex-wrap: wrap; margin: 14px 0; }
+.baseline-nav label { display: grid; gap: 5px; min-width: 220px; }
+.baseline-nav input, .baseline-nav select { width: 100%; }
+.baseline-specs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; margin-top: 8px; }
+.baseline-specs .baseline-spec-label { grid-column: 1 / -1; color: var(--muted); font-size: 12px; font-weight: 600; }
+.baseline-specs label { grid-column: 1 / -1; display: grid; gap: 4px; }
+.baseline-specs input { width: 100%; }
 .baseline-card textarea[data-baseline-field="name"] {
   display: block;
   width: 100%;

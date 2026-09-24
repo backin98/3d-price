@@ -10,6 +10,7 @@
     tab: "overview",
     catalogQuery: "",
     baselineQuery: "",
+    baselineCategory: "",
     baselineEdit: new Map(),
     runAllActive: false,
     runAllStop: false,
@@ -1284,15 +1285,25 @@
     const board = d.baseline || { categories: [{ id: "printers", name: "3D Printers" }], items: [] };
     const cats = board.categories && board.categories.length ? board.categories : [{ id: "printers", name: "3D Printers" }];
     const q = adminFold(state.baselineQuery || "");
+    const selectedCategory = cats.some((c) => c.id === state.baselineCategory) ? state.baselineCategory : "";
+    const shownCats = selectedCategory ? cats.filter((c) => c.id === selectedCategory) : cats;
     const all = board.items || [];
-    const match = (it) => !q || adminFold([it.name, it.brand].join(" ")).includes(q);
+    const match = (it) => (!selectedCategory || (it.category || "printers") === selectedCategory)
+      && (!q || adminFold([it.name, it.brand, it.toolSystem, it.motionType, it.packaging, it.reinforcement, it.buildVolumeX, it.buildVolumeY, it.buildVolumeZ].join(" ")).includes(q));
     return `<div class="panel">
       <h2>Baseline</h2>
       <p class="muted">Your models only. A shop run never writes here. Add one with the button on an Uncertain card, or by branching an offer into its own product in the catalog. You can also add a model on this page.</p>
-      ${recommendationHtml(d)}
-      <div class="form-row" style="flex-wrap:wrap;gap:8px">
-        <input id="baseline-q" type="search" placeholder="Search models…" value="${esc(state.baselineQuery || "")}" style="min-width:200px">
+      <div class="baseline-nav">
+        <label>Category
+          <select id="baseline-category"><option value="">All categories</option>${cats.map((c) => `<option value="${esc(c.id)}" ${selectedCategory === c.id ? "selected" : ""}>${esc(c.name)} (${all.filter((it) => (it.category || "printers") === c.id).length})</option>`).join("")}</select>
+        </label>
+        <label>Search
+          <input id="baseline-q" type="search" placeholder="Search this category…" value="${esc(state.baselineQuery || "")}">
+        </label>
       </div>
+      <datalist id="baseline-filament-packaging"><option value="Spool"><option value="Spoolless"><option value="Refill"></datalist>
+      <datalist id="baseline-filament-reinforcement"><option value="Plain polymer"><option value="Carbon fiber (CF)"><option value="Glass fiber (GF)"><option value="Aramid / Kevlar"><option value="Mineral filled"><option value="Wood filled"><option value="Metal filled"></datalist>
+      ${recommendationHtml(d)}
       <div class="form-row" style="flex-wrap:wrap;gap:8px;margin-top:8px">
         <input id="baseline-new-cat" type="text" placeholder="New category name" style="min-width:180px">
         <button type="button" class="btn-sm" id="baseline-add-cat">Add category</button>
@@ -1302,7 +1313,7 @@
         <button type="button" class="btn-sm" id="baseline-add-item">Add model</button>
       </div>
       <p class="muted">${all.filter(match).length} shown · ${all.length} models · ${cats.length} categories</p>
-      ${cats.map((c) => {
+      ${shownCats.map((c) => {
         const items = all.filter((it) => (it.category || "printers") === c.id && match(it));
         return `<details class="baseline-cat" ${detailAttrs("bcat-" + c.id)} open>
           <summary><strong>${esc(c.name)}</strong> <span class="muted">${items.length}</span></summary>
@@ -1339,13 +1350,28 @@
     const edit = state.baselineEdit.get(it.id) || {};
     const name = edit.name != null ? edit.name : (it.name || "");
     const brand = edit.brand != null ? edit.brand : (it.brand || "");
+    const field = (key) => edit[key] != null ? edit[key] : (it[key] || "");
     const list = cats && cats.length ? cats : [{ id: "printers", name: "3D Printers" }];
     const pending = state.pendingImages.get(it.id);
+    const printerFields = (it.category || "printers") === "filaments" ? "" : `<div class="baseline-specs">
+      <span class="baseline-spec-label">Build volume (mm)</span>
+      <input aria-label="Build volume X" type="number" min="1" step="1" data-baseline-field="buildVolumeX" data-baseline-id="${esc(it.id)}" value="${esc(field("buildVolumeX"))}" placeholder="X">
+      <input aria-label="Build volume Y" type="number" min="1" step="1" data-baseline-field="buildVolumeY" data-baseline-id="${esc(it.id)}" value="${esc(field("buildVolumeY"))}" placeholder="Y">
+      <input aria-label="Build volume Z" type="number" min="1" step="1" data-baseline-field="buildVolumeZ" data-baseline-id="${esc(it.id)}" value="${esc(field("buildVolumeZ"))}" placeholder="Z">
+      <label>Tool system<input list="baseline-tool-systems" data-baseline-field="toolSystem" data-baseline-id="${esc(it.id)}" value="${esc(field("toolSystem"))}" placeholder="Single head, IDEX…"></label>
+      <label>Motion type<input list="baseline-motion-types" data-baseline-field="motionType" data-baseline-id="${esc(it.id)}" value="${esc(field("motionType"))}" placeholder="CoreXY, Cartesian…"></label>
+    </div>`;
+    const filamentFields = (it.category || "printers") !== "filaments" ? "" : `<div class="baseline-specs">
+      <label>Packaging<input list="baseline-filament-packaging" data-baseline-field="packaging" data-baseline-id="${esc(it.id)}" value="${esc(field("packaging"))}" placeholder="Spool, spoolless, refill…"></label>
+      <label>Material<input list="baseline-filament-reinforcement" data-baseline-field="reinforcement" data-baseline-id="${esc(it.id)}" value="${esc(field("reinforcement"))}" placeholder="Plain polymer, CF, GF…"></label>
+    </div>`;
     return `<div class="product-card baseline-card" data-baseline-id="${esc(it.id)}">
       <div class="catalog-thumb">${pending ? `<img src="${esc(pending.preview)}" alt="Uploaded thumbnail preview">` : it.image ? productImg(it.image) : '<div class="catalog-thumb-empty"></div>'}</div>
       <label class="catalog-image-upload">Upload thumbnail<input type="file" accept="image/jpeg,image/png,image/webp" data-baseline-image="${esc(it.id)}"></label>
       <textarea aria-label="Model name" data-baseline-field="name" data-baseline-id="${esc(it.id)}" rows="3">${esc(name)}</textarea>
       <input aria-label="Brand" data-baseline-field="brand" data-baseline-id="${esc(it.id)}" value="${esc(brand)}" placeholder="Brand">
+      ${printerFields}
+      ${filamentFields}
       <label class="muted" style="font-size:12px">Change category
         <select data-baseline-move="${esc(it.id)}">${list.map((c) => `<option value="${esc(c.id)}" ${(it.category || "printers") === c.id ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select>
       </label>
@@ -2620,11 +2646,11 @@
       if (e.target.closest("[data-baseline-save]")) {
         const id = e.target.closest("[data-baseline-save]").dataset.baselineSave;
         const card = e.target.closest(".baseline-card");
-        const name = ((card && card.querySelector('[data-baseline-field="name"]')) || {}).value;
-        const brand = ((card && card.querySelector('[data-baseline-field="brand"]')) || {}).value;
+        const patch = {};
+        for (const input of (card ? card.querySelectorAll("[data-baseline-field]") : [])) patch[input.dataset.baselineField] = input.value;
         try {
           const image = state.pendingImages.get(id);
-          const res = await action({ action: "updateBaselineItem", id, patch: { name, brand }, imageUpload: image ? { type: image.type, data: image.data } : null });
+          const res = await action({ action: "updateBaselineItem", id, patch, imageUpload: image ? { type: image.type, data: image.data } : null });
           if (res.baseline) state.data.baseline = res.baseline;
           state.baselineEdit.delete(id);
           state.pendingImages.delete(id);
@@ -2897,6 +2923,12 @@
           render();
           toast("Category changed.");
         }).catch((err) => toast(err.message));
+        return;
+      }
+      if (e.target.id === "baseline-category") {
+        state.baselineCategory = e.target.value;
+        painted.delete("#tab-baseline");
+        paint("#tab-baseline", baselineHtml(state.data));
         return;
       }
       if (e.target.dataset.reviewPlace == null) return;
