@@ -410,6 +410,12 @@
   let stockPreviewTimer = null;
   let stockPreviewRequest = null;
   let stockPreviewKey = "";
+  const stockPreviewLoading = new Set();
+
+  function priceHuntStatus(product) {
+    if (!stockPreviewLoading.has(String(product && product.id))) return "";
+    return `<div class="price-hunt" role="status"><span class="price-hunt-icons" aria-hidden="true"><span>◐</span><span>◇</span><span>◑</span></span><small>${escapeHtml(C.live.findingBestPrice)}</small></div>`;
+  }
 
   function scheduleStockPreview(exactProduct) {
     clearTimeout(stockPreviewTimer);
@@ -421,11 +427,15 @@
       const key = (exactProduct ? "sheet" : query) + "\n" + ids.join(",");
       if (!ids.length || (!exactProduct && key === stockPreviewKey)) return;
       if (stockPreviewRequest) stockPreviewRequest.abort();
-      stockPreviewRequest = new AbortController();
+      const request = new AbortController();
+      stockPreviewRequest = request;
+      stockPreviewLoading.clear();
+      ids.forEach((id) => stockPreviewLoading.add(String(id)));
+      if (state.query === query) renderAisles();
       try {
         const res = await fetch("/api/stock-preview?ids=" + encodeURIComponent(ids.join(",")), {
           cache: "no-store",
-          signal: stockPreviewRequest.signal
+          signal: request.signal
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "stock preview failed");
@@ -452,7 +462,6 @@
         if (exactProduct && state.open === "sheet") renderSheet();
         if (state.query === query) {
           renderSuggest();
-          renderAisles();
           if (!exactProduct && state.open === "sheet") renderSheet();
         }
       } catch (err) {
@@ -460,6 +469,11 @@
         if (exactProduct && String(state.sheetProduct) === String(exactProduct.id)) {
           state.sheetPriceLoading = false;
           if (state.open === "sheet") renderSheet();
+        }
+      } finally {
+        if (stockPreviewRequest === request) {
+          stockPreviewLoading.clear();
+          if (state.query === query) renderAisles();
         }
       }
     }, exactProduct ? 0 : 400);
@@ -1108,6 +1122,7 @@
               : ""
           }
         </div>
+        ${priceHuntStatus(p)}
         <div class="deal-actions">
           ${
             stores.length > 1
@@ -1528,6 +1543,7 @@
               : ""
           }
         </div>
+        ${priceHuntStatus(product)}
         <div class="deal-actions">
           ${
             stores.length > 1 || product.bundleOptions

@@ -35,11 +35,13 @@ const catalog = {
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://localhost');
   if (url.pathname === '/api/stock-preview') {
-    res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
-    res.end(JSON.stringify({ products: [
-      { id: 'stock', url: 'https://cheap.example/stock', status: 'out_of_stock', verified: true, price: 150, priceSource: 'json-ld' },
-      { id: 'stock', url: 'https://live.example/stock', status: 'unknown', verified: false, price: 250, priceSource: 'json-ld' }
-    ] }));
+    setTimeout(() => {
+      res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
+      res.end(JSON.stringify({ products: [
+        { id: 'stock', url: 'https://cheap.example/stock', status: 'out_of_stock', verified: true, price: 150, priceSource: 'json-ld' },
+        { id: 'stock', url: 'https://live.example/stock', status: 'unknown', verified: false, price: 250, priceSource: 'json-ld' }
+      ] }));
+    }, 150);
     return;
   }
   if (url.pathname.startsWith('/api/')) {
@@ -129,6 +131,8 @@ const server = http.createServer((req, res) => {
     // best offer without blocking the search interaction.
     await type('stock test');
     assert.match((await suggestions())[0].text, /100,00 TL/, 'cached result is immediate');
+    await page.waitForTimeout(220);
+    assert.match(await page.$eval('[data-open-sheet="stock"] .price-hunt', (el) => el.innerText), /best live price/i, 'the main card explains that its cached price is being checked');
     await page.click('[data-open-sheet="stock"]');
     assert.match(await page.$eval('#sheet-body', (el) => el.innerText), /100,00 TL/, 'the open comparison starts with the cached price');
     assert.equal(await page.$eval('#sheet-body', (el) => el.classList.contains('is-price-checking')), true, 'unchecked prices are visibly loading');

@@ -804,6 +804,31 @@ p {
   text-decoration: line-through;
 }
 
+.price-hunt {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 1rem;
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.price-hunt small { font-size: inherit; }
+.price-hunt-icons {
+  display: inline-flex;
+  gap: 0.08rem;
+  color: #111;
+  filter: grayscale(1);
+}
+.price-hunt-icons span { animation: price-hunt-bop 0.9s ease-in-out infinite alternate; }
+.price-hunt-icons span:nth-child(2) { animation-delay: 0.14s; }
+.price-hunt-icons span:nth-child(3) { animation-delay: 0.28s; }
+
+@keyframes price-hunt-bop {
+  to { transform: translateY(-2px); opacity: 0.38; }
+}
+
 .off-pill {
   font-size: 0.68rem;
   font-weight: 700;
@@ -2107,6 +2132,7 @@ p {
   .drawer-panel,
   .deal,
   .price-check-orbit,
+  .price-hunt-icons span,
   #sheet-body .offer-row {
     transition: none;
     animation: none;
