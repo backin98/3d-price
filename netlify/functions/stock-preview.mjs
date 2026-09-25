@@ -1,8 +1,10 @@
 import store from "../../lib/netlify-store.cjs";
 import stock from "../../lib/stock-refresh.cjs";
+import catalogUnion from "../../lib/catalog-union.cjs";
 
 const { readJSON } = store;
 const { checkOfferStock } = stock;
+const { collapseByMagellan } = catalogUnion;
 const cache = new Map();
 const CACHE_MS = 2 * 60 * 1000;
 
@@ -10,7 +12,7 @@ export default async (req) => {
   const ids = new Set((new URL(req.url).searchParams.get("ids") || "").split(",").filter(Boolean).slice(0, 4));
   if (!ids.size) return Response.json({ products: [] });
 
-  const catalog = await readJSON("catalog.json", { products: [], filaments: [] });
+  const catalog = collapseByMagellan(await readJSON("catalog.json", { products: [], filaments: [] }));
   const products = [...(catalog.products || []), ...(catalog.filaments || [])].filter((p) => ids.has(String(p.id)));
   const targets = products.flatMap((product) => (product.offers || [])
     .filter((offer) => /^https:\/\//i.test(offer.url || ""))
