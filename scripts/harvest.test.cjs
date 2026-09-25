@@ -5,6 +5,8 @@ const { listingFromHarvest, shouldAddVat, shouldScrollPage } = require("../lib/q
 
 assert.equal(shouldScrollPage("https://shop.example/endustriyel-3d-yazici-printer", "https://shop.example/endustriyel-3d-yazici-printer"), true, "the submitted category always gets the listing-page scroll pass");
 assert.equal(shouldScrollPage("https://shop.example/model-x", "https://shop.example/endustriyel-3d-yazici-printer"), false, "product pages do not inherit category scrolling");
+assert.equal(shouldScrollPage("https://www.rhino3dprinter.com/rhinolab-pla-matte-filament-black", "https://www.rhino3dprinter.com/filament-cesitleri"), false, "a product slug containing filament does not trigger category scrolling");
+assert.equal(shouldScrollPage("https://shop.example/products/pla?page=2", "https://shop.example/filament"), false, "a product route is not a listing route");
 
 const RHINO = [
   "https://www.rhino3dprinter.com/muhendislik-filamentleri",
