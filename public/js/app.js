@@ -430,13 +430,19 @@
         if (!res.ok) throw new Error(data.error || "stock preview failed");
         const byId = new Map(products.map((p) => [String(p.id), p]));
         for (const row of data.products || []) {
-          if (!row.verified) continue;
           const product = byId.get(String(row.id));
           const offer = product && (product.offers || []).find((o) => o.url === row.url);
           if (offer) {
-            offer.stockStatus = row.status;
-            offer.stockVerified = true;
-            offer.stockCheckedAt = new Date().toISOString();
+            if (row.verified) {
+              offer.stockStatus = row.status;
+              offer.stockVerified = true;
+              offer.stockCheckedAt = new Date().toISOString();
+            }
+            if (Number.isFinite(Number(row.price)) && Number(row.price) > 0) {
+              offer.price = Number(row.price);
+              offer.priceSource = row.priceSource || "live-preview";
+              offer.priceCheckedAt = new Date().toISOString();
+            }
           }
         }
         stockPreviewKey = key;
@@ -444,6 +450,7 @@
         if (state.query === query) {
           renderSuggest();
           renderAisles();
+          if (state.open === "sheet") renderSheet();
         }
       } catch (err) {
         if (err.name !== "AbortError") stockPreviewKey = "";

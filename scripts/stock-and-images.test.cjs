@@ -108,6 +108,15 @@ const html = (body) => '<html><head><title>t</title></head><body>' + body + '<di
   assert.equal(renderedResult.status, 'in_stock');
   assert.equal(rendered, 1, 'unknown static pages are retried with a browser');
 
+  let renderedPrice = 0;
+  const dynamicPrice = await checkOfferStock('https://x/dynamic-price', {
+    kind: 'printer',
+    fetchImpl: stub({ 'https://x/dynamic-price': { body: '<h1>Example 3D Printer</h1><button>Sepete Ekle</button>' } }),
+    renderHtml: async () => { renderedPrice += 1; return html('<h1>Example 3D Printer</h1><button>Sepete Ekle</button><div class="current-price">23.456,00 TL</div>'); }
+  });
+  assert.equal(dynamicPrice.price, 23456, 'a browser-rendered price fills a statically visible buy box');
+  assert.equal(renderedPrice, 1);
+
   const grossPrice = await checkOfferStock('https://shop.example/snapmaker-u1', {
     kind: 'printer', vatAdded: true,
     fetchImpl: stub({ 'https://shop.example/snapmaker-u1': { body: '<h1>Snapmaker U1 3D Yazıcı</h1><script>var x={"urunSepetFiyatiStr":"₺43.124,26"}</script><div>Fiyat: $883.33 + KDV</div><div>KDV Dahil: ₺51.749,11</div><button>Sepete Ekle</button>' } })

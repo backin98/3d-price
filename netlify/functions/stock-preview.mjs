@@ -15,18 +15,30 @@ export default async (req) => {
   const targets = products.flatMap((product) => (product.offers || [])
     .filter((offer) => /^https:\/\//i.test(offer.url || ""))
     .sort((a, b) => (Number(a.price) || Infinity) - (Number(b.price) || Infinity))
-    .slice(0, 3)
-    .map((offer) => ({ product, offer }))).slice(0, 12);
+    .map((offer) => ({ product, offer })));
 
   const now = Date.now();
   const results = await Promise.all(targets.map(async ({ product, offer }) => {
-    let result = cache.get(offer.url);
+    const cacheKey = `${offer.url}\n${product.kind || "printer"}\n${offer.vatAdded === true}`;
+    let result = cache.get(cacheKey);
     if (!result || now - result.at > CACHE_MS) {
-      result = { ...(await checkOfferStock(offer.url, { timeoutMs: 2500, retries: 0 })), at: now };
+      result = { ...(await checkOfferStock(offer.url, {
+        timeoutMs: 2500,
+        retries: 0,
+        kind: product.kind || "printer",
+        vatAdded: offer.vatAdded === true
+      })), at: now };
       if (cache.size >= 500) cache.clear();
-      cache.set(offer.url, result);
+      cache.set(cacheKey, result);
     }
-    return { id: product.id, url: offer.url, status: result.status, verified: result.verified === true };
+    return {
+      id: product.id,
+      url: offer.url,
+      status: result.status,
+      verified: result.verified === true,
+      price: Number.isFinite(result.price) && result.price > 0 ? result.price : undefined,
+      priceSource: result.priceSource || undefined
+    };
   }));
 
   return Response.json({ products: results }, { headers: { "cache-control": "no-store" } });

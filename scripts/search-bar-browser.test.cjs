@@ -37,8 +37,8 @@ const server = http.createServer((req, res) => {
   if (url.pathname === '/api/stock-preview') {
     res.writeHead(200, { 'content-type': 'application/json', 'cache-control': 'no-store' });
     res.end(JSON.stringify({ products: [
-      { id: 'stock', url: 'https://cheap.example/stock', status: 'out_of_stock', verified: true },
-      { id: 'stock', url: 'https://live.example/stock', status: 'in_stock', verified: true }
+      { id: 'stock', url: 'https://cheap.example/stock', status: 'out_of_stock', verified: true, price: 150, priceSource: 'json-ld' },
+      { id: 'stock', url: 'https://live.example/stock', status: 'unknown', verified: false, price: 250, priceSource: 'json-ld' }
     ] }));
     return;
   }
@@ -129,8 +129,12 @@ const server = http.createServer((req, res) => {
     // best offer without blocking the search interaction.
     await type('stock test');
     assert.match((await suggestions())[0].text, /100,00 TL/, 'cached result is immediate');
+    await page.click('[data-open-sheet="stock"]');
+    assert.match(await page.$eval('#sheet-body', (el) => el.innerText), /100,00 TL/, 'the open comparison starts with the cached price');
     await page.waitForTimeout(800);
-    assert.match((await suggestions())[0].text, /200,00 TL/, 'live in-stock offer replaces the dead cheap offer');
+    const sheet = await page.$eval('#sheet-body', (el) => el.innerText);
+    assert.doesNotMatch(sheet, /100,00 TL/, 'the already-open comparison drops the stale price');
+    assert.match(sheet, /250,00 TL/, 'the already-open comparison redraws with the live price');
 
     assert.deepEqual(errors, [], 'no page errors: ' + errors.join(' | '));
     console.log('PASS: the storefront search bar suggests as you type, keeps the family visible, tolerates prefixes and typos, and opens products from the keyboard.');
