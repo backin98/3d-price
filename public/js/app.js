@@ -410,14 +410,14 @@
   let stockPreviewRequest = null;
   let stockPreviewKey = "";
 
-  function scheduleStockPreview() {
+  function scheduleStockPreview(exactProduct) {
     clearTimeout(stockPreviewTimer);
-    if (!state.query.trim() || !state.liveProducts) return;
+    if ((!state.query.trim() && !exactProduct) || !state.liveProducts) return;
     stockPreviewTimer = setTimeout(async () => {
       const query = state.query;
-      const products = matchingProducts().slice(0, 4);
+      const products = exactProduct ? [exactProduct] : matchingProducts().slice(0, 4);
       const ids = products.map((p) => p.id).filter(Boolean);
-      const key = query + "\n" + ids.join(",");
+      const key = (exactProduct ? "sheet" : query) + "\n" + ids.join(",");
       if (!ids.length || key === stockPreviewKey) return;
       if (stockPreviewRequest) stockPreviewRequest.abort();
       stockPreviewRequest = new AbortController();
@@ -455,7 +455,7 @@
       } catch (err) {
         if (err.name !== "AbortError") stockPreviewKey = "";
       }
-    }, 400);
+    }, exactProduct ? 0 : 400);
   }
 
   function bestPriceLabel(p) {
@@ -1655,7 +1655,10 @@
     if (name === "cart") renderCart();
     if (name === "profile") renderProfile();
     if (name === "location") renderLocations();
-    if (name === "sheet") renderSheet();
+    if (name === "sheet") {
+      renderSheet();
+      scheduleStockPreview(findProduct(state.sheetProduct));
+    }
   }
 
   function closeDrawers() {
