@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "unknownRule": "An absent axis stays empty; never infer diameter, weight, packaging, colour, or material variant.",
+  "polymers": {
+    "plabs": {"aliases":["PLA-ABS","PLA ABS","PLABS"]},
+    "petg": {"aliases":["PETG","PET-G","PET_G"]},
+    "peba": {"aliases":["PEBA"]}, "peek": {"aliases":["PEEK"]}, "pekk": {"aliases":["PEKK","POEK"]},
+    "pps": {"aliases":["PPS"]}, "ppa": {"aliases":["PPA"]},
+    "pa": {"aliases":["PA6","PA 6","PA12","PA 12","Nylon","Naylon","PA"]},
+    "pc": {"aliases":["Polycarbonate","Polikarbonat","Polikarbon","PC"]},
+    "asa": {"aliases":["ASA"]}, "abs": {"aliases":["ABS"]}, "tpu": {"aliases":["TPU","TPE"]},
+    "pva": {"aliases":["PVA"]}, "hips": {"aliases":["HIPS"]}, "pet": {"aliases":["PET"]},
+    "pla": {"aliases":["PLA Plus","PLA-Plus","PLA+","Pro PLA","PLA"]},
+    "pp": {"aliases":["Polypropylene","Polipropilen","PP"]}
+  },
+  "variants": {
+    "plus-high-speed":{"aliases":["Plus High Speed","Plus Yüksek Hız","Plus Yüksek Hızlı"]},
+    "high-speed":{"aliases":["High Speed","High-Speed","Yüksek Hız","Yüksek Hızlı","Rapid","Hyper","High Flow","Speed","HF","HS"]},
+    "cf":{"aliases":["Carbon Fiber","Carbon Fibre","Karbon Fiber","Karbon Elyaf","Karbon Elyaflı","Karbon Takviyeli","CF"]},
+    "gf":{"aliases":["Glass Fiber","Glass Fibre","Cam Elyaf","Cam Elyaflı","GF"]},
+    "glow":{"aliases":["Glow in the Dark","Glow in Dark","Gece Parlayan","Karanlıkta Parlayan","Luminous","Fosforlu","Glow"]},
+    "silk":{"aliases":["İpeksi","Ipeksi","İpek","Ipek","Silky","Silk"]},
+    "matte":{"aliases":["Matte","Mat"]},
+    "plus":{"aliases":["PLA Plus","PLA-Plus","PLA+","PETG Plus","PETG+","ABS Plus","ABS+","Pro PLA","Plus"]},
+    "marble":{"aliases":["Marble","Mermer"]}, "wood":{"aliases":["Wood","Ahşap","Ahsap"]},
+    "tough":{"aliases":["Tough","Dayanıklı"]}, "semiflex":{"aliases":["Semi Flex","Semi-Flex","Semiflex"]},
+    "rainbow":{"aliases":["Rainbow","Gradient","Gradyan","Dual Color","Dual Colour","Çift Renk","Cift Renk","Multicolor"]},
+    "sparkle":{"aliases":["Twinkling","Glitter","Sparkle","Simli"]},
+    "metal":{"aliases":["Metal Filled","Metal Dolgulu","Metallic"]},
+    "translucent":{"aliases":["Translucent","Transparent","Transparan","Şeffaf","Seffaf"]},
+    "recycled":{"aliases":["Recycled","Geri Dönüştürülmüş","Geri Donusturulmus"]},
+    "support":{"aliases":["Support Material","Destek Filamenti","Support"]},
+    "basic":{"aliases":["Basic"]}, "pure":{"aliases":["Pure"]}, "standard":{"aliases":["Standard"]}
+  },
+  "packaging": {
+    "refill":{"aliases":["Makarasız","Makarasiz","Refill","Spoolless","Yedek Paket"]},
+    "spool":{"aliases":["Makaralı","Makarali","With Spool","Filament with Spool","Spool"]}
+  },
+  "productForms": {
+    "resin":["Reçine","Recine","Resin","SLA Resin","UV Resin"],
+    "dryer":["Filament Dryer","Filament Kurutucu","Dry Box","Kurutma Kutusu"],
+    "accessory":["Nozzle","Nozul","Hotend","Filament Saklama Poşeti","Vakum Poşeti","Vacuum Bag","Spool Holder","Makara Tutucu","Filament Sensörü","Filament Sensor"]
+  },
+  "themeNoise":["Army","Series","Serisi","Collection","Koleksiyon","RAL[0-9]{4}"],
+  "colours": {
+    "black":{"name":"Black","hex":"#000000","aliases":["Siyah","Black","Onyx Black","Onyx Siyah"]},
+    "white":{"name":"White","hex":"#FFFFFF","aliases":["Beyaz","White","Cold White","Soğuk Beyaz","Bone White","Pearl White"]},
+    "gray":{"name":"Gray","hex":"#808080","aliases":["Gri","Grey","Gray","Ash Gray","Slate Grey","Demir Gri","Antrasit Gri"]},
+    "red":{"name":"Red","hex":"#D32F2F","aliases":["Kırmızı","Kirmizi","Red","Karmin Kırmızı","Trafik Kırmızı","Fire Engine Red","Rose Red"]},
+    "blue":{"name":"Blue","hex":"#1976D2","aliases":["Mavi","Blue","Sky Blue","Ice Blue","Buz Mavi","Cobalt Mavi","Royal Blue","Baby Blue"]},
+    "green":{"name":"Green","hex":"#388E3C","aliases":["Yeşil","Yesil","Green","Saf Yeşil","Çam Yeşil","Pine Green","Royal Green"]},
+    "khaki-green":{"name":"Khaki Green","hex":"#78866B","aliases":["Army Khaki Green","Khaki Green","Haki Yeşil","Asker Yeşili"]},
+    "olive-green":{"name":"Olive Green","hex":"#6B8E23","aliases":["Olive Green","Olive","Zeytin Yeşili"]},
+    "orange":{"name":"Orange","hex":"#F57C00","aliases":["Turuncu","Orange","Pumpkin Orange","Tangerine Orange"]},
+    "yellow":{"name":"Yellow","hex":"#FBC02D","aliases":["Sarı","Sari","Yellow","Sunshine Yellow"]},
+    "purple":{"name":"Purple","hex":"#7B1FA2","aliases":["Mor","Purple","Violet","Violet Purple"]},
+    "pink":{"name":"Pink","hex":"#E91E63","aliases":["Pembe","Pink","Rose Pink","Sakura Pembe"]},
+    "pastel-pink":{"name":"Pastel Pink","hex":"#F6B6C8","aliases":["Pastel Pembe","Pastel Pink"]},
+    "brown":{"name":"Brown","hex":"#795548","aliases":["Kahverengi","Kahve","Brown","Chocolate Brown","Çikolata Kahverengi","Reddish Brown"]},
+    "beige":{"name":"Beige","hex":"#DCC9A3","aliases":["Bej","Beige","Skin","Ten Rengi"]},
+    "gold":{"name":"Gold","hex":"#D4AF37","aliases":["Altın","Altin","Gold"]},
+    "silver":{"name":"Silver","hex":"#C0C0C0","aliases":["Gümüş","Gumus","Silver"]},
+    "bronze":{"name":"Bronze","hex":"#CD7F32","aliases":["Bronz","Bronze"]},
+    "copper":{"name":"Copper","hex":"#B87333","aliases":["Bakır","Bakir","Copper","Soft Copper"]},
+    "cyan":{"name":"Cyan","hex":"#00BCD4","aliases":["Cyan","Camgöbeği","Camgobegi"]},
+    "turquoise":{"name":"Turquoise","hex":"#40E0D0","aliases":["Turkuaz","Turquoise","Teal"]},
+    "magenta":{"name":"Magenta","hex":"#D81B60","aliases":["Magenta","Viva Magenta"]},
+    "natural":{"name":"Natural","hex":"#E8D7B9","aliases":["Naturel","Natural","Doğal","Dogal"]},
+    "clear":{"name":"Clear","hex":"#E8F4F8","aliases":["Şeffaf","Seffaf","Transparent","Transparan","Clear"]},
+    "transparent-blue":{"name":"Transparent Blue","hex":"#72B5E8","aliases":["Transparan Mavi","Transparent Blue","Şeffaf Mavi"]}
+  }
+}

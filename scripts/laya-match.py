@@ -51,6 +51,7 @@ def train():
     items = [x for x in board["items"] if x.get("name")]
     names = [x["name"] for x in items]
     eval_rows = [json.loads(line) for line in (ROOT / "docs" / "laya-eval.jsonl").read_text(encoding="utf-8").splitlines() if line]
+    eval_rows += json.loads((ROOT / "data" / "laya-filament-pairs.json").read_text(encoding="utf-8"))["pairs"]
     texts = list(dict.fromkeys([*(v for name in names for v in variants(name)),
                                 *(str(r[k]) for r in eval_rows for k in ("a", "b"))]))
     agent = load_agent()

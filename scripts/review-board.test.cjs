@@ -104,8 +104,9 @@ assert.match(mismatchHtml, /declared: printer/);
 assert.match(mismatchHtml, /Create new category: Filament/);
 
 // A first-time offer on an existing printer is a merge, not a new printer: the board must
-// agree with the placement. Cards here come from the candidate (no job events at all).
-const derived = context.test.collectCards({ url: 'https://shop.example.com/x', cards: {} }, data);
+// agree with the placement. The run supplies its own URLs; the global candidate may enrich
+// those URLs but cannot inject cards from another shop category.
+const derived = context.test.collectCards({ url: 'https://shop.example.com/x', cards: {}, events: [{ type: 'gather', urls: ['https://shop.example.com/a1', 'https://shop.example.com/k2'] }] }, data);
 const byUrl = new Map(derived.map((e) => [e.card.url, e.decision]));
 assert.equal(byUrl.get('https://shop.example.com/a1').action, 'merge', 'new offer on an existing row is a merge');
 assert.equal(byUrl.get('https://shop.example.com/a1').candidateName, 'Bambu Lab A1 Combo');

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "invariants": [
+    "Family identity is brand + polymer + material variant + diameter.",
+    "Child identity is parent + colour + weight + packaging.",
+    "Offers exist only in the catalog projection under a child SKU; baseline rows never store offers.",
+    "Empty axes are unknown and are never filled with 1.75 mm, 1000 g, or spool.",
+    "Deleting catalog, runs, or uncertainty does not delete baseline rows."
+  ],
+  "baseline": {
+    "categories": [{"id":"filaments","name":"Filament"}],
+    "items": [
+      {"id":"filament/porima/hyper-pla-plus/1.75","entityType":"family","category":"filaments","name":"Porima Hyper PLA+ 1.75 mm","brand":"Porima","polymer":"pla","variant":"plus-high-speed","diameter":"1.75 mm","image":"/images/baseline/porima-hyper-pla-plus.webp"},
+      {"id":"filament/porima/hyper-pla-plus/1.75/black/1000/spool","entityType":"sku","parentId":"filament/porima/hyper-pla-plus/1.75","category":"filaments","name":"Porima Hyper PLA+ Black 1000 g Spool","brand":"Porima","polymer":"pla","variant":"plus-high-speed","diameter":"1.75 mm","color":"black","weight":"1000 g","packaging":"spool","productForm":"filament","image":"/images/baseline/porima-hyper-pla-plus-black.webp"},
+      {"id":"filament/porima/hyper-pla-plus/1.75/red/1000/refill","entityType":"sku","parentId":"filament/porima/hyper-pla-plus/1.75","category":"filaments","name":"Porima Hyper PLA+ Red 1000 g Refill","brand":"Porima","polymer":"pla","variant":"plus-high-speed","diameter":"1.75 mm","color":"red","weight":"1000 g","packaging":"refill","productForm":"filament","image":"/images/baseline/porima-hyper-pla-plus-red.webp"},
+      {"id":"filament/bambu/petg-hf/1.75","entityType":"family","category":"filaments","name":"Bambu Lab PETG HF 1.75 mm","brand":"Bambu Lab","polymer":"petg","variant":"high-speed","diameter":"1.75 mm","image":"/images/baseline/bambu-petg-hf.webp"},
+      {"id":"filament/bambu/petg-hf/1.75/white/1000/refill","entityType":"sku","parentId":"filament/bambu/petg-hf/1.75","category":"filaments","name":"Bambu Lab PETG HF White 1000 g Refill","brand":"Bambu Lab","polymer":"petg","variant":"high-speed","diameter":"1.75 mm","color":"white","weight":"1000 g","packaging":"refill","productForm":"filament","image":"/images/baseline/bambu-petg-hf-white.webp"},
+      {"id":"filament/ultimaker/pc/2.85","entityType":"family","category":"filaments","name":"Ultimaker PC 2.85 mm","brand":"Ultimaker","polymer":"pc","variant":"standard","diameter":"2.85 mm","image":"/images/baseline/ultimaker-pc.webp"},
+      {"id":"filament/ultimaker/pc/2.85/clear/750/spool","entityType":"sku","parentId":"filament/ultimaker/pc/2.85","category":"filaments","name":"Ultimaker PC Clear 750 g Spool","brand":"Ultimaker","polymer":"pc","variant":"standard","diameter":"2.85 mm","color":"clear","weight":"750 g","packaging":"spool","productForm":"filament","image":"/images/baseline/ultimaker-pc-clear.webp"}
+    ]
+  },
+  "catalogProjection": {
+    "filaments": [
+      {"id":"filament/porima/hyper-pla-plus/1.75/black/1000/spool","baselineId":"filament/porima/hyper-pla-plus/1.75/black/1000/spool","offers":[{"store":"porima3d.com","url":"https://porima3d.com/products/example?variant=1","price":551.04,"currency":"TRY","stockStatus":"in_stock","sourceTitle":"Porima Hyper PLA+ Siyah 1kg Makaralı"}]},
+      {"id":"filament/bambu/petg-hf/1.75/white/1000/refill","baselineId":"filament/bambu/petg-hf/1.75/white/1000/refill","offers":[{"store":"example.com","url":"https://example.com/petg-hf-white-refill","price":999,"currency":"TRY","stockStatus":"preorder","sourceTitle":"Bambu Lab PETG HF Beyaz Makarasız 1kg"}]}
+    ]
+  }
+}
