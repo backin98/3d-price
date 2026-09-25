@@ -884,19 +884,16 @@
     });
     const cand = d && d.candidate;
     if (cand) {
-      const jobHost = hostOf(job.url);
-      const liveUrls = new Set();
       const liveIds = new Set();
       const live = currentCatalog();
       [...(live.products || []), ...(live.filaments || [])].forEach((p) => {
         if (p.id) liveIds.add(p.id);
-        (p.offers || []).forEach((o) => { if (o.url) liveUrls.add(o.url); });
       });
       [...(cand.products || []), ...(cand.filaments || [])].forEach((p) => {
         (p.offers || []).forEach((o) => {
-          if (!o.url) return;
-          if (liveUrls.has(o.url) && !byUrl.has(o.url) && hostOf(o.url) !== jobHost) return;
-          if (liveUrls.has(o.url) && !byUrl.has(o.url) && !jobHost) return;
+          // Candidate is global across every shop and category. It may enrich a URL gathered by
+          // this run, but it must never inject a different category's listing onto this board.
+          if (!o.url || !byUrl.has(o.url)) return;
           add(o.url, {
             card: {
               name: p.name, brand: p.brand, kind: p.kind, price: o.price, url: o.url,
