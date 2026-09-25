@@ -155,6 +155,7 @@
     saved: [],
     open: null,
     sheetProduct: null,
+    sheetPriceLoading: false,
     liveProducts: null,
     liveFilaments: null,
     liveStatus: "idle",
@@ -418,7 +419,7 @@
       const products = exactProduct ? [exactProduct] : matchingProducts().slice(0, 4);
       const ids = products.map((p) => p.id).filter(Boolean);
       const key = (exactProduct ? "sheet" : query) + "\n" + ids.join(",");
-      if (!ids.length || key === stockPreviewKey) return;
+      if (!ids.length || (!exactProduct && key === stockPreviewKey)) return;
       if (stockPreviewRequest) stockPreviewRequest.abort();
       stockPreviewRequest = new AbortController();
       try {
@@ -447,13 +448,19 @@
         }
         stockPreviewKey = key;
         clearRankCache();
+        if (exactProduct && String(state.sheetProduct) === String(exactProduct.id)) state.sheetPriceLoading = false;
+        if (exactProduct && state.open === "sheet") renderSheet();
         if (state.query === query) {
           renderSuggest();
           renderAisles();
-          if (state.open === "sheet") renderSheet();
+          if (!exactProduct && state.open === "sheet") renderSheet();
         }
       } catch (err) {
         if (err.name !== "AbortError") stockPreviewKey = "";
+        if (exactProduct && String(state.sheetProduct) === String(exactProduct.id)) {
+          state.sheetPriceLoading = false;
+          if (state.open === "sheet") renderSheet();
+        }
       }
     }, exactProduct ? 0 : 400);
   }
@@ -1606,6 +1613,8 @@
       return;
     }
     title.textContent = displayName(p);
+    const checking = state.sheetPriceLoading;
+    const settled = body.classList.contains("is-price-checking") && !checking;
     const best = bestOffer(p);
     // Only live vendors are compared; the ones that ran out are left out, not shown dead.
     const compared = liveOffers(p).slice().sort((a, b) => a.price - b.price);
@@ -1635,7 +1644,7 @@
         </div>`;
       })
       .join("");
-    body.innerHTML = `<div class="sheet-hero">
+    body.innerHTML = `${checking ? `<div class="price-check-status" role="status" aria-live="polite"><span class="price-check-orbit" aria-hidden="true"></span>${escapeHtml(C.live.checkingPrices)}</div>` : ""}<div class="sheet-hero">
         ${productGallery(p)}
         <div>
           <div class="deal-meta">${escapeHtml(p.unit)} · ${escapeHtml(aisleName(p.aisle))}</div>
@@ -1644,6 +1653,8 @@
           )}</p>
         </div>
       </div>${rows}`;
+    body.classList.toggle("is-price-checking", checking);
+    body.classList.toggle("prices-settled", settled);
   }
 
   function openDrawer(name) {
@@ -1656,6 +1667,7 @@
     if (name === "profile") renderProfile();
     if (name === "location") renderLocations();
     if (name === "sheet") {
+      state.sheetPriceLoading = true;
       renderSheet();
       scheduleStockPreview(findProduct(state.sheetProduct));
     }

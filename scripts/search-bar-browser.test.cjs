@@ -131,10 +131,12 @@ const server = http.createServer((req, res) => {
     assert.match((await suggestions())[0].text, /100,00 TL/, 'cached result is immediate');
     await page.click('[data-open-sheet="stock"]');
     assert.match(await page.$eval('#sheet-body', (el) => el.innerText), /100,00 TL/, 'the open comparison starts with the cached price');
+    assert.equal(await page.$eval('#sheet-body', (el) => el.classList.contains('is-price-checking')), true, 'unchecked prices are visibly loading');
     await page.waitForTimeout(800);
     const sheet = await page.$eval('#sheet-body', (el) => el.innerText);
     assert.doesNotMatch(sheet, /100,00 TL/, 'the already-open comparison drops the stale price');
     assert.match(sheet, /250,00 TL/, 'the already-open comparison redraws with the live price');
+    assert.equal(await page.$eval('#sheet-body', (el) => el.classList.contains('is-price-checking')), false, 'live prices are revealed after the check');
 
     assert.deepEqual(errors, [], 'no page errors: ' + errors.join(' | '));
     console.log('PASS: the storefront search bar suggests as you type, keeps the family visible, tolerates prefixes and typos, and opens products from the keyboard.');
