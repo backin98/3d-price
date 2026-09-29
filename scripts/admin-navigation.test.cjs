@@ -136,13 +136,16 @@ context.test.state.data = {
   candidate: { products: [], filaments: [] }, jobs: []
 };
 const cat = context.test.catalogHtml(context.test.state.data);
-assert.match(cat, /2 offers — source, scraped title, worker title/, 'the panel is labelled');
-assert.match(cat, /scraped: Creality K2 Plus Combo 3D Yazıcı - 300x300x300 mm/, 'the scraped title is shown');
-assert.match(cat, /worker: Creality K2 Combo/, 'the worker title is shown');
-assert.match(cat, /urun\/creality-k2-plus-combo/, 'the source url slug is shown');
-assert.match(cat, /data-offer-branch="https:\/\/www.rhino3dprinter.com\/urun\/creality-k2-plus-combo"/);
-assert.match(cat, /data-offer-move="https:\/\/www.rhino3dprinter.com\/urun\/creality-k2-plus-combo"/);
-assert.match(cat, /data-offer-delete="https:\/\/www.rhino3dprinter.com\/urun\/creality-k2-plus-combo"/);
+assert.match(cat, /2 offers — edit each listing/, 'the offers panel is labelled');
+// Opened, every offer is the same editable card as Uncertain / Shop Runs, tied to its catalog row.
+context.test.state.openDetails.add('offers:qwen-k2');
+const opened = context.test.catalogHtml(context.test.state.data);
+assert.match(opened, /data-uncertain-url="https:\/\/www.rhino3dprinter.com\/urun\/creality-k2-plus-combo"[^>]*data-catalog-product="qwen-k2"/, 'the offer is a full card on its row');
+assert.match(opened, /Creality K2 Plus Combo 3D Yazıcı - 300x300x300 mm/, 'the scraped title is the product line');
+assert.match(opened, /data-review-place=/, 'Goes to moves it');
+assert.match(opened, /data-uncertain-delete="https:\/\/www.rhino3dprinter.com\/urun\/creality-k2-plus-combo"/, 'the trash deletes it');
+assert.match(opened, /data-uncertain-baseline=/, 'Add to baseline makes it a model of its own');
+context.test.state.openDetails.delete('offers:qwen-k2');
 assert.match(cat, /id="catalog-targets"/, 'one shared target list for the whole page');
 assert.match(cat, /id="catalog-refresh"/, 'and a refresh button');
 assert.match(cat, /data-product-image="qwen-k2"/, 'each catalog card has a manual thumbnail upload');

@@ -104,10 +104,44 @@
   const offerStatus = (offer) => String((offer && (offer.stockStatus || offer.stock)) || "unknown");
   const isPreorderOffer = (offer) => !!(offer && (offer.preorder || offerStatus(offer) === "preorder"));
 
+  // Filament spool weight in grams. Mirrors api/filament-classify.js gramsFromText ("1KG", "1,5 kg",
+  // "250gr", "1.000 gr"; 50 g – 20 kg). An offer that never states a weight is a standard 1 kg spool.
+  function gramsIn(value) {
+    const re = /(\d+(?:[.,]\d+)?)\s*(kilogram|kilo|kgs?|grams?|gr|g)(?![\p{L}\p{N}])/giu;
+    for (const m of String(value || "").matchAll(re)) {
+      const kg = /^k/i.test(m[2]);
+      const num = !kg && /^\d{1,3}[.,]\d{3}$/.test(m[1]) ? Number(m[1].replace(/[.,]/, "")) : Number(m[1].replace(",", "."));
+      const grams = Math.round(num * (kg ? 1000 : 1));
+      if (grams >= 50 && grams <= 20000) return grams;
+    }
+    return 0;
+  }
+  function offerGrams(o, p) {
+    for (const t of [o && o.weight, o && o.sourceTitle, o && String(o.url || "").replace(/[-_/]+/g, " "), p && p.weight, p && p.name]) {
+      const g = gramsIn(t);
+      if (g) return g;
+    }
+    return 1000;
+  }
+  const isFilamentRow = (p) => !!p && (p.kind === "filament" || p.aisle === "filament" || !!p.polymer);
+  // The spool sizes the shopper is looking at. Default (nothing picked): every size of 1 kg and up, so a
+  // 250 g spool is never "the lowest price" for PLA until the shopper ticks 250 g (or All weights).
+  function inWeightBand(grams, picked) {
+    const set = picked !== undefined ? picked : state.filWeights;
+    return set ? set.has(grams) : grams >= 1000;
+  }
+  // Every spool size the catalog really has, smallest first (e.g. 250 g, 1 kg, 3 kg).
+  function catalogWeights() {
+    const sizes = new Set();
+    (state.liveFilaments || []).forEach((p) => (p.offers || []).forEach((o) => sizes.add(offerGrams(o, p))));
+    return Array.from(sizes).sort((a, b) => a - b);
+  }
+
   function liveOffers(product) {
     const offers = (product && product.offers) || [];
     // An offer carrying no stock information stays in: unknown is not out of stock.
-    return offers.filter((o) => Number.isFinite(Number(o.price)) && Number(o.price) > 0 && offerStatus(o) !== "out_of_stock");
+    const live = offers.filter((o) => Number.isFinite(Number(o.price)) && Number(o.price) > 0 && offerStatus(o) !== "out_of_stock");
+    return isFilamentRow(product) ? live.filter((o) => inWeightBand(offerGrams(o, product))) : live;
   }
 
   function bestOffer(product) {
@@ -164,6 +198,8 @@
     suggestClosed: false,
     world: "printers",
     filPath: { polymer: null, variant: null, brand: null },
+    // Filament spool sizes (grams) the shopper ticked; null = the default, every size of 1 kg and up.
+    filWeights: null,
     lang: "en"
   };
 
@@ -379,6 +415,9 @@
       return { score: 80 + boost, matched: inName, total: wanted.length, inName };
     }
     if (anywhere === wanted.length) return { score: 60, matched: anywhere, total: wanted.length, inName };
+    // Mirrors lib/search-match.cjs: a shade marked by eye ("Desert Tan" looks beige) comes right after.
+    const tone = wordsOf([p && p.colorTone, ...((p && p.offers) || []).map((o) => o && o.colorTone)].filter(Boolean).join(" ").replace(/-/g, " "));
+    if (tone.length && wanted.every((t) => tokenHits(t, hayWords) || tokenHits(t, tone))) return { score: 55, matched: wanted.length, total: wanted.length, inName };
     if (anchors.length && anchorsHere === anchors.length) return { score: 45, matched: anywhere, total: wanted.length, inName };
     if (anywhere >= Math.max(1, Math.ceil(wanted.length / 2))) return { score: 30 + anywhere, matched: anywhere, total: wanted.length, inName };
     return { score: 0, matched: anywhere, total: wanted.length, inName };
@@ -486,8 +525,16 @@
     return money(o.price) + (shops > 1 ? " · " + fill(C.live.compared, { n: shops }) : "");
   }
 
+  // Suggestions cover printers and filaments: "pla" used to say "No matches".
   function suggestRows() {
-    return matchingProducts().slice(0, SUGGEST_LIMIT);
+    const printers = matchingProducts();
+    const filaments = state.query.trim() ? rankFilaments(matchingFilaments()) : [];
+    const rows = [];
+    for (let i = 0; rows.length < SUGGEST_LIMIT && (i < printers.length || i < filaments.length); i++) {
+      if (i < filaments.length) rows.push(filaments[i]);
+      if (i < printers.length && rows.length < SUGGEST_LIMIT) rows.push(printers[i]);
+    }
+    return rows.slice(0, SUGGEST_LIMIT);
   }
 
   function renderSuggest() {
@@ -501,7 +548,7 @@
       return;
     }
     const rows = suggestRows();
-    const total = matchingProducts().length;
+    const total = matchingProducts().length + matchingFilaments().length;
     if (!rows.length) {
       box.innerHTML = `<div class="suggest-empty">${escapeHtml(
         state.lang === "tr" ? "Sonuç yok" : "No matches"
@@ -518,7 +565,7 @@
           return `<button class="suggest-row${i === state.suggestIndex ? " is-active" : ""}" type="button" role="option"
             aria-selected="${i === state.suggestIndex ? "true" : "false"}" id="suggest-${i}" data-open-sheet="${escapeHtml(p.id)}" data-suggest-index="${i}">
             <span class="suggest-thumb">${img ? `<img src="${escapeHtml(img.url)}" alt="" loading="lazy" onerror="window.__imgFail&&window.__imgFail(this)">` : ""}</span>
-            <span class="suggest-text"><strong>${escapeHtml(displayName(p))}</strong>
+            <span class="suggest-text"><strong>${escapeHtml(displayName(p) + (isFilamentRow(p) && p.color ? " · " + p.color : ""))}</strong>
               <em>${escapeHtml(bestPriceLabel(p))}</em></span>
             ${related ? `<span class="suggest-related">${escapeHtml(state.lang === "tr" ? "ilgili" : "related")}</span>` : ""}
           </button>`;
@@ -605,9 +652,19 @@
     return rankProducts(catalog(), state.query);
   }
 
+  // Weights are stored as grams ("1000 g"): under 1 kg show grams, from 1 kg up show kg.
+  function weightLabel(value) {
+    const m = String(value || "").match(/^(\d+)\s*g$/i);
+    if (!m) return value || "";
+    const g = Number(m[1]);
+    return g >= 1000 ? String(Math.round(g / 10) / 100) + " kg" : g + " g";
+  }
+
   function filLabel(kind, id) {
     const map = (C.filament && C.filament[kind]) || {};
-    return map[id] || String(id || "").toUpperCase();
+    if (map[id]) return map[id];
+    // Codes without a label ("plus-high-speed", "silk, plus") read as words: "Plus High Speed", "Silk + Plus".
+    return String(id || "").split(/\s*,\s*/).map((part) => map[part] || part.split("-").map((w) => w.length <= 3 && kind === "polymers" ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)).join(" ")).join(" + ");
   }
 
   function matchingFilaments() {
@@ -619,6 +676,7 @@
       // PLABS is a distinct polymer, never a partial PLA/ABS or general match.
       if (p.polymer === "plabs" && !asksPlabs) return false;
       if (asksPlabs && p.polymer !== "plabs") return false;
+      if ((p.offers || []).length && !p.offers.some((o) => inWeightBand(offerGrams(o, p)))) return false;
       if (!q) return true;
       const hay = foldText(filBlob(p) + " " + (p.offers || []).map((o) => o.sourceTitle).join(" "));
       // Filler-only queries ("filament") match the category; otherwise every token must land.
@@ -816,7 +874,72 @@
     return "";
   }
 
+  // A published filament row is a model ("Bambu Lab Matte PLA") whose colours arrive as shop offers.
+  // The shop shows one row per colour, so split each model by the colour each offer names; offers of the
+  // same colour from different shops stay together and get compared.
+  const SIZE_WORDS = /(?:^|\s)\d+(?:[.,]\d+)?\s*(?:kilogram|kilo|kgs?|grams?|gr|g|mm)(?=\s|$)/giu;
+  function offerColourName(o) {
+    if (o && o.colorName) return String(o.colorName);
+    const parts = String((o && o.sourceTitle) || "").split(/\s+[-–—|]\s+/);
+    return parts.length > 1 ? parts[parts.length - 1].replace(SIZE_WORDS, " ").replace(/\s+/g, " ").trim() : "";
+  }
+  function colourRows(rows) {
+    return (rows || []).flatMap((p) => {
+      const offers = p.offers || [];
+      if (p.color || !offers.length) return [p];
+      const groups = new Map();
+      offers.forEach((o) => {
+        const name = offerColourName(o);
+        const key = foldText(name).replace(/[^\p{L}\p{N}]+/gu, "-") || "offer-" + groups.size;
+        if (!groups.has(key)) groups.set(key, { name, offers: [] });
+        groups.get(key).offers.push(o);
+      });
+      return Array.from(groups.entries()).map(([key, g]) => {
+        const o = g.offers[0];
+        return {
+          ...p,
+          id: groups.size > 1 ? p.id + "~" + key : p.id,
+          modelId: p.id,
+          color: g.name,
+          colorHex: o.colorHex,
+          colorHexes: o.colorHexes,
+          colorTone: o.colorTone,
+          colorEffect: o.colorEffect,
+          image: o.image || p.image,
+          offers: g.offers
+        };
+      });
+    });
+  }
+
+  // The same colour dot as the admin: a solid colour, split for dual / tri colour, a rainbow for gradients,
+  // dark flecks for marble and glitter for galaxy. Replaces the ribbed "spool" circle on filament photos.
+  const HEX = /^#[0-9a-f]{6}$/i;
+  function dotFill(p) {
+    const hexes = ((p && p.colorHexes) || []).filter((h) => HEX.test(h));
+    if (hexes.length > 1) return "conic-gradient(" + hexes.map((h, i) => `${h} ${Math.round((i * 100) / hexes.length)}% ${Math.round(((i + 1) * 100) / hexes.length)}%`).join(",") + ")";
+    const one = hexes[0] || (p && HEX.test(p.colorHex || "") ? p.colorHex : "");
+    if (one) return one;
+    const g = guessSwatch(p && p.color, p && p.variant);
+    if (g.indexOf("background:") === 0) return g.slice(11).replace(/radial-gradient\([^)]*\)\s*,\s*/, "");
+    if (g.indexOf("--c:") === 0 && g.slice(4)) return g.slice(4);
+    return POLY_COLOR[p && p.polymer] || "#8a96a3";
+  }
+  function colourDotHtml(p, extra, attrs) {
+    const fx = p && (p.colorEffect === "marble" || p.colorEffect === "galaxy") ? " fx-" + p.colorEffect : "";
+    const label = translateProduct((p && p.color) || displayName(p));
+    return `<span class="cdot${fx}${extra ? " " + extra : ""}" style="--dot:${escapeHtml(dotFill(p))}" role="img" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}"${attrs || ""}></span>`;
+  }
+
   function spoolStyle(product, polymer) {
+    // The colours picked or read in the admin win over guessing from the name.
+    const hexes = ((product && product.colorHexes) || []).filter((h) => /^#[0-9a-f]{6}$/i.test(h));
+    if (hexes.length > 1) {
+      const hole = "radial-gradient(circle at 50% 50%, #141b24 0 17%, transparent 18%)";
+      return "background:" + hole + ",conic-gradient(" + hexes.map((h, i) => `${h} ${Math.round((i * 100) / hexes.length)}% ${Math.round(((i + 1) * 100) / hexes.length)}%`).join(",") + ")";
+    }
+    const one = hexes[0] || (product && product.colorHex);
+    if (one && /^#[0-9a-f]{6}$/i.test(one)) return "--c:" + one;
     const guessed = guessSwatch(product && product.color, product && product.variant);
     if (guessed.indexOf("background:") === 0) return guessed;
     const hex = guessed.replace("--c:", "") || POLY_COLOR[polymer] || "#8a96a3";
@@ -847,7 +970,7 @@
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "hunt failed");
       state.liveProducts = data.products || [];
-      state.liveFilaments = data.filaments || [];
+      state.liveFilaments = colourRows(data.filaments || []);
       state.liveFetchedAt = Date.now();
       state.liveStatus = "ready";
       state.activeAisle = null;
@@ -1089,13 +1212,13 @@
     const best = bestOffer(p);
     const pct = offPct(best.price, best.was);
     const saved = state.saved.includes(p.id);
-    const color = translateProduct(p.color || filLabel("variants", p.variant) || displayName(p));
+    const color = p.colorName || ((p.offers || []).find((o) => o && o.colorName) || {}).colorName || translateProduct(p.color || filLabel("variants", p.variant) || displayName(p));
     const stores = Array.from(new Set((p.offers || []).map((o) => o.store)));
     const crumbs = [
       filLabel("polymers", p.polymer),
       filLabel("variants", p.variant),
       p.brand,
-      p.weight,
+      weightLabel(p.weight),
       p.packaging === "refill" ? (state.lang === "tr" ? "Makarasız" : "Refill")
         : p.packaging === "spool" ? (state.lang === "tr" ? "Makaralı" : "With spool") : "",
       stores.join(" · ")
@@ -1103,7 +1226,7 @@
     return `<article class="fil-hit" data-open-sheet="${p.id}">
       <div class="fil-hit-photo">
         ${productGallery(p)}
-        <span class="spool spool--badge" style="${spoolStyle(p, p.polymer)}"></span>
+        ${colourDotHtml(p, "cdot--badge")}
       </div>
       <div class="fil-hit-body">
         <div class="color-name">${escapeHtml(color)}</div>
@@ -1271,12 +1394,24 @@
       </div>`;
     }
 
+    // One button per real spool size, each with how many products sell it; ticked sizes are shown.
+    const tr = state.lang === "tr";
+    const sizes = catalogWeights();
+    const withOffers = (state.liveFilaments || []).filter((p) => (p.offers || []).length);
+    const sizeCount = (g) => withOffers.filter((p) => p.offers.some((o) => offerGrams(o, p) === g)).length;
+    const allOn = sizes.length > 0 && sizes.every((g) => inWeightBand(g));
+    const weightBtns = sizes.map((g) => filFilterBtn("data-fil-weight", String(g), weightLabel(g + " g"), String(sizeCount(g)), inWeightBand(g))).join("")
+      + (sizes.length > 1 ? filFilterBtn("data-fil-weight", "all", tr ? "Tüm ağırlıklar" : "All weights", String(withOffers.length), allOn) : "");
     return `<aside class="fil-filters">
       ${filCrumbHtml()}
       <h2 class="fil-filters-title">${escapeHtml(F.filtersTitle)}</h2>
       <div class="fil-filter-group">
         <h3>${escapeHtml(F.filterPolymer)}</h3>
         ${polyBtns}
+      </div>
+      <div class="fil-filter-group">
+        <h3>${escapeHtml(tr ? "Ağırlık" : "Weight")}</h3>
+        ${weightBtns}
       </div>
       ${typeBlock}
       ${brandBlock}
@@ -1291,24 +1426,47 @@
     const packaging = p.packaging === "refill" ? (state.lang === "tr" ? "Makarasız" : "Refill")
       : p.packaging === "spool" ? (state.lang === "tr" ? "Makaralı" : "With spool")
       : "";
-    return [p.brand, filLabel("polymers", p.polymer), filLabel("variants", p.variant), packaging, p.weight, p.diameter].filter(Boolean).join(" · ");
+    return [p.brand, filLabel("polymers", p.polymer), filLabel("variants", p.variant), packaging, weightLabel(p.weight), p.diameter].filter(Boolean).join(" · ");
   }
 
   function filGroupPreview(items) {
-    const representative = items.slice().sort((a, b) => minPrice(a) - minPrice(b)).flatMap(productImages)[0];
+    // One entry per colour, cheapest first: its own photo and its dot.
     const colors = new Map();
-    items.forEach((p) => {
+    items.slice().sort((a, b) => minPrice(a) - minPrice(b)).forEach((p) => {
       const label = translateProduct(p.color || displayName(p));
       const key = label.toLowerCase().replace(/grey/g, "gray").trim();
-      if (!colors.has(key)) colors.set(key, { p, label });
+      if (!colors.has(key)) colors.set(key, { p, label, img: (productImages(p)[0] || {}).url || "" });
     });
     const dots = Array.from(colors.values());
     const shown = dots.slice(0, 12);
-    return `<span class="fil-group-photo">${representative ? `<img src="${escapeHtml(representative.url)}" alt="" loading="lazy" data-imgs="${escapeHtml(JSON.stringify(Array.from(new Set([representative.url, ...items.flatMap((p) => productImages(p).map((i) => i.url))]))))}" data-i="0" onerror="window.__imgFail&&window.__imgFail(this)">` : `<span class="gallery-empty">${state.lang === "tr" ? "Görsel yok" : "No image available"}</span>`}</span>
+    const first = dots.find((d) => d.img) || dots[0] || {};
+    const at = Math.max(0, dots.indexOf(first));
+    const tr = state.lang === "tr";
+    // The card itself is a button, so the arrows and dots are spans; the click handler stops them
+    // from opening the model.
+    const arrows = dots.length > 1
+      ? `<span class="fil-cycle fil-cycle--prev" data-fil-cycle="-1" role="button" tabindex="-1" aria-label="${tr ? "Önceki renk" : "Previous colour"}">‹</span><span class="fil-cycle fil-cycle--next" data-fil-cycle="1" role="button" tabindex="-1" aria-label="${tr ? "Sonraki renk" : "Next colour"}">›</span><span class="fil-cycle-name">${escapeHtml(first.label || "")}</span>`
+      : "";
+    return `<span class="fil-group-photo" data-colour-imgs="${escapeHtml(JSON.stringify(dots.map((d) => d.img)))}" data-colour-names="${escapeHtml(JSON.stringify(dots.map((d) => d.label)))}" data-ci="${at}">${first.img ? `<img src="${escapeHtml(first.img)}" alt="" loading="lazy" onerror="window.__imgFail&&window.__imgFail(this)">` : `<span class="gallery-empty">${tr ? "Görsel yok" : "No image available"}</span>`}${arrows}</span>
       <span class="fil-group-colors">
-        <span class="fil-group-swatches">${shown.map(({p, label}) => `<span class="fil-color-dot" role="img" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}" style="${spoolStyle(p, p.polymer)}"></span>`).join("")}${dots.length > shown.length ? `<span>+${dots.length-shown.length}</span>` : ""}</span>
-        <span>${escapeHtml(state.lang === "en" && dots.length === 1 ? "1 color" : fill(C.filament.colorCount, {n: dots.length}))}</span>
+        <span class="fil-group-swatches">${shown.map(({ p }, i) => colourDotHtml(p, i === at ? "is-on" : "", ` data-fil-dot="${i}"`)).join("")}${dots.length > shown.length ? `<span>+${dots.length - shown.length}</span>` : ""}</span>
+        <span>${escapeHtml(state.lang === "en" && dots.length === 1 ? "1 color" : fill(C.filament.colorCount, { n: dots.length }))}</span>
       </span>`;
+  }
+  // Show colour i on a model card: its photo, its name, its dot lit.
+  function showCardColour(card, i) {
+    const photo = card.querySelector(".fil-group-photo");
+    if (!photo) return;
+    const imgs = JSON.parse(photo.getAttribute("data-colour-imgs") || "[]");
+    const names = JSON.parse(photo.getAttribute("data-colour-names") || "[]");
+    if (!imgs.length) return;
+    const at = ((i % imgs.length) + imgs.length) % imgs.length;
+    photo.setAttribute("data-ci", String(at));
+    const img = photo.querySelector("img");
+    if (img && imgs[at]) img.src = imgs[at];
+    const name = photo.querySelector(".fil-cycle-name");
+    if (name) name.textContent = names[at] || "";
+    card.querySelectorAll("[data-fil-dot]").forEach((d) => d.classList.toggle("is-on", Number(d.getAttribute("data-fil-dot")) === at));
   }
 
   function filGroupsHtml(list, cur) {
@@ -1927,6 +2085,16 @@
         revealHits();
         return;
       }
+      const cycle = e.target.closest("[data-fil-cycle], [data-fil-dot]");
+      if (cycle && cycle.closest(".fil-group-card")) {
+        e.preventDefault();
+        e.stopPropagation();
+        const card = cycle.closest(".fil-group-card");
+        const photo = card.querySelector(".fil-group-photo");
+        const now = Number(photo && photo.getAttribute("data-ci")) || 0;
+        showCardColour(card, cycle.hasAttribute("data-fil-dot") ? Number(cycle.getAttribute("data-fil-dot")) : now + Number(cycle.getAttribute("data-fil-cycle")));
+        return;
+      }
       const level = e.target.closest("[data-fil-level]");
       const family = e.target.closest("[data-fil-family]");
       if (family) {
@@ -1970,6 +2138,25 @@
           state.filPath.variant = id;
           state.filPath.brand = null;
         }
+        renderAisles();
+        revealHits();
+        return;
+      }
+      const weightBtn = e.target.closest("[data-fil-weight]");
+      if (weightBtn) {
+        const id = weightBtn.getAttribute("data-fil-weight");
+        const sizes = catalogWeights();
+        if (id === "all") {
+          // All on → back to the default (1 kg and up); otherwise tick every size.
+          state.filWeights = sizes.every((g) => inWeightBand(g)) ? null : new Set(sizes);
+        } else {
+          const g = Number(id);
+          const next = new Set(sizes.filter((s) => inWeightBand(s)));
+          if (next.has(g)) next.delete(g); else next.add(g);
+          const isDefault = next.size === sizes.filter((s) => s >= 1000).length && sizes.every((s) => (s >= 1000) === next.has(s));
+          state.filWeights = next.size === 0 || isDefault ? null : next;
+        }
+        state.filPath.family = null;
         renderAisles();
         revealHits();
         return;

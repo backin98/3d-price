@@ -17,6 +17,15 @@ const payload = {
   jobs: [],
   heartbeat: null,
   counts: { products: 1, filaments: 0 },
+  baseline: {
+    categories: [{ id: 'printers', name: '3D Printers' }, { id: 'filaments', name: 'Filament' }],
+    items: [
+      { id: 'printer-k2', category: 'printers', name: 'Creality K2 Combo', brand: 'Creality' },
+      { id: 'filament-esun-pla-plus', entityType: 'family', category: 'filaments', name: 'eSUN Plus PLA', brand: 'eSUN' },
+      { id: 'filament-esun-pla-plus/black/1000', entityType: 'sku', parentId: 'filament-esun-pla-plus', category: 'filaments', name: 'eSUN PLA Plus Black 1000 g', brand: 'eSUN', color: 'black', weight: '1000 g' },
+      { id: 'filament-beta-petg', entityType: 'family', category: 'filaments', name: 'Beta PETG', brand: 'Beta' }
+    ]
+  },
   catalog: {
     savedAt: new Date().toISOString(),
     products: [{
@@ -110,6 +119,15 @@ const server = http.createServer((req, res) => {
     assert.equal(await page.$eval('[data-detail-key="offers:qwen-k2"]', (el) => el.open), false, 'closes on click');
     await page.waitForTimeout(7000);
     assert.equal(await page.$eval('[data-detail-key="offers:qwen-k2"]', (el) => el.open), false, 'and stays closed across a poll');
+
+    await page.evaluate(() => { location.hash = '#baseline'; });
+    await page.waitForSelector('#baseline-category');
+    await page.selectOption('#baseline-category', 'filaments');
+    await page.fill('#baseline-q', 'esun pla+');
+    assert.equal(await page.locator('#tab-baseline .baseline-cat .baseline-card').count(), 1, 'filament search accepts aliases and terms in a different order');
+    assert.match(await page.locator('#tab-baseline .baseline-cat .baseline-card textarea[data-baseline-field="name"]').first().inputValue(), /eSUN Plus PLA/i, 'the matching parent family remains visible');
+    await page.fill('#baseline-q', 'black 1000');
+    assert.equal(await page.locator('#tab-baseline .baseline-cat .baseline-card').count(), 1, 'filament search includes nested colour and weight SKUs');
 
     assert.deepEqual(errors, [], 'no page errors: ' + errors.join(' | '));
     console.log('PASS: in a real browser the offers disclosure stays open across polls, and stays closed when closed.');

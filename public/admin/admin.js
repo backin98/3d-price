@@ -12,6 +12,8 @@
     baselineQuery: "",
     baselineCategory: "",
     baselineEdit: new Map(),
+    baselineDupes: null,
+    baselineRemoved: new Set(),
     runAllActive: false,
     runAllStop: false,
     catalogLimit: 40,
@@ -25,6 +27,8 @@
     catalogSelected: new Set(),
     catalogShop: "",
     catalogVariant: "",
+    // Catalog category: "" (all), "product" (printers) or "filament".
+    catalogShelf: "",
     dupesOnly: false,
     dupes: null,
     reviewJobId: "",
@@ -34,6 +38,8 @@
     uncertainPublished: new Map(),
     // Cards deleted this page view. They stay in the grid, covered, until a full refresh.
     uncertainHeld: new Map(),
+    // Find duplicates on Uncertain: groups of URLs (null until the button is pressed).
+    uncertainDupes: null,
     catalogUndo: null,
     // Which disclosures the user opened. The 5s poll rebuilds the page HTML, which would
     // otherwise slam every <details> shut while you are working in it.
@@ -53,6 +59,9 @@
     if (!el || !el.dataset || !el.dataset.detailKey) return;
     if (el.open) state.openDetails.add(el.dataset.detailKey);
     else state.openDetails.delete(el.dataset.detailKey);
+    // Offer cards are built only when their list is opened (the catalog holds hundreds of offers).
+    const lazy = el.open && el.querySelector && el.querySelector("[data-lazy-offers]");
+    if (lazy && !lazy.childElementCount) lazy.innerHTML = offerCardsFor(lazy.dataset.lazyOffers);
   }
 
   // Inline ontoggle keeps this working no matter how the page was re-rendered.
@@ -405,6 +414,7 @@
       ? new Set((state.dupes.clusters || []).flatMap((c) => (c.rows || []).map((r) => r.id)))
       : null;
     return allProducts().filter((p) => {
+      if (state.catalogShelf && p.shelf !== state.catalogShelf) return false;
       if (dupeIds && !dupeIds.has(p.id)) return false;
       if (shop && !(p.offers || []).some((o) => o.store === shop)) return false;
       if (variant) {
@@ -435,6 +445,16 @@
   // open, focus and scroll. An idle 5s poll produces byte-identical markup, so only write when
   // something actually changed. Every tab goes through here.
   const painted = new Map();
+  function fitTextareas(root) {
+    const scope = root || document;
+    const fields = scope.matches && scope.matches("textarea") ? [scope] : scope.querySelectorAll ? $$("textarea", scope) : [];
+    fields.forEach((el) => {
+      if (!el.style) return;
+      el.style.height = "auto";
+      el.style.height = Math.max(el.scrollHeight || 0, 42) + "px";
+    });
+  }
+
   function paint(sel, html) {
     const el = $(sel);
     if (!el) return;
@@ -484,6 +504,7 @@
     $("#page-title").textContent = pages[state.tab][0];
     $("#page-description").textContent = pages[state.tab][1];
     document.title = pages[state.tab][0] + " — 3D Price Desk";
+    fitTextareas($("#tab-" + state.tab));
   }
 
   function activeJob(d) {
@@ -853,7 +874,8 @@
         url,
         image: (patch.card && patch.card.image) || prev.card.image || "",
         name: (patch.card && patch.card.name) || prev.card.name,
-        price: (patch.card && patch.card.price != null && patch.card.price !== "") ? patch.card.price : prev.card.price
+        listingTitles: [...new Set([...(prev.card.listingTitles || []), patch.card && patch.card.sourceTitle, patch.card && patch.card.name].filter(Boolean))],
+        price: (patch.card && Number(patch.card.price) > 0) ? patch.card.price : prev.card.price
       },
         decision,
         compared: patch.compared || prev.compared,
@@ -882,6 +904,8 @@
         }));
       }
     });
+    // Uncertain "Save" edits must beat the harvest events replayed above.
+    Object.values(job.cards || {}).forEach((c) => { if (c && c.handEdited && c.url) add(c.url, { card: c }); });
     const cand = d && d.candidate;
     if (cand) {
       const liveIds = new Set();
@@ -894,11 +918,13 @@
           // Candidate is global across every shop and category. It may enrich a URL gathered by
           // this run, but it must never inject a different category's listing onto this board.
           if (!o.url || !byUrl.has(o.url)) return;
+          const scraped = byUrl.get(o.url).card || {};
           add(o.url, {
             card: {
-              name: p.name, brand: p.brand, kind: p.kind, price: o.price, url: o.url,
-              image: o.image || p.image, polymer: p.polymer, variant: p.variant, color: p.color,
-              weight: p.weight, diameter: p.diameter, packaging: p.packaging
+              name: scraped.name || p.name, brand: scraped.brand || p.brand, kind: scraped.kind || p.kind, price: o.price, url: o.url,
+              image: scraped.image || o.image || p.image, polymer: scraped.polymer || p.polymer, variant: scraped.variant || p.variant,
+              color: scraped.color || p.color, weight: scraped.weight || p.weight, diameter: scraped.diameter || p.diameter,
+              packaging: scraped.packaging || p.packaging
             },
             // Merge or new comes from the row it landed on, not from the offer URL being new.
             decision: { action: liveIds.has(p.id) ? "merge" : "create", candidateId: p.id, candidateName: p.name, shelf: p.kind }
@@ -914,11 +940,34 @@
     for (const e of byUrl.values()) {
       const c = e.card || {};
       const title = adminFold(c.name || "").replace(/[^\p{L}\p{N}]+/gu, " ").trim();
-      const key = title ? hostOf(c.url) + "\n" + title : c.url;
+      // Colour code alone is too coarse ("Green Apple" and "Green" share green): the listing's colour
+      // name and the URL's colour decide too, so different spools never hide each other.
+      const sku = c.kind === "filament" ? [c.color, c.colorName, colourId(String(c.url || "").replace(/[-_/]+/g, " ")) || c.url, c.weight, c.diameter, c.packaging].map(adminFold).join("|") : "";
+      const key = title ? hostOf(c.url) + "\n" + title + "\n" + sku : c.url;
       const prev = exactTitles.get(key);
       if (!prev || quality(e) > quality(prev)) exactTitles.set(key, e);
     }
     return [...exactTitles.values()];
+  }
+
+  function editedCard(ev) {
+    const card = (ev && ev.card) || {};
+    const edited = { ...card, ...(state.uncertainEdit.get(card.url) || {}) };
+    if (edited.kind === "filament" && !edited.packaging) edited.packaging = "spool";
+    return edited;
+  }
+
+  function baselinePendingIds() {
+    const baselineIds = new Set((((state.data || {}).baseline || {}).items || []).map((it) => it.id));
+    return [...new Set([...state.baselineEdit.keys(), ...state.pendingImages.keys()].filter((id) => baselineIds.has(id)))];
+  }
+
+  function showBaselineDirtyCount() {
+    const btn = $("#save-all-baseline");
+    if (!btn) return;
+    const count = baselinePendingIds().length;
+    btn.disabled = !count;
+    btn.textContent = "Save all baseline changes" + (count ? " (" + count + ")" : "");
   }
 
   function hostOf(url) {
@@ -929,11 +978,13 @@
     if (!id || !state.data) return null;
     if (String(id).startsWith("baseline:")) {
       const bid = String(id).slice(9);
-      const it = ((state.data.baseline && state.data.baseline.items) || []).find((x) => x.id === bid);
+      const items = (state.data.baseline && state.data.baseline.items) || [];
+      const it = items.find((x) => x.id === bid);
       if (it) {
+        const shown = it.entityType === "sku" && it.parentId ? (items.find((x) => x.id === it.parentId) || it) : it;
         const live = currentCatalog();
         const product = [...(live.products || []), ...(live.filaments || [])].find((p) => p.id === bid || p.baselineId === bid);
-        return { id, name: it.name, brand: it.brand, image: it.image, offers: product?.offers || [], baseline: true };
+        return { id, name: shown.name, brand: shown.brand, image: shown.image, offers: product?.offers || [], baseline: true, shownId: shown.id };
       }
     }
     const bags = [state.data.candidate, currentCatalog()];
@@ -947,16 +998,22 @@
 
   function placementOptions(card, decision, query) {
     const q = adminFold(query || "");
-    const kind = card.kind === "filament" ? "filaments" : "printers";
+    // cardKind, not the stored kind: a spool the shop filed as a printer must still list filament baselines.
+    const kind = cardKind(card) === "filament" ? "filaments" : "printers";
     const models = ((state.data && state.data.baseline && state.data.baseline.items) || []).filter((it) => {
       if (kind === "filaments" ? it.category !== "filaments" : it.category === "filaments") return false;
+      if (kind === "filaments" && (it.entityType === "sku" || it.parentId)) return false;
       if (!q) return true;
       return adminFold([it.name, it.brand, it.id].join(" ")).includes(q);
     });
     const list = models.map((it) => catalogProduct("baseline:" + it.id));
     if (decision.candidateId) {
       const picked = catalogProduct(decision.candidateId);
-      if (picked && picked.baseline && !list.some((h) => h.id === picked.id)) list.unshift(picked);
+      if (picked && picked.baseline) {
+        const duplicate = list.findIndex((h) => h.shownId === picked.shownId);
+        if (duplicate >= 0) list.splice(duplicate, 1);
+        list.unshift(picked);
+      }
     }
     list.sort((a, b) => {
       if (a.id === decision.candidateId) return -1;
@@ -1046,12 +1103,90 @@
         ...(ev.card || {}),
         url,
         name: edit.name != null ? edit.name : (ev.card && ev.card.name),
-        brand: edit.brand != null ? edit.brand : (ev.card && ev.card.brand)
+        brand: edit.brand != null ? edit.brand : (ev.card && ev.card.brand),
+        subBrand: edit.subBrand != null ? edit.subBrand : (ev.card && ev.card.subBrand),
+        polymer: edit.polymer != null ? edit.polymer : (ev.card && ev.card.polymer),
+        variant: edit.variant != null ? edit.variant : (ev.card && ev.card.variant),
+        color: edit.color != null ? edit.color : (ev.card && ev.card.color),
+        kind: cardKind(ev.card),
+        packaging: edit.packaging != null ? edit.packaging : ((ev.card && ev.card.packaging) || (cardKind(ev.card) === "filament" ? "spool" : ""))
       };
-      const place = defaultPlace(ev);
+      for (const k of ["colorName", "colorTone", "colorHex", "colorHexes", "colorSet", "colorEffect", "weight", "spoolMaterial", "rfid"]) if (edit[k] != null) card[k] = edit[k];
+      // What the card on screen says goes (auto match, your pick or Laya); off screen, the same rule.
+      const domSel = typeof document.querySelectorAll === "function" ? $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url)?.querySelector("[data-review-place]") : null;
+      const place = domSel ? parsePlace(domSel.value) : uncertainPlace(ev);
       return { url, action: place.action === "merge" ? "merge" : "create", candidateId: place.candidateId, card };
     });
     return api("/api/admin", { method: "POST", body: JSON.stringify({ action: "publishSelected", placements }) });
+  }
+
+  function parsePlace(raw) {
+    const v = String(raw || "create");
+    return v.startsWith("merge:") ? { action: "merge", candidateId: v.slice(6) } : { action: "create", candidateId: "" };
+  }
+
+  // Automatic "Goes to": the baseline model this card already is. Filaments: same brand, polymer and
+  // variant (and sub-brand when either side has one) on a family row; colour lives below the family.
+  // Printers: only an exact model name, because Combo / Pro / Max are different machines.
+  function autoBaselinePlace(f) {
+    const items = (state.data && state.data.baseline && state.data.baseline.items) || [];
+    const vset = (v) => splitTags(v).map(adminFold).sort().join("+");
+    let best = null, score = 0;
+    if (f.kind === "filament") {
+      for (const it of items) {
+        if (it.category !== "filaments" || it.entityType === "sku" || it.parentId) continue;
+        if (adminFold(it.brand) !== adminFold(f.brand) || !f.brand) continue;
+        if (adminFold(it.polymer) !== adminFold(f.polymer) || vset(it.variant) !== vset(f.variant)) continue;
+        // A sub-brand is part of the identity: "Creality TPU" is not "Creality CR TPU", in either direction.
+        const itSub = adminFold(splitTags(it.subBrand)[0] || ""), cardSub = adminFold(splitTags(f.subBrand)[0] || "");
+        if (itSub !== cardSub) continue;
+        const s = 1 + (itSub ? 2 : 0);
+        if (s > score) { best = it; score = s; }
+      }
+    } else {
+      const title = adminFold(f.name).replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+      best = items.find((it) => it.category !== "filaments" && title && [it.name, [it.brand, it.name].join(" ")].some((n) => adminFold(n).replace(/[^\p{L}\p{N}]+/gu, " ").trim() === title)) || null;
+    }
+    return best ? { action: "merge", candidateId: "baseline:" + best.id, auto: true, name: best.name } : null;
+  }
+
+  // Linked (default): Goes to follows the automatic match, else Laya / Magellan. Picking one yourself
+  // breaks the link and your pick sticks (saved with the card); the chain links it again.
+  function uncertainPlace(ev, fields) {
+    const c = withEarlierSave(ev.card || {});
+    const edit = state.uncertainEdit.get(c.url) || {};
+    const linked = edit.placeLinked != null ? edit.placeLinked : c.placeLinked !== false;
+    if (!linked) {
+      const own = edit.place != null ? edit.place : c.place;
+      return { ...(own ? parsePlace(own) : defaultPlace(ev)), linked: false };
+    }
+    const f = fields || { kind: c.kind, name: edit.name != null ? edit.name : c.name, brand: edit.brand != null ? edit.brand : c.brand, subBrand: edit.subBrand != null ? edit.subBrand : c.subBrand, polymer: edit.polymer != null ? edit.polymer : c.polymer, variant: edit.variant != null ? edit.variant : c.variant };
+    return { ...(autoBaselinePlace(f) || defaultPlace(ev)), linked: true };
+  }
+  // While linked, Goes to follows the card live: typing a new brand, sub-brand, polymer or variant
+  // re-runs the automatic match at once (CR → no longer "Creality TPU").
+  function refreshAutoPlace(card) {
+    const chain = card && card.querySelector("[data-place-chain]");
+    const sel = card && card.querySelector("[data-review-place]");
+    if (!chain || !sel || chain.getAttribute("aria-pressed") !== "true") return;
+    const url = card.dataset.uncertainUrl;
+    const ev = cardEvent(url);
+    const f = uncertainFields(card);
+    const place = uncertainPlace(ev, { kind: card.dataset.kind || cardKind(ev.card), name: f.name, brand: f.brand, subBrand: f.subBrand, polymer: f.polymer, variant: f.variant });
+    sel.innerHTML = placeOptionsHtml(ev, place, "");
+    sel.value = placeValue(place);
+    const wrap = sel.closest(".review-place-label");
+    const note = wrap.querySelector(".place-auto");
+    const text = place.auto ? "Auto: matched baseline " + place.name : "";
+    if (note && !text) note.remove();
+    else if (note) note.textContent = text;
+    else if (text) wrap.insertAdjacentHTML("beforeend", `<small class="muted place-auto">${esc(text)}</small>`);
+    const line = card.querySelector(".review-compare");
+    if (line) line.textContent = compareText(ev, place);
+  }
+
+  function placeChain(linked) {
+    return `<button type="button" class="btn-sm ghost spool-chain place-chain" data-place-chain aria-pressed="${linked ? "true" : "false"}" title="${linked ? "Linked: follows the automatic baseline match. Click to choose by hand." : "Unlinked: your own pick. Click to follow the automatic match again."}" aria-label="${linked ? "Break baseline link" : "Link baseline"}">${linked ? CHAIN : CHAIN_BROKEN}</button>`;
   }
 
   function placeValue(place) {
@@ -1088,6 +1223,18 @@
     return el && (el.closest(".uncertain-card") || el.closest(".review-card"));
   }
 
+  // Your own pick on an Uncertain card breaks the automatic link and is saved with the card.
+  function unlinkPlace(card, place) {
+    if (!card) return;
+    const url = card.dataset.uncertainUrl;
+    state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), placeLinked: false, place: placeValue(place) });
+    const chain = card.querySelector("[data-place-chain]");
+    if (chain) chain.outerHTML = placeChain(false);
+    const note = card.querySelector(".place-auto");
+    if (note) note.remove();
+    scheduleAutosave(card);
+  }
+
   function applyPlace(wrap, url, place) {
     state.reviewPlace.set(url, place);
     const ev = cardEvent(url);
@@ -1108,7 +1255,7 @@
     const box = wrap && wrap.querySelector(".place-hits");
     const sel = wrap && wrap.querySelector("[data-review-place]");
     const ev = cardEvent(url);
-    const place = defaultPlace(ev);
+    const place = sel && sel.value ? parsePlace(sel.value) : defaultPlace(ev);
     const q = String(query || "").trim();
     const openAll = !!(opts && opts.openAll);
     if (sel) {
@@ -1122,7 +1269,8 @@
     const btns = [`<button type="button" class="place-hit" data-place-pick="${esc(id)}" data-place-val="create">New product — not compared yet</button>`]
       .concat(hits.map((p) => {
         const name = "Baseline · " + (p.name || p.id) + (p.brand ? " — " + p.brand : "");
-        return `<button type="button" class="place-hit" data-place-pick="${esc(id)}" data-place-val="merge:${esc(p.id)}">${esc(name)}</button>`;
+        const baselineId = String(p.id || "").startsWith("baseline:") ? String(p.id).slice(9) : "";
+        return `<span class="place-hit-row"><button type="button" class="place-hit" data-place-pick="${esc(id)}" data-place-val="merge:${esc(p.id)}">${esc(name)}</button>${baselineId ? `<button type="button" class="place-del place-rename" data-place-rename="${esc(baselineId)}" data-place-url="${esc(id)}" data-place-name="${esc(p.name || p.id)}" title="Rename this baseline model" aria-label="Rename baseline ${esc(p.name || p.id)}">✎</button>` : ""}${baselineId ? `<button type="button" class="place-del" data-place-del="${esc(baselineId)}" data-place-url="${esc(id)}" data-place-name="${esc(p.name || p.id)}" title="Delete this wrong baseline model" aria-label="Delete baseline ${esc(p.name || p.id)}">×</button>` : ""}</span>`;
       }));
     box.hidden = false;
     box.innerHTML = btns.join("") || '<span class="muted">No baseline match</span>';
@@ -1184,7 +1332,9 @@
       </div>
       <div class="review-board" id="review-board">
         ${cards.map((e) => {
-          const c = e.card || {};
+          const c = editedCard(e);
+          const shopHost = hostOf(job.url) || job.site || "";
+          const shop = shopForUrl(state.data, job.url);
           const url = c.url || "";
           const dec = e.decision || {};
           const id = encodeURIComponent(url);
@@ -1211,30 +1361,8 @@
               <button type="button" class="btn-sm" data-mismatch-create="${esc(id)}" data-detected="${esc(detected || "other")}">Create new category: ${esc((detected || "other").charAt(0).toUpperCase() + (detected || "other").slice(1))}</button>
               <button type="button" class="btn-sm danger" data-mismatch-discard="${esc(id)}">Discard</button>
             </div>` : "";
-          return `<article class="review-card${isSel ? " is-selected" : ""}${isFlag ? " flagged" : ""}${mismatch ? " is-mismatch" : ""}">
-            <div class="review-top">
-              <label><input type="checkbox" data-review-select="${esc(id)}" ${isSel ? "checked" : ""}> Select</label>
-              <label><input type="checkbox" data-review-flag="${esc(id)}" ${isFlag ? "checked" : ""}> Flag</label>
-            </div>
-            <div class="review-mid">
-              ${productImg(c.image)}
-              <span class="review-main">
-                <strong>${esc(c.name || url)}</strong>
-                <small>${esc([c.brand, c.kind, c.color, c.weight, c.polymer ? "polymer " + c.polymer : ""].filter(Boolean).join(" · ") || url)}</small>
-                <small class="muted">${esc(where + pathNote)}</small>
-                ${c.price ? `<b>${esc(String(c.price))} TL</b>` : ""}
-                ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">open ↗</a>` : ""}
-              </span>
-            </div>
-            <div class="review-place-label">Goes to
-              <input type="search" data-review-place-q="${esc(id)}" placeholder="Search baseline…" autocomplete="off" aria-label="Search baseline for where ${esc(c.name || "this product")} goes">
-              <div class="place-hits" hidden></div>
-              <select data-review-place="${esc(id)}" aria-label="Where ${esc(c.name || "this product")} goes">${placeOptionsHtml(e, place, "")}</select>
-              <button type="button" class="btn-sm ghost" data-restore-place="${esc(id)}">Restore default</button>
-            </div>
-            <p class="review-compare">${esc(mismatch ? where : compareText(e, place))}</p>
-            ${mismatchActions}
-          </article>`;
+          // Same card as Uncertain: autofill, colours, weight, spool chain, RFID, undo / redo, Goes to chain.
+          return uncertainCard({ ...e, jobId: job.id, shopHost, shopName: (shop && (shop.name || shop.id)) || shopHost }, false, { isSel, isFlag, mismatch, where: where + pathNote, mismatchActions });
         }).join("")}
       </div>
     `;
@@ -1281,18 +1409,40 @@
   function baselineHtml(d) {
     const board = d.baseline || { categories: [{ id: "printers", name: "3D Printers" }], items: [] };
     const cats = board.categories && board.categories.length ? board.categories : [{ id: "printers", name: "3D Printers" }];
-    const q = adminFold(state.baselineQuery || "");
+    const queryTokens = adminFold(state.baselineQuery || "").replace(/\+/g, " plus ").split(/[^a-z0-9]+/).filter(Boolean);
     const selectedCategory = cats.some((c) => c.id === state.baselineCategory) ? state.baselineCategory : "";
     const shownCats = selectedCategory ? cats.filter((c) => c.id === selectedCategory) : cats;
     const all = board.items || [];
+    const parentIds = new Set(all.map((it) => it.id).filter(Boolean));
+    const families = all.filter((it) => it.entityType === "family" || !it.parentId);
+    // parentId is the durable relationship; entityType was added later and is
+    // absent from some older live baseline rows.
+    const isChild = (it) => Boolean(
+      (it.parentId && parentIds.has(it.parentId))
+      || (it.entityType === "sku")
+      || families.some((parent) => parent.id !== it.id && adminFold(it.name).startsWith(adminFold(parent.name) + " "))
+    );
+    const topLevel = all.filter((it) => !isChild(it));
+    const childrenByParent = new Map();
+    for (const row of all) {
+      if (!isChild(row) || !row.parentId) continue;
+      const rows = childrenByParent.get(row.parentId) || [];
+      rows.push(row);
+      childrenByParent.set(row.parentId, rows);
+    }
+    const childrenOf = (it) => childrenByParent.get(it.id) || [];
+    const searchable = (it) => [it.name, it.brand, it.toolSystem, it.motionType, it.packaging, it.reinforcement,
+      it.buildVolumeX, it.buildVolumeY, it.buildVolumeZ, ...childrenOf(it).flatMap((row) => [row.name, row.color, row.weight])].join(" ");
     const match = (it) => (!selectedCategory || (it.category || "printers") === selectedCategory)
-      && (!q || adminFold([it.name, it.brand, it.toolSystem, it.motionType, it.packaging, it.reinforcement, it.buildVolumeX, it.buildVolumeY, it.buildVolumeZ].join(" ")).includes(q));
+      && (!queryTokens.length || queryTokens.every((token) => adminFold(searchable(it)).replace(/\+/g, " plus ").includes(token)));
     return `<div class="panel">
       <h2>Baseline</h2>
       <p class="muted">Your models only. A shop run never writes here. Add one with the button on an Uncertain card, or by branching an offer into its own product in the catalog. You can also add a model on this page.</p>
+      <div class="baseline-duplicate-tools"><button type="button" class="btn-sm primary" id="save-all-baseline" ${baselinePendingIds().length ? "" : "disabled"}>Save all baseline changes${baselinePendingIds().length ? " (" + baselinePendingIds().length + ")" : ""}</button><button type="button" class="btn-sm ghost" id="find-baseline-duplicates">Find duplicate baseline cards</button></div>
+      <div id="baseline-duplicate-result">${baselineDuplicateHtml(topLevel, cats, all, childrenByParent)}</div>
       <div class="baseline-nav">
         <label>Category
-          <select id="baseline-category"><option value="">All categories</option>${cats.map((c) => `<option value="${esc(c.id)}" ${selectedCategory === c.id ? "selected" : ""}>${esc(c.name)} (${all.filter((it) => (it.category || "printers") === c.id).length})</option>`).join("")}</select>
+          <select id="baseline-category"><option value="">All categories</option>${cats.map((c) => `<option value="${esc(c.id)}" ${selectedCategory === c.id ? "selected" : ""}>${esc(c.name)} (${topLevel.filter((it) => (it.category || "printers") === c.id).length})</option>`).join("")}</select>
         </label>
         <label>Search
           <input id="baseline-q" type="search" placeholder="Search this category…" value="${esc(state.baselineQuery || "")}">
@@ -1309,19 +1459,25 @@
         <select id="baseline-new-parent">${cats.map((c) => `<option value="${esc(c.id)}">${esc(c.name)}</option>`).join("")}</select>
         <button type="button" class="btn-sm" id="baseline-add-item">Add model</button>
       </div>
-      <p class="muted">${all.filter(match).length} shown · ${all.length} models · ${cats.length} categories</p>
+      <p class="muted">${topLevel.filter(match).length} shown · ${topLevel.length} models · ${cats.length} categories</p>
       ${shownCats.map((c) => {
-        const items = all.filter((it) => (it.category || "printers") === c.id && match(it));
+        const items = topLevel.filter((it) => (it.category || "printers") === c.id && match(it));
         return `<details class="baseline-cat" ${detailAttrs("bcat-" + c.id)} open>
           <summary><strong>${esc(c.name)}</strong> <span class="muted">${items.length}</span></summary>
           <div class="form-row" style="flex-wrap:wrap;gap:8px;margin:8px 0">
             <input data-baseline-cat-name="${esc(c.id)}" type="text" value="${esc(c.name)}" aria-label="Category name">
             <button type="button" class="btn-sm" data-baseline-cat-save="${esc(c.id)}">Save category</button>
           </div>
-          <div class="catalog-results">${items.map((it) => baselineCard(it, cats)).join("") || '<p class="muted">No models in this category.</p>'}</div>
+          <div class="catalog-results">${items.map((it) => baselineCard(it, cats, all, childrenByParent)).join("") || '<p class="muted">No models in this category.</p>'}</div>
         </details>`;
       }).join("")}
     </div>`;
+  }
+
+  function baselineDuplicateHtml(items, cats, allItems, childrenByParent) {
+    if (!state.baselineDupes) return "";
+    if (!state.baselineDupes.length) return '<p class="muted">No duplicate baseline cards found.</p>';
+    return `<div class="baseline-duplicates"><strong>Duplicate pairs</strong><p class="muted">Compare each pair and remove the unwanted card.</p>${state.baselineDupes.map((group) => `<div class="baseline-duplicate-group">${group.map((it) => baselineCard(it, cats, allItems, childrenByParent)).join("")}</div>`).join("")}</div>`;
   }
 
   function recommendationHtml(d) {
@@ -1343,7 +1499,643 @@
     </div>`;
   }
 
-  function baselineCard(it, cats) {
+  // ponytail: extra sub-brands / variants ride in the same string field, comma-joined — no schema change.
+  // First value stays in the original input; the rest render as tag chips beside a "+" button.
+  function splitTags(v) { return String(v || "").split(",").map((s) => s.trim()).filter(Boolean); }
+  function tagChip(t) { return `<span class="tag-chip" data-tag="${esc(t)}">${esc(t)}<button type="button" data-tag-remove aria-label="Remove ${esc(t)}">×</button></span>`; }
+  function tagField(fieldHtml, extras, list) {
+    return `<div class="tag-field">${fieldHtml}<div class="tag-row">${extras.map(tagChip).join("")}<input class="tag-new" list="${list}" aria-label="Add another" placeholder="Add another…"><button type="button" class="btn-sm ghost" data-tag-add aria-label="Add">+</button></div></div>`;
+  }
+  function tagFieldValue(el) {
+    if (!el) return undefined;
+    const extras = [...(el.closest?.(".tag-field")?.querySelectorAll("[data-tag]") || [])].map((t) => t.dataset.tag);
+    return extras.length ? [el.value.trim(), ...extras].filter(Boolean).join(", ") : el.value;
+  }
+  function addTagsFrom(row) {
+    const input = row.querySelector(".tag-new");
+    for (const t of splitTags(input.value)) input.insertAdjacentHTML("beforebegin", tagChip(t));
+    input.value = "";
+    row.closest(".tag-field").querySelector("[data-baseline-field],[data-uncertain-field]").dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  // Colour dot + "From image": named colours and their hex come from data/filament-taxonomy.json.
+  // Weight: stored as grams ("1000 g"), shown as grams under 1 kg and as kg from 1 kg up.
+  // Same parser as api/filament-classify.js gramsFromText (thousands separators, 50 g – 20 kg sanity).
+  function gramsOf(value) {
+    const re = /(\d+(?:[.,]\d+)?)\s*(kilogram|kilo|kgs?|grams?|gr|g)(?![\p{L}\p{N}])/giu;
+    for (const m of String(value || "").matchAll(re)) {
+      const kg = /^k/i.test(m[2]);
+      const num = !kg && /^\d{1,3}[.,]\d{3}$/.test(m[1]) ? Number(m[1].replace(/[.,]/, "")) : Number(m[1].replace(",", "."));
+      const grams = Math.round(num * (kg ? 1000 : 1));
+      if (grams >= 50 && grams <= 20000) return grams;
+    }
+    return 0;
+  }
+  function weightLabel(value) {
+    const g = gramsOf(value);
+    if (!g) return String(value || "");
+    return g >= 1000 ? String(Math.round(g / 10) / 100) + " kg" : g + " g";
+  }
+  // Older cards may lack a weight; the titles they were seen under and the URL slug often carry it.
+  function weightOf(c) {
+    for (const t of [c.weight, c.sourceTitle, ...(c.listingTitles || []), c.name, String(c.url || "").replace(/[-_/]+/g, " ")]) {
+      const g = gramsOf(t);
+      if (g) return g + " g";
+    }
+    return "";
+  }
+
+  // Colour code for any written colour: the longest known name/alias inside it ("Dark Red" → red).
+  function colourId(value) {
+    const words = titleWords(value);
+    let best = "", len = 0;
+    for (const [id, c] of Object.entries((state.data && state.data.filamentColours) || {})) {
+      for (const a of [id, c.name, ...(c.aliases || [])]) {
+        const w = titleWords(a);
+        if (w.trim() && w.length > len && words.includes(w)) { best = id; len = w.length; }
+      }
+    }
+    return best;
+  }
+  function colourHex(value) {
+    const v = String(value || "").trim();
+    if (/^#[0-9a-f]{6}$/i.test(v)) return v;
+    const row = ((state.data && state.data.filamentColours) || {})[colourId(v)];
+    return row ? row.hex : "";
+  }
+  // Older runs cut only part of a colour tail ("… - Dark Red" became "… - Dark"). When an earlier title
+  // ends in " - <colour>", its head is the clean product line.
+  function listingName(c) {
+    const name = c.name || "";
+    for (const t of [c.sourceTitle, ...(c.listingTitles || [])].filter(Boolean)) {
+      const parts = String(t).split(/\s+[-–—|]\s+/);
+      if (parts.length < 2 || !colourId(parts[parts.length - 1])) continue;
+      const head = parts.slice(0, -1).join(" - ").trim();
+      if (adminFold(name).startsWith(adminFold(head))) return head;
+    }
+    return name;
+  }
+
+  // The colour as the listing wrote it. New runs store it (colorName); older cards get it back from the
+  // titles they were seen under: a " - Dark Red" tail first, else the matching alias as written.
+  function colourNameOf(c) {
+    // Runs before the tail fix stored "Black 1Kg": drop weight / diameter from a stored name too.
+    const stored = String(c.colorName || "").replace(/(?:^|\s)\d+(?:[.,]\d+)?\s*(?:kilogram|kilo|kgs?|grams?|gr|g|mm)(?=\s|$)/giu, " ").replace(/\s+/g, " ").trim();
+    if (stored) return stored;
+    const titles = [c.sourceTitle, ...(c.listingTitles || []), c.name].filter(Boolean);
+    for (const t of titles) {
+      const parts = String(t).split(/\s+[-–—|]\s+/);
+      // "Black 1Kg": weight and diameter share the tail but are not the colour.
+      const tail = parts.length > 1 ? parts[parts.length - 1].replace(/(?:^|\s)\d+(?:[.,]\d+)?\s*(?:kilogram|kilo|kgs?|grams?|gr|g|mm)(?=\s|$)/giu, " ").replace(/\s+/g, " ").trim() : "";
+      if (tail && colourId(tail)) return tail;
+    }
+    const row = ((state.data && state.data.filamentColours) || {})[c.color];
+    for (const a of ((row && row.aliases) || []).slice().sort((x, y) => y.length - x.length)) {
+      if (titles.some((t) => titleWords(t).includes(titleWords(a)))) return a;
+    }
+    // Multicolour: the colourway the title names ("Rainbow Spring Lake" → Spring Lake), and never a
+    // single colour that only came from the photo (the cardboard spool read as "light brown").
+    if (isMultiTitle(titles)) return multiColourName(titles.join(" ")) || "";
+    return row ? row.name : (c.color || "");
+  }
+  const MULTI_TITLE_RE = /\b(?:dual|tri|multi)[\s-]*(?:colou?r|renk)|\b\d\s*renkli\b|\b(?:çift|cift|üç|uc)\s*renk|\brainbow\b|\bgradi(?:ent|yan)\b|g[öo]kku[şs]a[ğg]|\bco-?extru/i;
+  function isMultiTitle(titles) { return MULTI_TITLE_RE.test(titles.filter(Boolean).join(" ")); }
+  // Mirrors api/filament-classify.js multiColourName.
+  function multiColourName(value) {
+    const m = String(value || "").match(/\b(?:rainbow|gradient|gradyan|multicolou?r|(?:dual|tri|multi)[\s-]*(?:colou?r|renk)|\d\s*renkli)\s+(.+?)(?=\s+(?:filament|filaman|\d)|\s*$)/i);
+    const name = m ? m[1].trim() : "";
+    return name && !/\b(?:pla\+?|petg|abs|asa|tpu|pctg|silk|matte|hyper|speed|filament)\b/i.test(name) ? name : "";
+  }
+  // One colour, a split dot for dual / tri colour, or a rainbow for gradients with no named colours.
+  const RAINBOW = "conic-gradient(#e53935, #fb8c00, #fdd835, #43a047, #1e88e5, #8e24aa, #e53935)";
+  function colourDot(hex, fx) {
+    const list = Array.isArray(hex) ? hex.filter(Boolean) : [];
+    const fill = list.length > 1 ? "conic-gradient(" + list.map((h, i) => `${h} ${Math.round(i * 100 / list.length)}% ${Math.round((i + 1) * 100 / list.length)}%`).join(", ") + ")"
+      : list.length === 1 ? list[0] : hex === "rainbow" ? RAINBOW : Array.isArray(hex) ? "" : hex;
+    return `<span class="colour-dot${fill ? "" : " is-empty"}${fx === "marble" || fx === "galaxy" ? " fx-" + fx : ""}" style="--dot:${esc(fill || "transparent")}" title="${esc((list.join(" · ") || (hex === "rainbow" ? "Multicolour" : hex) || "No colour yet") + (fx ? " · " + fx : "") + " · double-click for marble / galaxy")}"></span>`;
+  }
+  // Every named colour in a colour name, longest first ("Rose Dark Blue Green" → rose, dark-blue, green).
+  function coloursIn(value) {
+    let rest = titleWords(value);
+    const table = (state.data && state.data.filamentColours) || {};
+    const names = Object.entries(table).flatMap(([id, c]) => [id, c.name, ...(c.aliases || [])].map((a) => ({ id, w: titleWords(a) })))
+      .filter((x) => x.w.trim()).sort((a, b) => b.w.length - a.w.length);
+    const out = [];
+    for (const { id, w } of names) {
+      if (rest.includes(w)) { out.push(id); rest = rest.replace(w, " "); }
+    }
+    return [...new Set(out)];
+  }
+  // A card's colour state: the colours (one per slot), the shade picked for each slot, and a finish.
+  // It lives on the .colour-row element so the eyedropper, minus, finish menu and autosave share it.
+  const MARBLE_RE = /\bmarble\b|\bmermer\b/i;
+  const GALAXY_RE = /\bgalaxy\b|\bglitter\b|\bsparkle\b|\bsimli\b|\bgalaksi\b/i;
+  function cardColour(c, edit, name) {
+    const ids = coloursIn(name);
+    const own = edit.colorSet != null ? edit.colorSet : edit.colorName == null && Array.isArray(c.colorSet) && c.colorSet.length ? c.colorSet : null;
+    // A multicolour card never falls back to the single stored colour: that one came from the photo.
+    const multiCard = isMultiTitle([c.sourceTitle, ...(c.listingTitles || []), c.name]);
+    const found = own || (ids.length ? ids : !multiCard && c.color && ((state.data && state.data.filamentColours) || {})[c.color] ? [c.color] : []);
+    // Number the colours the way the name reads them: "Rose Dark Blue Green" → 1 rose, 2 dark blue, 3 green.
+    const table = (state.data && state.data.filamentColours) || {};
+    const words = titleWords(name);
+    const at = (id) => Math.min(...[id, table[id] && table[id].name, ...((table[id] && table[id].aliases) || [])].filter(Boolean)
+      .map((a) => words.indexOf(titleWords(a))).map((i) => (i < 0 ? 1e9 : i)));
+    const set = [...found].sort((x, y) => at(x) - at(y));
+    const hexes = edit.colorHexes || (edit.colorName == null && (c.colorHexes || (c.colorHex ? [c.colorHex] : []))) || (edit.colorHex ? [edit.colorHex] : []);
+    const titles = [c.sourceTitle, ...(c.listingTitles || []), c.name, name].join(" ");
+    const fx = edit.colorEffect != null ? edit.colorEffect : c.colorEffect != null ? c.colorEffect : MARBLE_RE.test(titles) ? "marble" : GALAXY_RE.test(titles) ? "galaxy" : "";
+    const rainbow = !set.length && !!(c.multicolor || /rainbow|gradi|renkli|dual|tri colou?r|multicolou?r/i.test(titles));
+    return { set, hexes: edit.colorHex && !edit.colorHexes ? [edit.colorHex] : hexes, fx, rainbow };
+  }
+  function colourFill(st) {
+    const table = (state.data && state.data.filamentColours) || {};
+    if (st.set.length > 1) return st.set.map((id, i) => st.hexes[i] || (table[id] && table[id].hex));
+    if (st.hexes[0]) return st.hexes[0];
+    if (st.set.length === 1) return table[st.set[0]] ? table[st.set[0]].hex : "";
+    return st.rainbow ? "rainbow" : "";
+  }
+  function rowColour(row) {
+    const list = (v) => String(v || "").split(",").filter((x, i, all) => x || i < all.length - 1);
+    return { set: String(row.dataset.set || "").split(",").filter(Boolean), hexes: list(row.dataset.hexes), fx: row.dataset.fx || "", rainbow: row.dataset.rainbow === "1", slot: Number(row.dataset.slot) || 0 };
+  }
+  function colourRowAttrs(st) {
+    return `data-set="${esc(st.set.join(","))}" data-hexes="${esc(st.hexes.join(","))}" data-fx="${esc(st.fx)}" data-rainbow="${st.rainbow ? "1" : ""}" data-slot="0"`;
+  }
+  // Redraw the dot, the eyedropper's colour number and the minus button from the row's state.
+  function paintColourRow(row, st) {
+    row.dataset.set = st.set.join(",");
+    row.dataset.hexes = st.hexes.join(",");
+    row.dataset.fx = st.fx;
+    row.dataset.slot = String(st.slot || 0);
+    row.querySelector(".colour-dot").outerHTML = colourDot(colourFill(st), st.fx);
+    const droppers = row.querySelector(".droppers");
+    if (droppers) droppers.innerHTML = dropperButtons(st);
+    const note = row.closest(".colour-field") && row.closest(".colour-field").querySelector(".colour-tone");
+    if (note) note.outerHTML = toneNote(autoTone(st));
+    const minus = row.querySelector("[data-colour-minus]");
+    if (minus) minus.hidden = st.set.length < 2;
+    const plus = row.querySelector("[data-colour-plus]");
+    if (plus) plus.hidden = st.set.length >= 6;
+  }
+  // Same voting as the worker's colourFromPixels (lib/image-match.cjs): each pixel votes for its nearest
+  // named colour; a winner needs 30 useful pixels and 38% of the vote. Pass 1 ignores white/grey/dark
+  // pixels (usually background); pass 2 only drops near-white so black, white and grey spools still read.
+  // The returned hex is the average of the winning pixels, which is what the dot shows.
+  // "Which named colour does this look like?" — measured the way eyes see it (CIE Lab, ΔE 2000), not as
+  // raw RGB distance, which called a deep purple "dark grey" and teal "slate grey".
+  function hexLab(rgb) {
+    const [r, g, b] = rgb.map((v) => { v /= 255; return v > 0.04045 ? ((v + 0.055) / 1.055) ** 2.4 : v / 12.92; });
+    const f = (t) => (t > 216 / 24389 ? Math.cbrt(t) : (24389 / 27 * t + 16) / 116);
+    const x = f((r * 0.4124 + g * 0.3576 + b * 0.1805) / 0.95047), y = f(r * 0.2126 + g * 0.7152 + b * 0.0722), z = f((r * 0.0193 + g * 0.1192 + b * 0.9505) / 1.08883);
+    return [116 * y - 16, 500 * (x - y), 200 * (y - z)];
+  }
+  function deltaE(p, q) {
+    const [L1, a1, b1] = p, [L2, a2, b2] = q, rad = Math.PI / 180;
+    const Cm = (Math.hypot(a1, b1) + Math.hypot(a2, b2)) / 2;
+    const G = 0.5 * (1 - Math.sqrt(Cm ** 7 / (Cm ** 7 + 25 ** 7)));
+    const a1p = a1 * (1 + G), a2p = a2 * (1 + G);
+    const C1 = Math.hypot(a1p, b1), C2 = Math.hypot(a2p, b2);
+    const hue = (x, y) => { const d = Math.atan2(y, x) / rad; return d < 0 ? d + 360 : d; };
+    const h1 = hue(a1p, b1), h2 = hue(a2p, b2);
+    let dh = h2 - h1;
+    if (C1 * C2 === 0) dh = 0; else if (dh > 180) dh -= 360; else if (dh < -180) dh += 360;
+    const dH = 2 * Math.sqrt(C1 * C2) * Math.sin((dh / 2) * rad);
+    const Lm = (L1 + L2) / 2, Cp = (C1 + C2) / 2;
+    let hm = h1 + h2;
+    if (C1 * C2 !== 0) hm = Math.abs(h1 - h2) > 180 ? (h1 + h2 + (h1 + h2 < 360 ? 360 : -360)) / 2 : (h1 + h2) / 2;
+    const T = 1 - 0.17 * Math.cos((hm - 30) * rad) + 0.24 * Math.cos(2 * hm * rad) + 0.32 * Math.cos((3 * hm + 6) * rad) - 0.2 * Math.cos((4 * hm - 63) * rad);
+    const SL = 1 + 0.015 * (Lm - 50) ** 2 / Math.sqrt(20 + (Lm - 50) ** 2), SC = 1 + 0.045 * Cp, SH = 1 + 0.015 * Cp * T;
+    const RT = -2 * Math.sqrt(Cp ** 7 / (Cp ** 7 + 25 ** 7)) * Math.sin(60 * Math.exp(-(((hm - 275) / 25) ** 2)) * rad);
+    const dL = (L2 - L1) / SL, dC = (C2 - C1) / SC, dHs = dH / SH;
+    return Math.sqrt(dL * dL + dC * dC + dHs * dHs + RT * dC * dHs);
+  }
+  // "Transparent …" and "Clear" describe see-through plastic, not a hue, so they are never a look-alike.
+  function namedLabs(table) {
+    return Object.entries(table || {}).filter(([id]) => !/^(?:transparent|clear|translucent)/.test(id)).map(([id, c]) => ({ id, name: c.name, rgb: [1, 3, 5].map((i) => parseInt(String(c.hex).slice(i, i + 2), 16)) }))
+      .filter((r) => r.rgb.every(Number.isFinite)).map((r) => ({ ...r, lab: hexLab(r.rgb) }));
+  }
+  function nearestNamed(rgb, named) {
+    const lab = hexLab(rgb);
+    let best = null;
+    for (const r of named) {
+      const d = deltaE(lab, r.lab);
+      if (!best || d < best.d) best = { id: r.id, name: r.name, d };
+    }
+    return best;
+  }
+
+  function colourFromPixels(data, table) {
+    const named = namedLabs(table);
+    // Photos repeat colours: remember the answer per (slightly rounded) pixel colour.
+    const seen = new Map();
+    const vote = (chromaticOnly) => {
+      const votes = new Map();
+      let useful = 0;
+      for (let i = 0; i + 3 < data.length; i += 4) {
+        const rgb = [data[i], data[i + 1], data[i + 2]];
+        const hi = Math.max(...rgb), lo = Math.min(...rgb);
+        if (data[i + 3] < 200 || lo > 235) continue;
+        if (chromaticOnly && (hi > 245 || hi - lo < 35 || hi < 35)) continue;
+        const key = (rgb[0] >> 2) << 12 | (rgb[1] >> 2) << 6 | (rgb[2] >> 2);
+        let best = seen.get(key);
+        if (best === undefined) { best = nearestNamed(rgb, named); seen.set(key, best); }
+        // ΔE over 30: not close to any named colour, so this pixel does not vote.
+        if (!best || best.d > 30) continue;
+        useful += 1;
+        const v = votes.get(best.id) || { n: 0, sum: [0, 0, 0] };
+        v.n += 1;
+        v.sum = v.sum.map((x, k) => x + rgb[k]);
+        votes.set(best.id, v);
+      }
+      const top = [...votes].sort((a, b) => b[1].n - a[1].n)[0];
+      if (!top || useful < 30 || top[1].n / useful < 0.38) return null;
+      return { color: top[0], confidence: top[1].n / useful, hex: "#" + top[1].sum.map((x) => Math.round(x / top[1].n).toString(16).padStart(2, "0")).join("") };
+    };
+    return vote(true) || vote(false);
+  }
+  // The colour NAME always comes from the listing ("Desert Tan"). The eyedropper / Image only record a
+  // tone: the nearest named colour (beige) plus the exact pixel colour for the dot. Search uses the tone
+  // quietly, so "bambu lab pla beige" shows Desert Tan right after the real Beige.
+  function toneName(id) {
+    return String(id || "").split("+").filter(Boolean).map((one) => {
+      const row = ((state.data && state.data.filamentColours) || {})[one];
+      return row ? row.name : one;
+    }).join(" + ");
+  }
+  function toneNote(id) {
+    return `<small class="colour-tone muted">${id ? "Looks " + esc(toneName(id)) + " (for search)" : ""}</small>`;
+  }
+  // The internal colour is always a plain everyday name, whatever the maker calls it ("Desert Tan" →
+  // beige, "Indigo Purple" → purple). Decided by how the colour looks (CIE LCh): dull colours are
+  // black / gray / white by lightness, pale warm ones beige, dark warm ones brown, the rest by hue.
+  function basicColour(hex) {
+    const rgb = [1, 3, 5].map((i) => parseInt(String(hex || "").slice(i, i + 2), 16));
+    if (!rgb.every(Number.isFinite)) return "";
+    const [L, a, b] = hexLab(rgb);
+    const C = Math.hypot(a, b);
+    let h = Math.atan2(b, a) * 180 / Math.PI;
+    if (h < 0) h += 360;
+    // Warm off-whites (a "Beige" spool photographed pale) are beige, not grey; the very lightest are white.
+    if (L >= 75 && L <= 92 && C >= 4 && C < 32 && h >= 40 && h < 110) return "beige";
+    if (C < 8) return L < 20 ? "black" : L > 82 ? "white" : "gray";
+    if (L < 18 && C < 25) return "black";
+    if (L > 85 && C < 15) return "white";
+    if (L >= 68 && C < 32 && h >= 50 && h < 110) return "beige";
+    if (L < 58 && C <= 45 && h >= 20 && h < 90) return "brown";
+    if (C < 15) return L < 20 ? "black" : L > 85 ? "white" : "gray";
+    if (h < 25 || h >= 345) return "pink";
+    if (h < 50) return "red";
+    if (h < 70) return "orange";
+    if (h < 105) return "yellow";
+    if (h < 185) return "green";
+    if (h < 225) return "cyan";
+    if (h < 300) return "blue";
+    return "purple";
+  }
+  // Every colour of the spool, in order, as plain names: "blue", "white+cyan+blue".
+  function autoTone(st) {
+    const table = (state.data && state.data.filamentColours) || {};
+    const hexes = st.set.length ? st.set.map((id, i) => st.hexes[i] || (table[id] && table[id].hex)) : st.hexes.slice(0, 1);
+    return [...new Set(hexes.map(basicColour).filter(Boolean))].join("+");
+  }
+  // One eyedropper per colour: button N always sets colour N (with a swatch of what it holds now).
+  const DROPPER_SVG = '<svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M20.7 5.6l-2.3-2.3a1 1 0 0 0-1.4 0l-3.1 3.1-1.9-1.9-1.4 1.4 1.4 1.4L4 15.3V20h4.7l8-8 1.4 1.4 1.4-1.4-1.9-1.9 3.1-3.1a1 1 0 0 0 0-1.4zM7.9 18H6v-1.9l7.9-7.9 1.9 1.9L7.9 18z"/></svg>';
+  function dropperButtons(st) {
+    const table = (state.data && state.data.filamentColours) || {};
+    const n = Math.max(1, st.set.length);
+    return Array.from({ length: n }, (_, i) => {
+      const hex = st.hexes[i] || (table[st.set[i]] && table[st.set[i]].hex) || "";
+      const label = n > 1 ? `colour ${i + 1} (${toneName(st.set[i]) || "not set"})` : "the colour";
+      return `<button type="button" class="btn-sm ghost colour-dropper" data-colour-dropper data-slot="${i}" title="Eyedropper: pick ${esc(label)}" aria-label="Pick ${esc(label)} with the eyedropper">${n > 1 ? `<span class="dropper-swatch" style="--dot:${esc(hex || "transparent")}"></span><span class="dropper-slot">${i + 1}</span>` : ""}${DROPPER_SVG}</button>`;
+    }).join("");
+  }
+
+  function setColourTone(card, id, hex, slotIndex) {
+    const url = card.dataset.uncertainUrl;
+    const input = card.querySelector('[data-uncertain-field="color"]');
+    // No colour name in the listing at all: then the tone is the best name we have.
+    if (!input.value.trim() && id) {
+      input.value = toneName(id);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    const row = card.querySelector(".colour-row");
+    const st = rowColour(row);
+    const slot = st.set.length > 1 ? Math.min(Math.max(Number(slotIndex) || 0, 0), st.set.length - 1) : 0;
+    st.hexes[slot] = hex;
+    // Multi-colour: each click fills the next colour (1 → 2 → 3 → back to 1). The tone follows colour 1.
+    st.slot = slot;
+    state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), colorHex: st.hexes[0] || "", colorHexes: st.hexes, colorTone: autoTone(st) });
+    paintColourRow(row, st);
+
+    scheduleAutosave(card);
+  }
+
+  function nearestColour(hex) {
+    const rgb = [1, 3, 5].map((i) => parseInt(String(hex).slice(i, i + 2), 16));
+    if (!rgb.every(Number.isFinite)) return null;
+    return nearestNamed(rgb, namedLabs((state.data && state.data.filamentColours) || {}));
+  }
+  async function colourFromImage(src) {
+    let url = src;
+    if (new URL(src, location.href).origin !== location.origin) {
+      url = (await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "imageData", url: new URL(src, location.href).href }) })).dataUrl;
+    }
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 64;
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, 64, 64);
+    return colourFromPixels(ctx.getImageData(0, 0, 64, 64).data, state.data && state.data.filamentColours);
+  }
+
+  // RFID is a plain on/off button beside the spool material; its value is "yes" or "" like any other field.
+  function rfidToggle(attrs, on) {
+    return `<button type="button" class="rfid-toggle" data-rfid-toggle ${attrs} value="${on ? "yes" : ""}" aria-pressed="${on ? "true" : "false"}">RFID</button>`;
+  }
+  // linked: undefined = no chain (baseline cards), true / false = the group chain on Uncertain cards.
+  function spoolRow(attr, spoolMaterial, rfid, linked) {
+    const chain = linked == null ? "" : `<button type="button" class="btn-sm ghost spool-chain" data-spool-chain aria-pressed="${linked ? "true" : "false"}" title="${linked ? "Linked: one spool type and RFID for this brand, sub-brand, polymer and variant. Click to break." : "Unlinked: each card has its own spool type. Click to link again."}" aria-label="${linked ? "Break spool link" : "Link spool type"}">${linked ? CHAIN : CHAIN_BROKEN}</button>`;
+    return `<div class="spool-row">${spoolMaterialSelect(attr("spoolMaterial"), spoolMaterial)}${chain}${rfidToggle(attr("rfid"), rfid)}</div>`;
+  }
+  const CHAIN = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M10.6 13.4a1 1 0 0 0 1.4 0l4-4a3 3 0 1 0-4.2-4.2l-1.2 1.2 1.4 1.4 1.2-1.2a1 1 0 0 1 1.4 1.4l-4 4a1 1 0 0 0 0 1.4zm2.8-2.8a1 1 0 0 0-1.4 0l-4 4a3 3 0 1 0 4.2 4.2l1.2-1.2-1.4-1.4-1.2 1.2a1 1 0 0 1-1.4-1.4l4-4a1 1 0 0 0 0-1.4z"/></svg>';
+  const CHAIN_BROKEN = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M15.8 5.2a1 1 0 0 1 1.4 1.4l-2 2 1.4 1.4 2-2a3 3 0 1 0-4.2-4.2l-2 2 1.4 1.4 2-2zM8.2 18.8a1 1 0 0 1-1.4-1.4l2-2-1.4-1.4-2 2a3 3 0 1 0 4.2 4.2l2-2-1.4-1.4-2 2zM4 6.5 5.5 5l3 3L7 9.5zm12.5 9.5L18 14.5l3 3-1.5 1.5z"/></svg>';
+  function spoolGroupKey(brand, subBrand, polymer, variant) {
+    return [brand, splitTags(subBrand)[0] || "", polymer, splitTags(variant).map(adminFold).sort().join("+")].map(adminFold).join("|");
+  }
+  function spoolGroup(key) {
+    return ((state.data && state.data.desk && state.data.desk.filamentGroups) || {})[key] || {};
+  }
+  function cardGroupKey(card) {
+    const v = (k) => tagFieldValue(card.querySelector(`[data-uncertain-field="${k}"]`)) || "";
+    return spoolGroupKey(v("brand"), v("subBrand"), v("polymer"), v("variant"));
+  }
+  async function setSpoolGroup(key, patch) {
+    const res = await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "setFilamentGroup", key, ...patch }) });
+    if (res.desk && state.data) state.data.desk = res.desk;
+  }
+
+  // Autosave: any change on a card saves that card a moment later, without reloading the page.
+  // The Save buttons stay. Baseline image uploads still wait for Save (they are files, not fields).
+  // Undo / redo per Uncertain card. Each autosave is one step; the card as it was before you first touched
+  // it is step 0. Undo restores a step and saves it, so the server follows.
+  const cardHistory = new Map();
+  function cardSnapshot(card) {
+    const snap = uncertainFields(card);
+    const edit = state.uncertainEdit.get(card.dataset.uncertainUrl) || {};
+    snap.colorTone = edit.colorTone != null ? edit.colorTone : "";
+    return JSON.parse(JSON.stringify(snap));
+  }
+  function startCardHistory(card) {
+    const url = card && card.dataset && card.dataset.uncertainUrl;
+    if (url && !cardHistory.has(url)) cardHistory.set(url, { steps: [cardSnapshot(card)], at: 0 });
+  }
+  function recordCardHistory(card) {
+    const url = card.dataset.uncertainUrl;
+    startCardHistory(card);
+    const h = cardHistory.get(url);
+    const snap = cardSnapshot(card);
+    if (JSON.stringify(snap) === JSON.stringify(h.steps[h.at])) return;
+    h.steps = [...h.steps.slice(0, h.at + 1), snap].slice(-50);
+    h.at = h.steps.length - 1;
+    paintHistoryButtons(card);
+  }
+  function cardHistoryCan(url, dir) {
+    const h = cardHistory.get(url);
+    return !!h && h.at + dir >= 0 && h.at + dir < h.steps.length;
+  }
+  function paintHistoryButtons(card) {
+    const url = card.dataset.uncertainUrl;
+    const undo = card.querySelector("[data-card-undo]");
+    const redo = card.querySelector("[data-card-redo]");
+    if (undo) undo.disabled = !cardHistoryCan(url, -1);
+    if (redo) redo.disabled = !cardHistoryCan(url, 1);
+  }
+  function stepCardHistory(card, dir) {
+    const url = card.dataset.uncertainUrl;
+    if (!cardHistoryCan(url, dir)) return;
+    const h = cardHistory.get(url);
+    h.at += dir;
+    const snap = h.steps[h.at];
+    // The snapshot IS the card: write it back as your edits, redraw, then save it.
+    state.uncertainEdit.set(url, { ...snap, colorName: snap.colorName != null ? snap.colorName : snap.color });
+    painted.delete("#tab-uncertain");
+    render();
+    const fresh = $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url);
+    if (fresh) { fresh.dataset.historyStep = "1"; scheduleAutosave(fresh); }
+  }
+
+  const autosaveTimers = new Map();
+  function scheduleAutosave(el) {
+    const card = el && el.closest && el.closest(".uncertain-card, .baseline-card");
+    if (!card || typeof setTimeout !== "function") return;
+    const key = card.dataset.uncertainUrl || card.dataset.baselineId;
+    if (!key || card.classList.contains("is-removed") || card.classList.contains("is-held")) return;
+    clearTimeout((autosaveTimers.get(key) || {}).timer);
+    autosaveTimers.set(key, { card, timer: setTimeout(() => {
+      autosaveTimers.delete(key);
+      if (card.dataset.uncertainUrl && !card.dataset.historyStep) recordCardHistory(card);
+      delete card.dataset.historyStep;
+      autosave(card).catch(() => { /* kept in unsavedEdits and retried */ });
+    }, 900) });
+  }
+  // The request a card's autosave sends; also used to flush on page close.
+  function saveBodyFor(card) {
+    if (card.dataset.uncertainUrl) return { action: "updateUncertainCard", jobId: card.dataset.uncertainJob, url: card.dataset.uncertainUrl, patch: uncertainFields(card) };
+    const patch = {};
+    for (const input of card.querySelectorAll("[data-baseline-field]")) patch[input.dataset.baselineField] = tagFieldValue(input);
+    return { action: "updateBaselineItem", id: card.dataset.baselineId, patch };
+  }
+  // An edit is never dropped: a failed save (server restarting, offline) stays here and is retried every
+  // few seconds until it goes through; a newer edit of the same card replaces it.
+  const unsavedEdits = new Map();
+  function sendSave(key, body) {
+    unsavedEdits.set(key, body);
+    return api("/api/admin", { method: "POST", body: JSON.stringify(body) }).then((res) => {
+      if (unsavedEdits.get(key) === body) unsavedEdits.delete(key);
+      if (unsavedEdits.size === 0) document.body && document.body.classList.remove("has-unsaved");
+      return res;
+    }, (err) => {
+      if (unsavedEdits.get(key) === body) {
+        document.body && document.body.classList.add("has-unsaved");
+        toast("Not saved yet (" + err.message + "). Retrying…");
+        setTimeout(() => { if (unsavedEdits.get(key) === body) sendSave(key, body).catch(() => {}); }, 4000);
+      }
+      throw err;
+    });
+  }
+  async function autosave(card) {
+    const body = saveBodyFor(card);
+    if (body.url) {
+      const { url, jobId, patch } = body;
+      await sendSave(url, body);
+      const now = new Date().toISOString();
+      const job = ((state.data && state.data.jobs) || []).find((j) => j.id === jobId);
+      if (job) job.cards = { ...(job.cards || {}), [url]: { ...((job.cards || {})[url] || { url }), ...patch, url, handEdited: true, savedAt: now } };
+      knownCache = null;
+      state.uncertainSaved.add(url);
+      card.classList.add("is-saved");
+      return;
+    }
+    const res = await sendSave("baseline:" + body.id, body);
+    if (res.baseline && state.data) state.data.baseline = res.baseline;
+    state.baselineEdit.delete(body.id);
+    knownCache = null;
+    showBaselineDirtyCount();
+  }
+  // Closing or reloading the page: send what is still waiting, and warn if an earlier save never got through.
+  if (typeof window !== "undefined" && typeof window.addEventListener === "function") {
+    window.addEventListener("beforeunload", (e) => {
+      for (const [key, { card, timer }] of autosaveTimers) {
+        clearTimeout(timer);
+        unsavedEdits.set(key, saveBodyFor(card));
+      }
+      autosaveTimers.clear();
+      for (const body of unsavedEdits.values()) {
+        try { fetch("/api/admin", { method: "POST", keepalive: true, credentials: "same-origin", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }); } catch (_) { /* best effort */ }
+      }
+      if (unsavedEdits.size && document.body && document.body.classList.contains("has-unsaved")) { e.preventDefault(); e.returnValue = ""; }
+    });
+  }
+
+  function spoolMaterialSelect(attrs, value) {
+    return `<label>Spool material<select ${attrs}><option value="">Not set</option><option value="cardboard" ${value === "cardboard" ? "selected" : ""}>Cardboard</option><option value="plastic" ${value === "plastic" ? "selected" : ""}>Plastic</option></select></label>`;
+  }
+
+  function uncertainFields(card) {
+    const out = {};
+    for (const k of ["name", "brand", "subBrand", "polymer", "variant", "color", "packaging", "spoolMaterial", "rfid", "weight"]) out[k] = tagFieldValue(card.querySelector(`[data-uncertain-field="${k}"]`));
+    if (out.color != null) {
+      const row = card.querySelector && card.querySelector(".colour-row");
+      const st = row && row.dataset ? rowColour(row) : { set: coloursIn(out.color), hexes: [], fx: "" };
+      out.colorName = out.color;
+      out.colorSet = st.set;
+      out.color = st.set.length > 1 ? st.set.join("+") : st.set[0] || colourId(out.color) || out.color;
+      if (row && row.dataset) {
+        out.colorHexes = st.hexes;
+        out.colorEffect = st.fx;
+        if (st.hexes[0]) out.colorHex = st.hexes[0];
+      }
+    }
+    if (out.weight != null) out.weight = gramsOf(out.weight) ? gramsOf(out.weight) + " g" : out.weight.trim();
+    if (card.dataset && card.dataset.kind) out.kind = card.dataset.kind;
+    const chain = card.querySelector && card.querySelector("[data-place-chain]");
+    const placeSel = card.querySelector && card.querySelector("[data-review-place]");
+    if (chain && chain.getAttribute && placeSel) {
+      out.placeLinked = chain.getAttribute("aria-pressed") === "true";
+      out.place = placeSel.value || "create";
+    }
+    const edit = card.dataset && state.uncertainEdit.get(card.dataset.uncertainUrl);
+    if (edit && edit.colorHex) out.colorHex = edit.colorHex;
+    const toneRow = card.querySelector && card.querySelector(".colour-row");
+    if (toneRow && toneRow.dataset) out.colorTone = autoTone(rowColour(toneRow));
+    return out;
+  }
+
+  // What you already confirmed: baseline rows plus every card you pressed Save on, in any run —
+  // including ones published since, so a confirmation keeps helping later runs.
+  // Cached per data load — every Uncertain card reads it while rendering.
+  let knownCache = null;
+  function knownRows(filament) {
+    const d = state.data || {};
+    const items = (d.baseline && d.baseline.items) || [];
+    if (!knownCache || knownCache.data !== d || knownCache.jobs !== d.jobs || knownCache.items !== items) {
+      const saved = [];
+      for (const job of d.jobs || []) {
+        for (const raw of Object.values(job.cards || {})) {
+          const c = (raw && raw.card) || raw;
+          if (!c || !c.handEdited) continue;
+          const filamentCard = (c.kind || job.kind) === "filament" || !!c.polymer;
+          saved.push({ ...c, category: filamentCard ? "filaments" : "printers" });
+        }
+      }
+      knownCache = { data: d, jobs: d.jobs, items, rows: [...items, ...saved], profiles: null };
+    }
+    return knownCache.rows.filter((x) => (x.category === "filaments") === filament);
+  }
+
+  // One entry per distinct brand/sub-brand/polymer/variant combo (colour SKUs collapse), words pre-folded.
+  // Later rows win, so a card you saved beats a baseline row with the same words.
+  function filamentProfiles() {
+    knownRows(true);
+    if (!knownCache.profiles) {
+      const byKey = new Map();
+      for (const p of knownRows(true)) {
+        if (!p.brand) continue;
+        const prof = { row: p, brand: titleWords(p.brand), subs: splitTags(p.subBrand).map(titleWords), polymer: titleWords(p.polymer), variants: splitTags(p.variant).map(titleWords) };
+        byKey.set([prof.brand, ...prof.subs, prof.polymer, ...prof.variants].join("|"), prof);
+      }
+      knownCache.profiles = [...byKey.values()];
+    }
+    return knownCache.profiles;
+  }
+
+  // Title help for filament cards. A confirmed model whose brand, sub-brand, polymer and variant words all
+  // appear in this title is the answer (most specific wins), so saving one colour pre-fills its siblings.
+  // Otherwise known words are picked one field at a time. Nothing is saved until you press Save.
+  function titleWords(s) { return " " + adminFold(s).replace(/[^\p{L}\p{N}+]+/gu, " ").trim() + " "; }
+  function titleGuess(c) {
+    const words = titleWords(c.name);
+    const inTitle = (w) => w.trim() !== "" && words.includes(w);
+    const has = (t) => inTitle(titleWords(t));
+    // Baseline rows store polymer / variant as codes (pla, plus-high-speed) that titles never spell out;
+    // the scraper already turned this title into the same codes, so a code match counts too.
+    const cardPolymer = titleWords(c.polymer);
+    const cardVariants = splitTags(c.variant).map(titleWords);
+    const profiles = filamentProfiles();
+    let best = null, score = 0;
+    for (const p of profiles) {
+      const terms = 1 + p.subs.length + (p.polymer.trim() ? 1 : 0) + p.variants.length;
+      if (terms < score || !inTitle(p.brand) || !p.subs.every(inTitle)) continue;
+      if (p.polymer.trim() && !inTitle(p.polymer) && p.polymer !== cardPolymer) continue;
+      if (!p.variants.every((v) => inTitle(v) || cardVariants.includes(v))) continue;
+      best = p.row; score = terms;
+    }
+    const rows = profiles.map((p) => p.row);
+    if (best) return { from: [best.brand, best.subBrand, best.polymer, best.variant].filter(Boolean).join(" · "), brand: best.brand, subBrand: best.subBrand, polymer: best.polymer, variant: best.variant, spoolMaterial: best.spoolMaterial, rfid: best.rfid };
+    const found = (key, pool) => [...new Set(pool.flatMap((p) => splitTags(p[key])))].filter(has).sort((a, b) => b.length - a.length);
+    const brand = found("brand", rows)[0] || "";
+    const same = rows.filter((p) => adminFold(p.brand) === adminFold(brand));
+    // A harvested brand the title never mentions is a shop mislabel (Bambu Lab on RhinoLab spools): replace it.
+    return { from: "", brandWrong: !!brand && !has(c.brand), brand, subBrand: found("subBrand", same)[0] || "", polymer: found("polymer", rows)[0] || "", variant: found("variant", rows).join(", ") };
+  }
+
+  // Filament brand / polymer / sub-brand / variant suggestions come from knownRows, scoped to the focused
+  // card: sub-brands and polymers by brand, variants by brand + sub-brand + polymer.
+  // Filled on focus into the shared dl-* datalists in index.html, so they are never stale.
+  function fillFilamentSuggestions(listId, card) {
+    const key = listId.slice(3);
+    const on = (k) => {
+      const el = card && card.querySelector(`[data-baseline-field="${k}"],[data-uncertain-field="${k}"]`);
+      return el ? adminFold(el.value) : "";
+    };
+    const brand = on("brand"), sub = on("subBrand"), polymer = on("polymer");
+    const filament = !!(card && card.querySelector("[data-baseline-field=\"polymer\"],[data-uncertain-field=\"polymer\"]"));
+    const rows = knownRows(filament);
+    const scoped = rows.filter((x) => (key === "brand" || !brand || adminFold(x.brand) === brand)
+      && (key !== "variant" || ((!polymer || adminFold(x.polymer) === polymer)
+        && (!sub || splitTags(x.subBrand).some((s) => adminFold(s) === sub)))));
+    // ponytail: nothing in scope (new brand/series) → offer every baseline value rather than an empty list.
+    const values = new Map();
+    for (const x of scoped.length ? scoped : rows) for (const v of splitTags(x[key])) if (!values.has(adminFold(v))) values.set(adminFold(v), v);
+    document.getElementById(listId).innerHTML = [...values.values()].sort().map((v) => `<option value="${esc(v)}">`).join("");
+  }
+
+  // The shop listings published under this model (and its colour / weight rows), as editable cards.
+  function baselineOffersPanel(it) {
+    const ids = new Set([it.id, ...(((state.data && state.data.baseline && state.data.baseline.items) || []).filter((x) => x.parentId === it.id).map((x) => x.id))]);
+    const n = allProducts().filter((p) => ids.has(p.baselineId) || ids.has(p.id)).reduce((sum, p) => sum + (p.offers || []).length, 0);
+    if (!n) return "";
+    const key = "bl-offers:" + it.id;
+    return `<details class="offer-src-box" ${detailAttrs(key)}>
+      <summary>${n} shop offer${n === 1 ? "" : "s"} — edit each listing</summary>
+      <div class="offer-cards" data-lazy-offers="baseline:${esc(it.id)}">${isOpen(key) ? offerCardsFor("baseline:" + it.id) : ""}</div>
+    </details>`;
+  }
+
+  function baselineCard(it, cats, allItems, childrenByParent) {
     const edit = state.baselineEdit.get(it.id) || {};
     const name = edit.name != null ? edit.name : (it.name || "");
     const brand = edit.brand != null ? edit.brand : (it.brand || "");
@@ -1358,23 +2150,51 @@
       <label>Tool system<input list="baseline-tool-systems" data-baseline-field="toolSystem" data-baseline-id="${esc(it.id)}" value="${esc(field("toolSystem"))}" placeholder="Single head, IDEX…"></label>
       <label>Motion type<input list="baseline-motion-types" data-baseline-field="motionType" data-baseline-id="${esc(it.id)}" value="${esc(field("motionType"))}" placeholder="CoreXY, Cartesian…"></label>
     </div>`;
-    const filamentFields = (it.category || "printers") !== "filaments" ? "" : `<div class="baseline-specs">
+    const isFilament = (it.category || "printers") === "filaments";
+    const [variant1 = "", ...variantMore] = splitTags(field("variant"));
+    const [sub1 = "", ...subMore] = splitTags(field("subBrand"));
+    const subBrandLabel = `<label class="muted">Sub-brand / Series (optional)<input aria-label="Sub-brand / Series" data-baseline-field="subBrand" data-baseline-id="${esc(it.id)}" list="dl-subBrand" value="${esc(sub1)}" placeholder="Ender, CR, PolyLite…"></label>`;
+    const filamentFields = !isFilament ? "" : `<div class="baseline-specs">
+      <label>Polymer<input list="dl-polymer" data-baseline-field="polymer" data-baseline-id="${esc(it.id)}" value="${esc(field("polymer"))}" placeholder="PLA, PETG, ABS…"></label>
+      ${tagField(`<label>Material variant<input list="dl-variant" data-baseline-field="variant" data-baseline-id="${esc(it.id)}" value="${esc(variant1)}" placeholder="Plus, Silk, High-Speed…"></label>`, variantMore, "dl-variant")}
+      <label>Diameter<select data-baseline-field="diameter" data-baseline-id="${esc(it.id)}"><option value="1.75 mm" ${(field("diameter") || "1.75 mm") === "1.75 mm" ? "selected" : ""}>1.75 mm</option><option value="2.85 mm" ${field("diameter") === "2.85 mm" ? "selected" : ""}>2.85 mm</option></select></label>
       <label>Packaging<input list="baseline-filament-packaging" data-baseline-field="packaging" data-baseline-id="${esc(it.id)}" value="${esc(field("packaging"))}" placeholder="Spool, spoolless, refill…"></label>
+      ${spoolRow((k) => `data-baseline-field="${k}" data-baseline-id="${esc(it.id)}"`, field("spoolMaterial"), !!field("rfid"))}
       <label>Material<input list="baseline-filament-reinforcement" data-baseline-field="reinforcement" data-baseline-id="${esc(it.id)}" value="${esc(field("reinforcement"))}" placeholder="Plain polymer, CF, GF…"></label>
     </div>`;
-    return `<div class="product-card baseline-card" data-baseline-id="${esc(it.id)}">
+    const rows = allItems || [];
+    const ids = new Set(rows.map((row) => row.id).filter(Boolean));
+    const children = childrenByParent && childrenByParent.has(it.id)
+      ? childrenByParent.get(it.id)
+      : rows.filter((row) => (row.parentId === it.id && ids.has(row.parentId))
+        || (row.id !== it.id && adminFold(row.name).startsWith(adminFold(it.name) + " ")));
+    const colourHex = { black: "#111827", white: "#f8fafc", beige: "#d6c3a5", gray: "#9ca3af", grey: "#9ca3af", red: "#ef4444", orange: "#f97316", yellow: "#facc15", green: "#22c55e", blue: "#3b82f6", purple: "#a855f7", pink: "#ec4899", brown: "#92400e", gold: "#eab308", silver: "#cbd5e1", bronze: "#b45309", transparent: "#e5e7eb" };
+    const childGroups = [...new Set(children.map((row) => row.weight || "Unspecified weight"))].map((weight) => {
+      const rows = children.filter((row) => (row.weight || "Unspecified weight") === weight);
+      const colours = [...new Map(rows.map((row) => {
+        const name = row.color || "Unspecified colour";
+        return [name, `<span class="baseline-colour"><i style="--swatch:${esc(colourHex[adminFold(name)] || "#94a3b8")}" aria-hidden="true"></i>${esc(name)}</span>`];
+      })).values()];
+      return `<div class="baseline-sku-group"><strong>${esc(weightLabel(weight))}</strong><details class="baseline-colour-menu"><summary>${colours.length} colour${colours.length === 1 ? "" : "s"}</summary><div class="baseline-colours">${colours.join("") || '<span class="muted">No colour recorded</span>'}</div></details></div>`;
+    }).join("");
+    const childSummary = children.length ? `<div class="baseline-skus"><span class="baseline-spec-label">Colours and weights (${children.length} SKUs)</span>${childGroups}</div>` : "";
+    const removed = state.baselineRemoved.has(it.id);
+    return `<div class="product-card baseline-card${removed ? " is-removed" : ""}" data-baseline-id="${esc(it.id)}">
       <div class="catalog-thumb">${pending ? `<img src="${esc(pending.preview)}" alt="Uploaded thumbnail preview">` : it.image ? productImg(it.image) : '<div class="catalog-thumb-empty"></div>'}</div>
       <label class="catalog-image-upload">Upload thumbnail<input type="file" accept="image/jpeg,image/png,image/webp" data-baseline-image="${esc(it.id)}"></label>
-      <textarea aria-label="Model name" data-baseline-field="name" data-baseline-id="${esc(it.id)}" rows="3">${esc(name)}</textarea>
-      <input aria-label="Brand" data-baseline-field="brand" data-baseline-id="${esc(it.id)}" value="${esc(brand)}" placeholder="Brand">
+      <label class="muted">Product line<textarea aria-label="Model name" data-baseline-field="name" data-baseline-id="${esc(it.id)}" rows="3">${esc(name)}</textarea></label>
+      <label class="muted">Brand<input aria-label="Brand" ${isFilament ? "list=\"dl-brand\"" : ""} data-baseline-field="brand" data-baseline-id="${esc(it.id)}" value="${esc(brand)}" placeholder="Brand"></label>
+      ${tagField(subBrandLabel, subMore, "dl-subBrand")}
       ${printerFields}
       ${filamentFields}
+      ${childSummary}
+      ${baselineOffersPanel(it)}
       <label class="muted" style="font-size:12px">Change category
         <select data-baseline-move="${esc(it.id)}">${list.map((c) => `<option value="${esc(c.id)}" ${(it.category || "printers") === c.id ? "selected" : ""}>${esc(c.name)}</option>`).join("")}</select>
       </label>
       <div class="actions">
-        <button class="btn-sm" type="button" data-baseline-save="${esc(it.id)}">Save</button>
-        <button class="btn-sm danger" type="button" data-baseline-del="${esc(it.id)}">Remove</button>
+        <button class="btn-sm" type="button" data-baseline-save="${esc(it.id)}" ${removed ? "disabled" : ""}>Save</button>
+        <button class="btn-sm danger" type="button" data-baseline-del="${esc(it.id)}" ${removed ? "disabled" : ""}>Remove</button>
       </div>
     </div>`;
   }
@@ -1394,8 +2214,45 @@
     return { all, rows, live };
   }
 
+  // One listing seen under two URLs of the SAME shop (category paths, ?variant links). The same product at
+  // two shops is not a duplicate: that is two prices. Filaments must also agree on colour, weight, packaging.
+  function uncertainDupeKey(ev) {
+    const c = withEarlierSave(ev.card || {});
+    const base = [ev.shopHost || hostOf(c.url), adminFold(listingName(c))];
+    // Some older cards never recorded kind; a polymer or the word "filament" is enough to know.
+    const filament = c.kind === "filament" || !!c.polymer || /filament/i.test(c.name || "");
+    // The colour may only be in the URL ("…-matte-yellow"). A filament with no colour anywhere is not
+    // provably the same spool, so it never pairs.
+    // Both the name's and the URL's colour: "Filamix PLA Matte - Green" at …-mint-green is not plain green.
+    const urlColour = colourId(String(c.url || "").replace(/[-_/]+/g, " "));
+    const colour = [adminFold(colourNameOf(c)), urlColour].filter(Boolean).join("/") || (filament ? c.url : "");
+    return (filament ? [...base, colour, gramsOf(weightOf(c)) || 1000, c.packaging || "spool"] : [...base, colour]).join("|");
+  }
+  function findUncertainDupes(d) {
+    const groups = new Map();
+    for (const ev of uncertainRows(d).live) {
+      const url = ev.card && ev.card.url;
+      if (!url) continue;
+      const key = uncertainDupeKey(ev);
+      groups.set(key, [...(groups.get(key) || []), url]);
+    }
+    return [...groups.values()].filter((g) => g.length > 1);
+  }
+  function uncertainDupesHtml(all) {
+    if (!state.uncertainDupes) return "";
+    if (!state.uncertainDupes.length) return '<p class="muted">No duplicate cards found.</p>';
+    const byUrl = new Map(all.map((ev) => [ev.card && ev.card.url, ev]));
+    for (const spot of state.uncertainHeld.values()) if (spot.ev && spot.ev.card) byUrl.set(spot.ev.card.url, spot.ev);
+    return `<div class="baseline-duplicates uncertain-duplicates"><strong>Duplicate groups (${state.uncertainDupes.length})</strong><p class="muted">Same listing from the same shop. Delete the extras: the last card of a group always stays.</p>${state.uncertainDupes.map((group) => {
+      const live = group.filter((u) => !state.uncertainHeld.has(u));
+      return `<div class="baseline-duplicate-group uncertain-dupe-group">${group.map((u) => byUrl.get(u)).filter(Boolean).map((ev) => uncertainCard(ev, live.length === 1 && live[0] === ev.card.url)).join("")}</div>`;
+    }).join("")}</div>`;
+  }
+
   function uncertainHtml(d) {
-    const { all, rows, live } = uncertainRows(d);
+    const { all, rows: allRows, live } = uncertainRows(d);
+    const inDupes = new Set((state.uncertainDupes || []).flat());
+    const rows = allRows.filter((ev) => !inDupes.has(ev.card && ev.card.url));
     const shops = [...new Set(all.map((x) => x.shopHost).filter(Boolean))].sort();
     const shop = state.uncertainShop || "";
     return `<div class="panel">
@@ -1406,55 +2263,138 @@
           <select id="uncertain-shop"><option value="">all shops</option>${shops.map((s) => `<option value="${esc(s)}" ${shop === s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>
         </label>
         <button type="button" class="btn-sm ok" id="uncertain-publish-all" ${live.length ? "" : "disabled"}>Force publish all (${live.length})</button>
+        ${live.filter((ev) => !(Number(ev.card && ev.card.price) > 0)).length ? `<button type="button" class="btn-sm" id="uncertain-fetch-prices">Fetch missing prices (${live.filter((ev) => !(Number(ev.card && ev.card.price) > 0)).length})</button>` : ""}
+        <button type="button" class="btn-sm" id="uncertain-find-dupes">${state.uncertainDupes ? "Refresh duplicates" : "Find duplicates"}</button>
+        ${state.uncertainDupes ? '<button type="button" class="btn-sm ghost" id="uncertain-clear-dupes">Close duplicates</button>' : ""}
       </div>
+      ${uncertainDupesHtml(all)}
       <p class="muted">${rows.length} shown · ${all.length} uncertain</p>
-      <div class="catalog-results">${rows.map(uncertainCard).join("") || '<div class="empty">No unmatched cards. Run a shop, then Ask Laya on the review board.</div>'}</div>
+      <div class="catalog-results">${rows.map((ev) => uncertainCard(ev)).join("") || '<div class="empty">No unmatched cards. Run a shop, then Ask Laya on the review board.</div>'}</div>
     </div>`;
   }
 
-  function uncertainCard(ev) {
-    const c = ev.card || {};
+  // A re-run is a new run, so a card you already saved comes back unsaved. Carry that save forward:
+  // your identity fields win, the new run keeps its price, image and stock.
+  const SAVED_KEYS = ["name", "brand", "subBrand", "polymer", "variant", "color", "colorName", "colorHex", "colorHexes", "colorSet", "colorEffect", "colorTone", "weight", "packaging", "spoolMaterial", "rfid", "place", "placeLinked"];
+  // What a card really is. A shop can file spools under another category (the run then marks them
+  // category_mismatch), and "Ender" is also a printer name, so a stored kind of "printer" is not enough:
+  // a name that says filament or a polymer is a filament.
+  function cardKind(c) {
+    if (!c) return "printer";
+    if (c.kind === "filament" || c.polymer) return "filament";
+    return /\bfilament|\bfilaman|\b(?:pla\+?|petg|abs|asa|tpu|pctg|nylon|pa6?|pa12|pc)\b/i.test([c.name, c.sourceTitle].join(" ")) ? "filament" : (c.kind || "printer");
+  }
+
+  function withEarlierSave(c) {
+    if (c && c.url && c.kind !== cardKind(c)) c = { ...c, kind: cardKind(c) };
+    if (!c || !c.url) return c;
+    knownRows(true);
+    // The same listing can sit in several runs, each with its own save: the newest one wins, so an edit
+    // made on Shop Runs shows on Uncertain and the other way round.
+    const saved = knownCache.rows.filter((r) => r.handEdited && r.url === c.url)
+      .reduce((best, r) => (!best || String(r.savedAt || "") >= String(best.savedAt || "") ? r : best), null);
+    if (!saved || (c.handEdited && String(c.savedAt || "") >= String(saved.savedAt || ""))) return c;
+    const out = { ...c, handEdited: true };
+    for (const k of SAVED_KEYS) if (saved[k] != null) out[k] = saved[k];
+    return out;
+  }
+
+  // review: Shop Runs extras on the same card (select / flag, worker match line, compare line, mismatch actions).
+  function uncertainCard(ev, keepLast, review) {
+    const c = withEarlierSave(ev.card || {});
     const url = c.url || "";
     const id = encodeURIComponent(url);
     const edit = state.uncertainEdit.get(url) || {};
-    const name = edit.name != null ? edit.name : (c.name || "");
-    const brand = edit.brand != null ? edit.brand : (c.brand || "");
+    const isFilament = c.kind === "filament";
+    // Your typing beats a saved card, which beats a confirmed-model match, which beats the harvest;
+    // per-word guesses only fill blanks.
+    const guess = isFilament && !c.handEdited ? titleGuess(c) : null;
+    const pick = (k) => edit[k] != null ? edit[k]
+      : guess && guess[k] && (guess.from || !c[k] || (k === "brand" && guess.brandWrong)) ? guess[k] : (c[k] || "");
+    const name = edit.name != null ? edit.name : listingName(c);
+    const brand = pick("brand");
+    const polymer = pick("polymer");
+    const variant = pick("variant");
+    const color = edit.colorName != null ? edit.colorName : colourNameOf(c);
+    const colourState = cardColour(c, edit, color);
+    const packaging = edit.packaging != null ? edit.packaging : (c.packaging || "spool");
+    const found = weightOf(c);
+    const weightAssumed = edit.weight == null && (c.weightAssumed || !found);
+    const weight = edit.weight != null ? edit.weight : (found || "1000 g");
+    // Spool material follows its model group while the chain is linked.
+    const group = spoolGroup(spoolGroupKey(brand, pick("subBrand"), polymer, variant));
+    const spoolLinked = group.spoolLinked !== false;
+    const spoolMaterial = spoolLinked && group.spoolMaterial ? group.spoolMaterial : pick("spoolMaterial");
+    // RFID: your click, else a saved card, else a matched model or the word "RFID" in the title.
+    const ownRfid = edit.rfid != null ? !!edit.rfid : c.handEdited ? !!c.rfid : !!(guess && guess.rfid) || !!c.rfid || /\brfid\b/i.test(c.name || "");
+    // Linked: the group's RFID (set from any card of the group) wins, like spool material.
+    const rfid = isFilament && spoolLinked && group.rfid != null ? !!group.rfid : ownRfid;
+    const subBrand = pick("subBrand");
+    const [variant1 = "", ...variantMore] = splitTags(variant);
+    const [sub1 = "", ...subMore] = splitTags(subBrand);
+    const subBrandLabel = `<label class="muted">Sub-brand / Series (optional)<input aria-label="Sub-brand / Series" data-uncertain-field="subBrand" data-uncertain-url="${esc(url)}" list="dl-subBrand" value="${esc(sub1)}" placeholder="Ender, CR, PolyLite…"></label>`;
     const laya = layaOf(ev);
-    const magellan = ev.error ? "Harvest blocked: " + ev.error : magellanUnsure(ev)
+    // category_mismatch: the shop filed the listing under another category, so the run held it back
+    // unread. Say that in words; once a price was fetched from the page it is not a problem any more.
+    const magellan = ev.error === "category_mismatch"
+      ? (Number(c.price) > 0 ? "Held out of the run (the shop filed it under another category). Price read from its page." : "Held out of the run: the shop filed it under another category, so its price was not read.")
+      : ev.error ? "Harvest blocked: " + ev.error : magellanUnsure(ev)
       ? ((ev.decision && ev.decision.action) === "held" || (ev.decision && ev.decision.action) === "hold"
         ? "Magellan: held" + (ev.decision.reason ? " — " + ev.decision.reason : "")
         : "Magellan: unmatched")
       : "Magellan: " + ((ev.decision && ev.decision.action) || "placed");
-    const place = defaultPlace(ev);
+    const place = uncertainPlace(ev, { kind: c.kind, name, brand, subBrand, polymer, variant });
     const held = state.uncertainHeld.has(url);
     const saved = state.uncertainSaved.has(url);
     const published = state.uncertainPublished.has(url);
-    return `<div class="product-card baseline-card uncertain-card${held ? " is-held" : ""}${saved ? " is-saved" : ""}${published ? " is-published" : ""}" data-uncertain-url="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">
+    const reviewClass = review ? " review-card" + (review.isSel ? " is-selected" : "") + (review.isFlag ? " flagged" : "") + (review.mismatch ? " is-mismatch" : "") : "";
+    return `<div class="product-card baseline-card uncertain-card${reviewClass}${held ? " is-held" : ""}${saved ? " is-saved" : ""}${published ? " is-published" : ""}" data-uncertain-url="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}" data-kind="${esc(c.kind || "")}"${ev.catalogProductId ? ` data-catalog-product="${esc(ev.catalogProductId)}"` : ""}>
+      ${review ? `<div class="review-top">
+        <label><input type="checkbox" data-review-select="${esc(id)}" ${review.isSel ? "checked" : ""}> Select</label>
+        <label><input type="checkbox" data-review-flag="${esc(id)}" ${review.isFlag ? "checked" : ""}> Flag</label>
+      </div>` : ""}
       ${held ? '<div class="uncertain-hold" aria-hidden="true">Removed</div>' : ""}
       ${published ? '<div class="uncertain-check" aria-label="Published">✓</div>' : ""}
-      <button class="uncertain-trash" type="button" data-uncertain-delete="${esc(url)}" aria-label="Delete this card" title="Delete this card">
+      ${keepLast === true ? '<span class="uncertain-kept badge">Kept</span>' : `<button class="uncertain-trash" type="button" data-uncertain-delete="${esc(url)}" aria-label="Delete this card" title="Delete this card">
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9z"/></svg>
-      </button>
+      </button>`}
+      <div class="card-history">
+        <button class="btn-sm ghost" type="button" data-card-undo title="Undo the last change on this card"${cardHistoryCan(url, -1) ? "" : " disabled"}>↶ Undo</button>
+        <button class="btn-sm ghost" type="button" data-card-redo title="Redo"${cardHistoryCan(url, 1) ? "" : " disabled"}>↷ Redo</button>
+      </div>
       <div class="catalog-thumb">${c.image ? productImg(c.image) : '<div class="catalog-thumb-empty"></div>'}</div>
       <div class="meta"><span class="badge">${esc(ev.shopName || ev.shopHost || "shop")}</span></div>
-      <textarea aria-label="Listing name" data-uncertain-field="name" data-uncertain-url="${esc(url)}" rows="3">${esc(name)}</textarea>
-      <input aria-label="Brand" data-uncertain-field="brand" data-uncertain-url="${esc(url)}" value="${esc(brand)}" placeholder="Brand">
-      <p class="muted">${esc(magellan)}</p>
-      ${Number(c.price) > 0 ? `<p class="muted">Shop price: ${esc(c.price)} TL</p>` : '<p class="error">No shop price was harvested. Re-run this shop with the updated worker before publishing.</p>'}
+      <label class="muted">Product line<textarea aria-label="Listing name" data-uncertain-field="name" data-uncertain-url="${esc(url)}" rows="3">${esc(name)}</textarea></label>
+      ${tagField(subBrandLabel, subMore, "dl-subBrand")}
+      ${isFilament ? `<div class="filament-identity-fields">
+        <label>Brand<input list="dl-brand" data-uncertain-field="brand" data-uncertain-url="${esc(url)}" value="${esc(brand)}" placeholder="Brand"></label>
+        <label>Polymer<input list="dl-polymer" data-uncertain-field="polymer" data-uncertain-url="${esc(url)}" value="${esc(polymer)}" placeholder="PLA, PETG, ABS…"></label>
+        ${tagField(`<label>Material variant<input list="dl-variant" data-uncertain-field="variant" data-uncertain-url="${esc(url)}" value="${esc(variant1)}" placeholder="Plus, Silk, High-Speed…"></label>`, variantMore, "dl-variant")}
+        <label class="colour-field">Colour<span class="colour-row" ${colourRowAttrs(colourState)}>${colourDot(colourFill(colourState), colourState.fx)}<input data-uncertain-field="color" data-uncertain-url="${esc(url)}" value="${esc(color)}" placeholder="Detected colour"><button type="button" class="btn-sm ghost" data-colour-from-image title="Read the colour from the product image"${c.image ? "" : " disabled"}>Image</button><button type="button" class="btn-sm ghost colour-minus" data-colour-minus title="One colour fewer: the name only sounds like two or three colours" aria-label="Remove a colour"${colourState.set.length > 1 ? "" : " hidden"}>−</button><button type="button" class="btn-sm ghost colour-plus" data-colour-plus title="One colour more (dual, tri colour…)" aria-label="Add a colour"${colourState.set.length >= 6 ? " hidden" : ""}>+</button><span class="droppers">${dropperButtons(colourState)}</span></span>${toneNote(autoTone(colourState))}</label>
+        <label>Weight<input data-uncertain-field="weight" data-uncertain-url="${esc(url)}" value="${esc(weightLabel(weight))}" placeholder="1 kg, 250 g…">${weightAssumed ? '<small class="muted weight-assumed">Assumed: the listing gives no weight</small>' : ""}</label>
+        <label>Packaging<select data-uncertain-field="packaging" data-uncertain-url="${esc(url)}"><option value="spool" ${packaging === "spool" ? "selected" : ""}>With spool</option><option value="refill" ${packaging === "refill" ? "selected" : ""}>Refill / Makarasız</option></select></label>
+        ${spoolRow((k) => `data-uncertain-field="${k}" data-uncertain-url="${esc(url)}"`, spoolMaterial, rfid, spoolLinked)}
+      </div>
+      ${guess && guess.from ? `<p class="muted uncertain-guess">Matches ${esc(guess.from)}. Check, then Save.</p>` : ""}` : `<label class="muted">Brand<input data-uncertain-field="brand" data-uncertain-url="${esc(url)}" value="${esc(brand)}" placeholder="Brand"></label>`}
+      <p class="muted">${esc(review ? review.where : magellan)}</p>
+      ${Number(c.price) > 0 ? `<p class="muted">Shop price: ${esc(c.price)} TL</p>` : `<p class="error">No shop price was harvested. <button type="button" class="btn-sm" data-refetch-price="${esc(url)}" data-refetch-job="${esc(ev.jobId || "")}">Get price</button></p>`}
       <p class="muted">${esc(layaLabel(laya))}${laya && laya.confidence != null ? " · " + Number(laya.confidence).toFixed(2) : ""}</p>
       ${url ? `<a href="${esc(url)}" target="_blank" rel="noopener noreferrer">open ↗</a>` : ""}
       <div class="review-place-label">Goes to
         <div class="place-combo">
           <input type="search" data-review-place-q="${esc(id)}" placeholder="Type to search baseline…" autocomplete="off" aria-label="Search baseline for where ${esc(c.name || "this listing")} goes">
           <button type="button" class="ghost place-arrow" data-place-open="${esc(id)}" aria-label="Show baseline matches">▾</button>
+          ${placeChain(place.linked)}
         </div>
         <div class="place-hits" hidden></div>
         <select data-review-place="${esc(id)}" aria-label="Where ${esc(c.name || "this listing")} goes">${placeOptionsHtml(ev, place, "")}</select>
+        ${place.auto ? `<small class="muted place-auto">Auto: matched baseline ${esc(place.name)}</small>` : ""}
       </div>
+      ${review ? `<button type="button" class="btn-sm ghost" data-restore-place="${esc(id)}" title="Back to the automatic match">Restore default</button><p class="review-compare">${esc(review.mismatch ? review.where : compareText(ev, place))}</p>${review.mismatchActions}` : ""}
       <div class="actions">
-        <button class="btn-sm" type="button" data-uncertain-save="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">Save &amp; publish</button>
+        <button class="btn-sm" type="button" data-uncertain-save="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">Save</button>
         <button class="btn-sm primary" type="button" data-uncertain-baseline="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">Add to baseline</button>
-        <button class="btn-sm ok" type="button" data-uncertain-publish="${esc(url)}">Force publish</button>
+        <button class="btn-sm ok" type="button" data-uncertain-publish="${esc(url)}">Save &amp; publish</button>
       </div>
     </div>`;
   }
@@ -1480,6 +2420,9 @@
         <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:8px 0">
           <label class="muted" style="font-size:12px">Shop
             <select id="catalog-shop"><option value="">all shops</option>${[...new Set(allProducts().flatMap((p) => (p.offers || []).map((o) => o.store)).filter(Boolean))].sort().map((x) => `<option value="${esc(x)}" ${state.catalogShop === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select>
+          </label>
+          <label class="muted" style="font-size:12px">Category
+            <select id="catalog-shelf">${[["", "all"], ["product", "3D printers"], ["filament", "Filaments"]].map(([v, l]) => `<option value="${v}" ${state.catalogShelf === v ? "selected" : ""}>${l} (${allProducts().filter((p) => !v || p.shelf === v).length})</option>`).join("")}</select>
           </label>
           <label class="muted" style="font-size:12px">Variant
             <select id="catalog-variant">
@@ -1577,38 +2520,52 @@
 
   // Where every offer on this row actually came from, and the two ways out of a wrong group:
   // move it onto another product, or branch it out as a product of its own.
+  // Every published offer as the same card as Uncertain / Shop Runs. "Goes to" moves it (Save & publish),
+  // the trash can deletes it from the catalog, Add to baseline makes it a model of its own.
   function offersPanel(p) {
     const offers = p.offers || [];
     if (!offers.length) return "";
-    const rows = offers.map((o, i) => {
-      const slug = String(o.url || "").split("/").pop() || "";
-      return `<li class="offer-src" data-offer-url="${esc(o.url)}">
-        <div class="offer-src-head">
-          <strong>${esc(o.store || "?")}</strong>
-          <span class="muted">${esc(o.price != null ? String(o.price) : "")}</span>
-          ${/^https?:\/\//i.test(o.url || "") ? `<a href="${esc(o.url)}" target="_blank" rel="noopener noreferrer">source ↗</a>` : ""}
-          <span class="muted">${esc(o.stockStatus || "stock ?")}</span>
-          ${o.priceSuspect ? `<span class="badge failed" title="the number on the page looked wrong, so this price is not trusted">price suspect: ${esc(o.priceSuspect)}</span>` : ""}
-        </div>
-        <div class="muted" title="scraped title">scraped: ${esc(o.sourceTitle || "(not recorded yet — re-run the shop)")}</div>
-        <div class="muted" title="worker title">worker: ${esc(p.name || p.id)}</div>
-        <div class="muted" title="url slug">${esc(slug)}</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
-          <input list="catalog-targets" data-offer-move-q="${esc(o.url)}" placeholder="Move to baseline model…" style="flex:1;min-width:140px">
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <button class="btn-sm" type="button" data-offer-move="${esc(o.url)}" data-offer-from="${esc(p.id)}" data-offer-name="${esc(p.name || "")}">Move</button>
-            <button class="btn-sm danger" type="button" data-offer-delete="${esc(o.url)}" data-offer-from="${esc(p.id)}" data-offer-store="${esc(o.store || "listing")}">Delete</button>
-          </div>
-          <button class="btn-sm ghost" type="button" data-offer-branch="${esc(o.url)}" data-offer-from="${esc(p.id)}" title="Create a new catalog product and baseline model from the scraped title">Create new model</button>
-        </div>
-      </li>`;
-    }).join("");
-    return `<details class="offer-src-box" ${detailAttrs("offers:" + p.id)}>
-      <summary>${offers.length} offer${offers.length === 1 ? "" : "s"} — source, scraped title, worker title</summary>
-      <ul class="offer-src-list">${rows}</ul>
+    const key = "offers:" + p.id;
+    return `<details class="offer-src-box" ${detailAttrs(key)}>
+      <summary>${offers.length} offer${offers.length === 1 ? "" : "s"} — edit each listing</summary>
+      <div class="offer-cards" data-lazy-offers="product:${esc(p.id)}">${isOpen(key) ? offerCardsFor("product:" + p.id) : ""}</div>
     </details>`;
   }
-
+  // Offers of one catalog row ("product:<id>") or of every catalog row of a baseline model ("baseline:<id>").
+  function offerCardsFor(key) {
+    const [kind, ...rest] = String(key || "").split(":");
+    const id = rest.join(":");
+    const rows = allProducts();
+    const baselineIds = kind === "baseline"
+      ? new Set([id, ...(((state.data && state.data.baseline && state.data.baseline.items) || []).filter((it) => it.parentId === id).map((it) => it.id))])
+      : null;
+    const products = kind === "product" ? rows.filter((p) => p.id === id) : rows.filter((p) => baselineIds.has(p.baselineId) || baselineIds.has(p.id));
+    const html = products.flatMap((p) => (p.offers || []).map((o) => uncertainCard(offerEvent(p, o)))).join("");
+    return html || '<p class="muted">No shop offers yet.</p>';
+  }
+  // The card for a published offer: the listing's card from its run when there is one, else built from
+  // the offer; the price is the catalog's, and Goes to starts on the row it sits on.
+  let offerIndexCache = null;
+  function offerEvent(p, o) {
+    const d = state.data || {};
+    if (!offerIndexCache || offerIndexCache.data !== d || offerIndexCache.jobs !== d.jobs) {
+      const byUrl = new Map();
+      for (const job of d.jobs || []) for (const ev of collectCards(job, d)) if (ev.card && ev.card.url && !byUrl.has(ev.card.url)) byUrl.set(ev.card.url, { ...ev, jobId: job.id });
+      offerIndexCache = { data: d, jobs: d.jobs, byUrl };
+    }
+    const found = offerIndexCache.byUrl.get(o.url);
+    const base = found ? found.card : { url: o.url, name: o.sourceTitle || p.name, sourceTitle: o.sourceTitle, brand: p.brand, subBrand: p.subBrand, kind: p.kind || (p.shelf === "filament" ? "filament" : "printer"), polymer: p.polymer, variant: p.variant };
+    const current = p.baselineId ? "merge:baseline:" + p.baselineId : "create";
+    const card = {
+      ...base,
+      price: o.price, image: o.image || base.image || p.image,
+      colorName: base.colorName || o.colorName, colorHex: base.colorHex || o.colorHex, colorHexes: base.colorHexes || o.colorHexes,
+      colorEffect: base.colorEffect != null ? base.colorEffect : o.colorEffect, weight: base.weight || o.weight,
+      place: base.handEdited && base.place ? base.place : current,
+      placeLinked: base.handEdited && base.placeLinked != null ? base.placeLinked : false
+    };
+    return { ...(found || {}), card, jobId: found ? found.jobId : "", catalogProductId: p.id, shopName: o.store, decision: (found && found.decision) || { action: "merge", candidateId: p.baselineId ? "baseline:" + p.baselineId : p.id } };
+  }
   function shopsHtml(d) {
     const desk = d.desk || { shops: [] };
     return `
@@ -1925,6 +2882,49 @@
         }
         return;
       }
+      if (e.target.closest("#find-baseline-duplicates")) {
+        const all = ((state.data && state.data.baseline && state.data.baseline.items) || []);
+        const ids = new Set(all.map((it) => it.id).filter(Boolean));
+        const selectedCategory = state.baselineCategory || "";
+        const items = all.filter((it) => !(it.parentId && ids.has(it.parentId)) && it.entityType !== "sku"
+          && (!selectedCategory || (it.category || "printers") === selectedCategory));
+        const groups = new Map();
+        for (const it of items) {
+          const key = adminFold([it.category, it.brand, it.name, it.polymer, it.variant, it.diameter].join("|"));
+          if (!key) continue;
+          const list = groups.get(key) || [];
+          list.push(it);
+          groups.set(key, list);
+        }
+        state.baselineDupes = [...groups.values()].filter((group) => group.length > 1);
+        toast(state.baselineDupes.length ? state.baselineDupes.length + " duplicate baseline group" + (state.baselineDupes.length === 1 ? "" : "s") + " found in " + (selectedCategory || "all categories") + "." : "No duplicate baseline cards found in " + (selectedCategory || "all categories") + ".");
+        render();
+        return;
+      }
+      if (e.target.closest("#save-all-baseline")) {
+        const btn = e.target.closest("#save-all-baseline");
+        const ids = baselinePendingIds();
+        if (!ids.length) { toast("No baseline changes to save."); return; }
+        btn.disabled = true;
+        btn.textContent = "Saving " + ids.length + "…";
+        const changes = ids.map((id) => {
+          const image = state.pendingImages.get(id);
+          return { id, patch: state.baselineEdit.get(id) || {}, imageUpload: image ? { type: image.type, data: image.data } : null };
+        });
+        try {
+          const res = await action({ action: "updateBaselineItems", changes });
+          for (const id of ids) { state.baselineEdit.delete(id); state.pendingImages.delete(id); }
+          if (res.baseline) state.data.baseline = res.baseline;
+          painted.delete("#tab-baseline");
+          render();
+          toast("Saved " + ids.length + " baseline card" + (ids.length === 1 ? "" : "s") + ".");
+        } catch (err) {
+          toast(err.message);
+          btn.disabled = false;
+          showBaselineDirtyCount();
+        }
+        return;
+      }
       if (e.target.closest("[data-merge-cluster]")) {
         const clusterKey = e.target.closest("[data-merge-cluster]").dataset.mergeCluster;
         const cluster = (state.dupes && state.dupes.clusters || []).find((c) => c.key === clusterKey);
@@ -2110,7 +3110,59 @@
         const place = raw.startsWith("merge:")
           ? { action: "merge", candidateId: raw.slice(6) }
           : { action: "create", candidateId: "" };
+        // Find the card first: applyPlace empties the list this button sits in.
+        const pickedCard = btn.closest(".uncertain-card");
         applyPlace(placeCard(btn), url, place);
+        unlinkPlace(pickedCard, place);
+        return;
+      }
+      if (e.target.closest("[data-place-rename]")) {
+        const btn = e.target.closest("[data-place-rename]");
+        const next = prompt("New name for this baseline model:", btn.dataset.placeName);
+        if (!next || !next.trim() || next.trim() === btn.dataset.placeName) return;
+        try {
+          const wrap = placeCard(btn);
+          const url = decodeURIComponent(btn.dataset.placeUrl);
+          const q = ((wrap && wrap.querySelector("[data-review-place-q]")) || {}).value || "";
+          const res = await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateBaselineItem", id: btn.dataset.placeRename, patch: { name: next.trim() } }) });
+          if (res.baseline && state.data) state.data.baseline = res.baseline;
+          knownCache = null;
+          painted.delete("#tab-baseline");
+          fillPlaceHits(wrap, url, q, { openAll: true });
+          toast("Baseline model renamed.");
+        } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("[data-place-del]")) {
+        const btn = e.target.closest("[data-place-del]");
+        const id = btn.dataset.placeDel;
+        if (!confirm(`Delete the baseline model "${btn.dataset.placeName}"? Its colour/weight rows go with it. This cannot be undone here.`)) return;
+        try {
+          const wrap = placeCard(btn);
+          const url = decodeURIComponent(btn.dataset.placeUrl);
+          const q = ((wrap && wrap.querySelector("[data-review-place-q]")) || {}).value || "";
+          // No page reload: the open list refreshes in place so you can keep cleaning.
+          const res = await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "deleteBaselineItem", id }) });
+          if (res.baseline && state.data) state.data.baseline = res.baseline;
+          knownCache = null;
+          painted.delete("#tab-baseline");
+          fillPlaceHits(wrap, url, q, { openAll: true });
+          toast("Baseline model deleted.");
+        } catch (err) { toast(err.message); }
+        return;
+      }
+      if (e.target.closest("[data-place-chain]")) {
+        const btn = e.target.closest("[data-place-chain]");
+        const card = btn.closest(".uncertain-card");
+        const url = card.dataset.uncertainUrl;
+        const linked = btn.getAttribute("aria-pressed") === "true";
+        state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), placeLinked: !linked });
+        if (!linked) state.reviewPlace.delete(url);
+        painted.delete("#tab-uncertain");
+        render();
+        const fresh = $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url);
+        if (fresh) scheduleAutosave(fresh);
+        toast(linked ? "Goes to unlinked: choose the baseline by hand." : "Goes to linked: it follows the automatic match again.");
         return;
       }
       if (e.target.closest("[data-place-open]")) {
@@ -2123,6 +3175,18 @@
         fillPlaceHits(wrap, url, q, { openAll: true });
         const search = wrap && wrap.querySelector("[data-review-place-q]");
         if (search) search.focus();
+        return;
+      }
+      if (e.target.closest("[data-restore-place]") && e.target.closest(".uncertain-card [data-restore-place]")) {
+        const card = e.target.closest(".uncertain-card");
+        const url = card.dataset.uncertainUrl;
+        state.reviewPlace.delete(url);
+        state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), placeLinked: true });
+        painted.delete("#tab-runs");
+        painted.delete("#tab-uncertain");
+        render();
+        const fresh = $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url);
+        if (fresh) scheduleAutosave(fresh);
         return;
       }
       if (e.target.closest("[data-restore-place]")) {
@@ -2348,11 +3412,31 @@
         }
         return;
       }
+      if (e.target.closest("[data-catalog-product] [data-uncertain-delete]")) {
+        // An offer card in Catalog / Baseline: delete this listing from the catalog row.
+        const card = e.target.closest("[data-catalog-product]");
+        const url = card.dataset.uncertainUrl;
+        const from = card.dataset.catalogProduct;
+        if (!confirm("Delete this listing from the catalog?")) return;
+        try {
+          const res = await action({ action: "deleteOffer", url, from });
+          card.remove();
+          toast(res.removedProduct ? "Listing deleted; the empty product was removed." : "Listing deleted from the catalog.");
+        } catch (err) { toast(err.message); }
+        return;
+      }
       if (e.target.closest("[data-uncertain-delete]")) {
         const btn = e.target.closest("[data-uncertain-delete]");
         const url = btn.dataset.uncertainDelete;
         const card = btn.closest(".uncertain-card");
         if (!url || !card || card.classList.contains("is-held") || state.uncertainHeld.has(url)) return;
+        const dupeGroup = card.closest(".uncertain-dupe-group");
+        const others = dupeGroup ? [...dupeGroup.querySelectorAll(".uncertain-card:not(.is-held)")].filter((el) => el !== card) : [];
+        if (dupeGroup && !others.length) { toast("That is the last copy, so it stays."); return; }
+        if (others.length === 1) {
+          const trash = others[0].querySelector("[data-uncertain-delete]");
+          if (trash) trash.outerHTML = '<span class="uncertain-kept badge">Kept</span>';
+        }
         const grid = card.parentElement;
         const index = grid ? Array.prototype.indexOf.call(grid.children, card) : 0;
         const ev = collectUncertain(state.data).find((x) => x.card && x.card.url === url) || { card: { url }, held: true };
@@ -2375,13 +3459,16 @@
         const jobId = btn.dataset.uncertainJob;
         const card = btn.closest(".uncertain-card");
         if (!url || !card || state.uncertainHeld.has(url)) return;
-        const name = ((card.querySelector('[data-uncertain-field="name"]')) || {}).value;
-        const brand = ((card.querySelector('[data-uncertain-field="brand"]')) || {}).value;
+        // A pending autosave would save the temporary "this model" option below; the add saves everything.
+        clearTimeout((autosaveTimers.get(url) || {}).timer);
+        autosaveTimers.delete(url);
+        const fields = uncertainFields(card);
+        const { name, brand } = fields;
         const grid = card.parentElement;
         const index = grid ? Array.prototype.indexOf.call(grid.children, card) : 0;
         const ev = collectUncertain(state.data).find((x) => x.card && x.card.url === url) || { card: { url, name, brand } };
         state.uncertainPublished.set(url, { index, ev });
-        state.uncertainEdit.set(url, { ...(state.uncertainEdit.get(url) || {}), name, brand });
+        state.uncertainEdit.set(url, { ...(state.uncertainEdit.get(url) || {}), ...fields });
         card.classList.add("is-published");
         if (!card.querySelector(".uncertain-check")) card.insertAdjacentHTML("afterbegin", '<div class="uncertain-check" aria-label="Published">✓</div>');
         const sel = card.querySelector("[data-review-place]");
@@ -2398,7 +3485,7 @@
         }
         const note = card.querySelector(".uncertain-note");
         if (note) note.remove();
-        api("/api/admin", { method: "POST", body: JSON.stringify({ action: "addUncertainToBaseline", jobId, url, name, brand, price: ev.card && ev.card.price }) }).then((res) => {
+        api("/api/admin", { method: "POST", body: JSON.stringify({ action: "addUncertainToBaseline", jobId, url, ...fields, price: ev.card && ev.card.price }) }).then((res) => {
           const item = res && res.item;
           if (!item) throw new Error("Baseline model was not created");
           if (state.data) {
@@ -2407,6 +3494,12 @@
             state.data.baseline = board;
           }
           applyPlace(card, url, { action: "merge", candidateId: "baseline:" + item.id });
+          // The card now belongs to the model it just created: linked, so a reload or re-run keeps it there
+          // (an older hand pick like "New product" would otherwise win and publish it a second time).
+          const place = "merge:baseline:" + item.id;
+          state.uncertainEdit.set(url, { ...(state.uncertainEdit.get(url) || {}), place, placeLinked: true });
+          knownCache = null;
+          return api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateUncertainCard", jobId, url, patch: { place, placeLinked: true } }) });
         }).catch((err) => {
           state.uncertainPublished.delete(url);
           card.classList.remove("is-published");
@@ -2425,9 +3518,65 @@
         });
         return;
       }
-      if (e.target.closest("[data-uncertain-save], [data-uncertain-publish], #uncertain-publish-all")) {
-        const btn = e.target.closest("[data-uncertain-save], [data-uncertain-publish], #uncertain-publish-all");
-        const singleUrl = btn.dataset.uncertainSave || btn.dataset.uncertainPublish;
+      if (e.target.closest("[data-uncertain-save]")) {
+        const btn = e.target.closest("[data-uncertain-save]");
+        const url = btn.dataset.uncertainSave;
+        const jobId = btn.dataset.uncertainJob;
+        const card = btn.closest(".uncertain-card");
+        if (!url || !card || btn.disabled) return;
+        const patch = uncertainFields(card);
+        state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), ...patch });
+        btn.disabled = true;
+        try {
+          await action({ action: "updateUncertainCard", jobId, url, patch }); // reloads data → other cards suggest these values
+          state.uncertainSaved.add(url);
+          card.classList.add("is-saved");
+          toast("Saved. Not published.");
+        } catch (err) { toast(err.message); }
+        finally { btn.disabled = false; }
+        return;
+      }
+      if (e.target.closest("[data-refetch-price], #uncertain-fetch-prices")) {
+        const btn = e.target.closest("[data-refetch-price], #uncertain-fetch-prices");
+        if (btn.disabled) return;
+        const items = btn.dataset.refetchPrice
+          ? [{ url: btn.dataset.refetchPrice, jobId: btn.dataset.refetchJob }]
+          : uncertainRows(state.data).live.filter((ev) => ev.card && ev.card.url && !(Number(ev.card.price) > 0)).map((ev) => ({ url: ev.card.url, jobId: ev.jobId }));
+        if (!items.length) return;
+        btn.disabled = true;
+        const label = btn.textContent;
+        let got = 0;
+        const failed = [];
+        try {
+          // Six pages per request keeps each call short; the shop sees a handful at a time, not a burst.
+          for (let i = 0; i < items.length; i += 6) {
+            btn.textContent = `Reading prices ${Math.min(i + 6, items.length)} / ${items.length}…`;
+            const res = await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "refetchUncertainPrices", items: items.slice(i, i + 6) }) });
+            for (const r of res.results || []) (r.price ? got++ : failed.push(r));
+          }
+          await loadData();
+          const why = [...new Set(failed.map((r) => r.error))].join("; ");
+          toast(`Got ${got} of ${items.length} price${items.length === 1 ? "" : "s"}.` + (failed.length ? ` ${failed.length} not found: ${why}.` : ""));
+        } catch (err) { toast(err.message); }
+        finally { btn.disabled = false; btn.textContent = label; }
+        return;
+      }
+      if (e.target.closest("#uncertain-find-dupes")) {
+        state.uncertainDupes = findUncertainDupes(state.data);
+        painted.delete("#tab-uncertain");
+        render();
+        toast(state.uncertainDupes.length ? state.uncertainDupes.length + " duplicate group" + (state.uncertainDupes.length === 1 ? "" : "s") + " moved to the top." : "No duplicate cards found.");
+        return;
+      }
+      if (e.target.closest("#uncertain-clear-dupes")) {
+        state.uncertainDupes = null;
+        painted.delete("#tab-uncertain");
+        render();
+        return;
+      }
+      if (e.target.closest("[data-uncertain-publish], #uncertain-publish-all")) {
+        const btn = e.target.closest("[data-uncertain-publish], #uncertain-publish-all");
+        const singleUrl = btn.dataset.uncertainPublish;
         const urls = singleUrl ? [singleUrl] : uncertainRows(state.data).live
           .map((x) => x.card && x.card.url).filter((u) => u && !state.uncertainHeld.has(u) && !state.uncertainPublished.has(u));
         if (!urls.length || btn.disabled) return;
@@ -2436,15 +3585,15 @@
         for (const url of urls) {
           const card = singleUrl ? btn.closest(".uncertain-card") : $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url);
           if (!card || state.uncertainHeld.has(url)) continue;
-          const name = card.querySelector('[data-uncertain-field="name"]')?.value;
-          const brand = card.querySelector('[data-uncertain-field="brand"]')?.value;
-          state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), name, brand });
+          state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), ...uncertainFields(card) });
           const ev = collectUncertain(state.data).find((x) => x.card?.url === url) || state.uncertainPublished.get(url)?.ev;
           pending.set(url, { index: card.parentElement ? Array.prototype.indexOf.call(card.parentElement.children, card) : 0, ev });
         }
         if (!pending.size) return;
         btn.disabled = true;
         try {
+          const one = singleUrl && btn.closest(".uncertain-card");
+          if (one) await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateUncertainCard", jobId: one.dataset.uncertainJob, url: singleUrl, patch: uncertainFields(one) }) });
           const result = await forcePublishUrls([...pending.keys()]);
           if (!result.published || !Array.isArray(result.appliedUrls)) throw new Error("No listings were confirmed published. Refresh and try again.");
           for (const url of result.appliedUrls) {
@@ -2466,8 +3615,11 @@
         collectCards(job, state.data).forEach((ev) => { if (ev.card?.url) byUrl.set(ev.card.url, ev); });
         const chosen = ids.map((url) => {
           const ev = byUrl.get(url) || cardEvent(url);
-          const place = defaultPlace(ev);
-          return { url, action: place.action, candidateId: place.candidateId, card: ev.card };
+          const dom = typeof document.querySelectorAll === "function" ? $$(".review-card").find((el) => el.dataset.uncertainUrl === url) : null;
+          const sel = dom && dom.querySelector("[data-review-place]");
+          const place = sel ? parsePlace(sel.value) : uncertainPlace(ev);
+          const card = { ...editedCard(ev), ...(dom ? uncertainFields(dom) : {}), url, kind: cardKind(ev.card) };
+          return { url, action: place.action, candidateId: place.candidateId, card };
         });
         const placements = chosen.filter((it) => it.action === "merge" && String(it.candidateId || "").startsWith("baseline:"));
         const deferred = chosen.filter((it) => !placements.includes(it));
@@ -2634,6 +3786,7 @@
           const res = await action({ action: "deleteBaselineItem", id });
           if (res.baseline) state.data.baseline = res.baseline;
           state.baselineEdit.delete(id);
+          state.baselineRemoved.add(id);
           painted.delete("#tab-baseline");
           render();
           toast("Removed from baseline.");
@@ -2644,7 +3797,7 @@
         const id = e.target.closest("[data-baseline-save]").dataset.baselineSave;
         const card = e.target.closest(".baseline-card");
         const patch = {};
-        for (const input of (card ? card.querySelectorAll("[data-baseline-field]") : [])) patch[input.dataset.baselineField] = input.value;
+        for (const input of (card ? card.querySelectorAll("[data-baseline-field]") : [])) patch[input.dataset.baselineField] = tagFieldValue(input);
         try {
           const image = state.pendingImages.get(id);
           const res = await action({ action: "updateBaselineItem", id, patch, imageUpload: image ? { type: image.type, data: image.data } : null });
@@ -2851,6 +4004,7 @@
           const box = e.target.closest(".product-card").querySelector(".catalog-thumb");
           box.innerHTML = `<img src="${esc(image.preview)}" alt="Uploaded thumbnail preview">`;
           if (e.target.dataset.productImage) showCatalogDirtyCount();
+          if (e.target.dataset.baselineImage) showBaselineDirtyCount();
           toast(e.target.dataset.baselineImage ? "Thumbnail ready. Press Save on this model." : "Thumbnail ready. Press Update catalog or Save to publish it.");
         } catch (err) { toast(err.message); e.target.value = ""; }
         return;
@@ -2938,9 +4092,11 @@
       const ev = cardEvent(url);
       const line = e.target.closest(".review-card")?.querySelector(".review-compare");
       if (line) line.textContent = compareText(ev, place);
+      unlinkPlace(e.target.closest(".uncertain-card"), place);
     });
 
     document.addEventListener("input", (e) => {
+      if (e.target.tagName === "TEXTAREA") fitTextareas(e.target);
       const placeQ = e.target.getAttribute && e.target.getAttribute("data-review-place-q");
       if (placeQ != null) {
         fillPlaceHits(placeCard(e.target) || e.target.closest(".review-place-label"), decodeURIComponent(placeQ), e.target.value);
@@ -2948,14 +4104,49 @@
       }
       if (e.target.dataset.baselineField && e.target.dataset.baselineId) {
         const cur = state.baselineEdit.get(e.target.dataset.baselineId) || {};
-        cur[e.target.dataset.baselineField] = e.target.value;
+        cur[e.target.dataset.baselineField] = tagFieldValue(e.target);
         state.baselineEdit.set(e.target.dataset.baselineId, cur);
+        showBaselineDirtyCount();
+        scheduleAutosave(e.target);
         return;
       }
       if (e.target.dataset.uncertainField && e.target.dataset.uncertainUrl) {
         const cur = state.uncertainEdit.get(e.target.dataset.uncertainUrl) || {};
-        cur[e.target.dataset.uncertainField] = e.target.value;
+        if (e.target.dataset.uncertainField === "color") {
+          if (e.isTrusted) {
+            delete cur.colorHex;
+            const row = e.target.closest(".colour-row");
+            if (row) {
+              const st = rowColour(row);
+              paintColourRow(row, { ...st, set: coloursIn(e.target.value), hexes: [], slot: 0 });
+              delete cur.colorSet;
+              delete cur.colorHexes;
+            }
+          }
+          cur.colorName = e.target.value;
+          cur.color = colourId(e.target.value) || e.target.value;
+          state.uncertainEdit.set(e.target.dataset.uncertainUrl, cur);
+          scheduleAutosave(e.target);
+          return;
+        }
+        cur[e.target.dataset.uncertainField] = tagFieldValue(e.target);
         state.uncertainEdit.set(e.target.dataset.uncertainUrl, cur);
+        if (["brand", "subBrand", "polymer", "variant", "name"].includes(e.target.dataset.uncertainField)) refreshAutoPlace(e.target.closest(".uncertain-card"));
+        // A linked group shares one spool type: change it once, every card of the group follows.
+        if (e.target.dataset.uncertainField === "spoolMaterial") {
+          const card = e.target.closest(".uncertain-card");
+          const key = card && cardGroupKey(card);
+          if (key && spoolGroup(key).spoolLinked !== false) {
+            const value = e.target.value;
+            setSpoolGroup(key, { spoolMaterial: value }).catch((err) => toast(err.message));
+            for (const other of $$(".uncertain-card")) {
+              if (other === card || cardGroupKey(other) !== key) continue;
+              const sel = other.querySelector('[data-uncertain-field="spoolMaterial"]');
+              if (sel) sel.value = value;
+            }
+          }
+        }
+        scheduleAutosave(e.target);
         return;
       }
       if (e.target.id === "review-job-select") {
@@ -2970,6 +4161,13 @@
         state.uncertainShop = e.target.value;
         painted.delete("#tab-uncertain");
         paint("#tab-uncertain", uncertainHtml(state.data));
+        return;
+      }
+      if (e.target.id === "catalog-shelf") {
+        state.catalogShelf = e.target.value;
+        state.catalogLimit = 40;
+        painted.delete("#tab-catalog");
+        render();
         return;
       }
       if (e.target.id === "catalog-shop" || e.target.id === "catalog-variant" || e.target.id === "dupes-only") {
@@ -3025,7 +4223,156 @@
       showCatalogDirtyCount();
     });
 
+    for (const type of ["pointerdown", "focusin"]) {
+      document.addEventListener(type, (e) => {
+        const card = e.target.closest && e.target.closest(".uncertain-card");
+        if (card && !e.target.closest("[data-card-undo], [data-card-redo]")) startCardHistory(card);
+      }, true);
+    }
+
+    document.addEventListener("dblclick", (e) => {
+      const dot = e.target.closest && e.target.closest(".uncertain-card .colour-dot");
+      if (!dot) return;
+      document.querySelectorAll(".fx-menu").forEach((m) => m.remove());
+      const fx = dot.closest(".colour-row").dataset.fx || "";
+      const option = (value, label) => `<button type="button" class="btn-sm ghost" data-colour-fx="${value}" aria-pressed="${fx === value}">${label}</button>`;
+      dot.closest(".colour-field").insertAdjacentHTML("beforeend", `<span class="fx-menu" role="menu">${option("", "Plain")}${option("marble", "Marble")}${option("galaxy", "Galaxy")}</span>`);
+    });
+
+    document.addEventListener("focusin", (e) => {
+      const list = e.target.getAttribute && e.target.getAttribute("list");
+      if (!list || !list.startsWith("dl-")) return;
+      fillFilamentSuggestions(list, e.target.closest(".baseline-card"));
+      // Browsers hide an empty datalist entirely, so say why there is no menu yet.
+      if (!document.getElementById(list).options.length) e.target.placeholder = "None saved yet: type one, then Save";
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && e.target.classList.contains("tag-new")) { e.preventDefault(); addTagsFrom(e.target.closest(".tag-row")); }
+    });
+
     document.addEventListener("click", (e) => {
+      if (e.target.closest("[data-tag-add]")) { addTagsFrom(e.target.closest(".tag-row")); return; }
+      if (e.target.closest("[data-spool-chain]")) {
+        const btn = e.target.closest("[data-spool-chain]");
+        const card = btn.closest(".uncertain-card");
+        const key = card && cardGroupKey(card);
+        if (!key) return;
+        const linked = btn.getAttribute("aria-pressed") === "true";
+        const spool = card.querySelector('[data-uncertain-field="spoolMaterial"]');
+        // Breaking keeps today's value as the group default; each card can then be changed on its own.
+        const rfidBtn = card.querySelector('[data-uncertain-field="rfid"]');
+        const rfidOn = !!(rfidBtn && rfidBtn.getAttribute("aria-pressed") === "true");
+        setSpoolGroup(key, linked ? { spoolLinked: false, spoolMaterial: spool ? spool.value : "", rfid: rfidOn } : { spoolLinked: true, spoolMaterial: spool ? spool.value : "", rfid: rfidOn })
+          .then(() => {
+            for (const other of $$(".uncertain-card")) {
+              if (cardGroupKey(other) !== key) continue;
+              const b = other.querySelector("[data-spool-chain]");
+              if (b) b.outerHTML = spoolRow(() => "", "", false, !linked).match(/<button type="button" class="btn-sm ghost spool-chain"[\s\S]*?<\/button>/)[0];
+              if (!linked && spool) { const s = other.querySelector('[data-uncertain-field="spoolMaterial"]'); if (s) s.value = spool.value; }
+              if (!linked) { const r = other.querySelector('[data-uncertain-field="rfid"]'); if (r) { r.setAttribute("aria-pressed", rfidOn ? "true" : "false"); r.value = rfidOn ? "yes" : ""; } }
+            }
+            toast(linked ? "Spool link broken for this group: edit each card on its own." : "Spool linked: this group shares one spool type again.");
+          }).catch((err) => toast(err.message));
+        return;
+      }
+      if (e.target.closest("[data-rfid-toggle]")) {
+        const btn = e.target.closest("[data-rfid-toggle]");
+        const on = btn.getAttribute("aria-pressed") !== "true";
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+        btn.value = on ? "yes" : "";
+        btn.dispatchEvent(new Event("input", { bubbles: true }));
+        // Linked group: one RFID for every card of the same brand / sub-brand / polymer / variant.
+        const card = btn.closest(".uncertain-card");
+        const key = card && cardGroupKey(card);
+        if (key && spoolGroup(key).spoolLinked !== false) {
+          setSpoolGroup(key, { rfid: on }).catch((err) => toast(err.message));
+          for (const other of $$(".uncertain-card")) {
+            if (other === card || cardGroupKey(other) !== key) continue;
+            const r = other.querySelector('[data-uncertain-field="rfid"]');
+            if (r) { r.setAttribute("aria-pressed", on ? "true" : "false"); r.value = on ? "yes" : ""; }
+          }
+        }
+        return;
+      }
+      if (e.target.closest("[data-card-undo], [data-card-redo]")) {
+        const card = e.target.closest(".uncertain-card");
+        if (card) stepCardHistory(card, e.target.closest("[data-card-undo]") ? -1 : 1);
+        return;
+      }
+      if (e.target.closest("[data-colour-plus]")) {
+        const card = e.target.closest(".uncertain-card");
+        const row = card.querySelector(".colour-row");
+        const st = rowColour(row);
+        if (st.set.length >= 6) return;
+        // Put back the next colour the name mentions; if the name has none left, add a slot for the eyedropper.
+        const fromName = cardColour({}, {}, card.querySelector('[data-uncertain-field="color"]').value).set.filter((id) => !st.set.includes(id));
+        st.set.push(fromName[0] || st.set[st.set.length - 1] || colourId(card.querySelector('[data-uncertain-field="color"]').value) || "white");
+        st.slot = st.set.length - 1;
+        state.uncertainEdit.set(card.dataset.uncertainUrl, { ...state.uncertainEdit.get(card.dataset.uncertainUrl), colorSet: st.set, colorHexes: st.hexes });
+        paintColourRow(row, st);
+        scheduleAutosave(card);
+        return;
+      }
+      if (e.target.closest("[data-colour-minus]")) {
+        const card = e.target.closest(".uncertain-card");
+        const row = card.querySelector(".colour-row");
+        const st = rowColour(row);
+        if (st.set.length < 2) return;
+        st.set.pop();
+        st.hexes = st.hexes.slice(0, st.set.length);
+        st.slot = 0;
+        state.uncertainEdit.set(card.dataset.uncertainUrl, { ...state.uncertainEdit.get(card.dataset.uncertainUrl), colorSet: st.set, colorHexes: st.hexes });
+        paintColourRow(row, st);
+        scheduleAutosave(card);
+        return;
+      }
+      if (e.target.closest("[data-colour-fx]")) {
+        const btn = e.target.closest("[data-colour-fx]");
+        const card = btn.closest(".uncertain-card");
+        const row = card.querySelector(".colour-row");
+        const st = rowColour(row);
+        st.fx = btn.dataset.colourFx;
+        state.uncertainEdit.set(card.dataset.uncertainUrl, { ...state.uncertainEdit.get(card.dataset.uncertainUrl), colorEffect: st.fx });
+        paintColourRow(row, st);
+        btn.closest(".fx-menu").remove();
+        scheduleAutosave(card);
+        return;
+      }
+      if (!e.target.closest(".fx-menu")) document.querySelectorAll(".fx-menu").forEach((m) => m.remove());
+      if (e.target.closest("[data-colour-dropper]")) {
+        const card = e.target.closest(".uncertain-card");
+        const slot = Number(e.target.closest("[data-colour-dropper]").dataset.slot) || 0;
+        // ponytail: native EyeDropper (Chrome/Edge); other browsers get a toast, add <input type=color> if needed.
+        if (!window.EyeDropper) { toast("This browser has no eyedropper. Use Chrome or Edge, or type the colour."); return; }
+        new window.EyeDropper().open().then(({ sRGBHex }) => {
+          const hex = String(sRGBHex).toLowerCase();
+          const near = nearestColour(hex);
+          setColourTone(card, near && near.id, hex, slot);
+          toast("Picked " + hex + (near ? ": looks " + near.name : "") + ". The listing colour name stays. Not saved yet.");
+        }).catch(() => { /* Esc cancels the picker */ });
+        return;
+      }
+      if (e.target.closest("[data-colour-from-image]")) {
+        const btn = e.target.closest("[data-colour-from-image]");
+        const card = btn.closest(".uncertain-card");
+        const img = card && card.querySelector(".catalog-thumb img");
+        if (!img || btn.disabled) return;
+        btn.disabled = true;
+        colourFromImage(img.currentSrc || img.src).then((found) => {
+          if (!found) { toast("No clear colour in this image. Type it instead."); return; }
+          setColourTone(card, found.color, found.hex, 0);
+          toast("Image looks " + toneName(found.color) + " (" + Math.round(found.confidence * 100) + "% of pixels). The listing colour name stays. Not saved yet.");
+        }).catch((err) => toast("Could not read the image: " + err.message))
+          .finally(() => { btn.disabled = false; });
+        return;
+      }
+      if (e.target.closest("[data-tag-remove]")) {
+        const field = e.target.closest(".tag-field").querySelector("[data-baseline-field],[data-uncertain-field]");
+        e.target.closest(".tag-chip").remove();
+        field.dispatchEvent(new Event("input", { bubbles: true }));
+        return;
+      }
       const pinBtn = e.target.closest("[data-pin-id]");
       if (pinBtn) {
         state.pickedPin = pinBtn.dataset.pinId;

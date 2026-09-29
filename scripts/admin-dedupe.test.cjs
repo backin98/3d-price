@@ -128,7 +128,8 @@ const products = () => store['catalog.json'].products;
     money: require('../lib/parse-money.cjs'),
     matcher: require('../lib/product-match.cjs'),
     baselineLib: require('../lib/baseline-catalog.js'),
-    boardLib: require('../lib/baseline-board.cjs')
+    boardLib: require('../lib/baseline-board.cjs'),
+  filamentColours: require('../lib/filament-colours.cjs')
   };
   api.runInNewContext(source, sandbox);
   const post = (body) => sandbox.handler({ method: 'POST', headers: { get: () => null, entries: () => [][Symbol.iterator]() }, json: async () => body });

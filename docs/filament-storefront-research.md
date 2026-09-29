@@ -126,6 +126,17 @@ Overrides are allowed only where captured evidence proves a platform rule insuff
 
 These overrides select evidence. They do not change taxonomy or matching rules and contain no brand/model conditions.
 
+## Gathered baseline artifact
+
+[`data/filament-baseline.json`](../data/filament-baseline.json) is the reference set mined from the listings already scraped on this machine — family cards plus their colour children, with the listing behind every claim. It is produced deterministically, with no network and no model:
+
+```bash
+node scripts/build-filament-baseline.cjs          # rewrite when the mined content changed
+node scripts/build-filament-baseline.cjs --check   # fail when the file is stale
+```
+
+A card is `brand + polymer + material variant + diameter`; colours hang under it as gathered features, and each colour's child SKU carries the axes its own listing proved (colour, net weight, packaging). Nothing is invented: a colour with no listing behind it is not in the file, and an absent axis stays absent. Re-running after any new shop run (including the paginated `?sayfa=N` category pages) picks up the new listings and leaves the untouched cards identical.
+
 ## Laya corpus and safety
 
 [`data/laya-filament-pairs.json`](../data/laya-filament-pairs.json) adds bilingual positives and hard negatives. Every hard negative differs on exactly one named axis: polymer, variant, colour, weight, diameter, packaging or product form. `scripts/laya-match.py --train` loads this corpus beside the existing evaluation rows.

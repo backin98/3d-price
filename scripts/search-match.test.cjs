@@ -173,4 +173,26 @@ const firstReads = titleReads;
 api.matchingProducts();
 assert.equal(titleReads, firstReads, 'repeated renders reuse the prepared search index');
 
+// Colour tone: Bambu's "Desert Tan" looks beige. It keeps its listing name, but a beige search shows it
+// right after the listings that really say beige, and above the other colours.
+const spool = (id, colour, tone) => ({ id, name: 'Bambu Lab PLA Basic Filament', brand: 'Bambu Lab', kind: 'filament', aisle: 'filament', price: 900, colorTone: tone, offers: [{ store: 'rhino3dprinter.com', price: 900, url: 'https://x/' + id, sourceTitle: 'Bambu Lab PLA Basic Filament - ' + colour, stockStatus: 'in_stock' }] });
+const beige = spool('beige', 'Beige'), tan = spool('tan', 'Desert Tan', 'beige'), red = spool('red', 'Red');
+const rankSearchTone = require('../lib/search-match.cjs').rankSearch;
+assert.deepEqual(rankSearchTone([red, tan, beige], 'bambu lab pla beige').map((p) => p.id), ['beige', 'tan', 'red'], 'server: real beige, then the beige-looking tan, then the rest');
+assert.deepEqual(rankSearchTone([red, tan, beige], 'desert tan').map((p) => p.id)[0], 'tan', 'the listing name stays searchable');
+api.state.liveProducts = [red, tan, beige];
+api.state.query = 'bambu lab pla beige';
+const toneRanked = api.matchingProducts().map((p) => p.id);
+assert.deepEqual(toneRanked.slice(0, 2), ['beige', 'tan'], 'storefront: same order ' + JSON.stringify(toneRanked));
+
+// Filament prices default to spools of 1 kg and up; 250 g only when the shopper asks for it.
+const wood = { id: 'rl-wood', name: 'RhinoLab Wood PLA', brand: 'RhinoLab', kind: 'filament', polymer: 'pla', variant: 'wood', offers: [
+  { store: 'rhino', price: 294.45, url: 'https://x/wood-pla-oak-250gr', sourceTitle: 'RhinoLab Wood PLA Filament - Oak 250gr', stockStatus: 'in_stock' },
+  { store: 'rhino', price: 483.73, url: 'https://x/wood-pla-oak', sourceTitle: 'RhinoLab Wood PLA Filament - Oak', stockStatus: 'in_stock' }] };
+api.state.liveProducts = []; api.state.liveFilaments = [wood];
+assert.equal(api.bestOffer(wood).price, 483.73, 'default: the 1 kg spool sets the price');
+api.state.filWeights = new Set([250, 1000]);
+assert.equal(api.bestOffer(wood).price, 294.45, 'ticking 250 g lets the small spool count');
+api.state.filWeights = null;
+
 console.log('PASS: family searches find branched and slug-named rows, offers are searchable, Turkish folds both ways, and siblings stay distinct.');

@@ -4,6 +4,11 @@ import auth from "../../lib/netlify-auth.cjs";
 import money from "../../lib/parse-money.cjs";
 import matcher from "../../lib/product-match.cjs";
 import boardLib from "../../lib/baseline-board.cjs";
+import filamentColours from "../../lib/filament-colours.cjs";
+
+// A tone is one of the named filament colours (beige, bone-white…); anything else is dropped.
+// One or more plain colour names joined by "+" ("white+cyan+blue"); unknown names are dropped.
+const colourToneOf = (v) => String(v || "").split("+").filter((one) => Object.hasOwn(filamentColours, one)).join("+");
 
 const { readJSON, writeJSON, writeBytes, deleteKey } = store;
 const { ownerFromHeaders, authReady } = auth;
@@ -351,6 +356,28 @@ function offerStore(url, card) {
   try { return new URL(url).hostname.replace(/^www\./, ""); } catch (_) { return ""; }
 }
 
+// Read a product page's price now. "+KDV" on the page or a shop set to VAT-excluded adds the 20%, the
+// same rule the worker uses, because every stored price is KDV-inclusive.
+async function fetchPagePrice(url, shopVat) {
+  if (!/^https?:\/\//i.test(String(url || ""))) return { error: "not a web address" };
+  try {
+    const page = await fetch(url, {
+      redirect: "follow",
+      signal: AbortSignal.timeout(12000),
+      headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.7" }
+    });
+    if (!page.ok) return { error: "shop page answered " + page.status };
+    const picked = pickPrice(await page.text());
+    const raw = picked && coercePrice(picked.price);
+    if (!raw) return { error: "no readable price on the page" };
+    if (picked.suspect) return { error: "the price looked wrong (" + raw + ")" };
+    const addVat = picked.plusVat || shopVat === "excluded";
+    return { price: addVat ? withVat(raw, "excluded") : raw, was: picked.was ? (addVat ? withVat(picked.was, "excluded") : picked.was) : undefined, vatAdded: addVat, vatForced: !!picked.plusVat };
+  } catch (err) {
+    return { error: err && err.name === "TimeoutError" ? "shop page timed out" : "shop page could not be read" };
+  }
+}
+
 function coercePrice(value) {
   if (value == null || value === "") return null;
   if (typeof value === "number" && Number.isFinite(value) && value > 0) return value;
@@ -387,13 +414,24 @@ function applySelectedListings(live, candidate, items, jobs) {
     const found = findByUrl(candidate || {}, url) || findByUrl(next, url);
     // The scraped title travels with the offer so the catalog can show where it came from
     // and offer a regroup/branch when the matcher grouped it wrong.
-    const scrapedTitle = String(card.name || "").trim();
+    // Filament names have the colour taken out, so prefer the untouched shop title ("… - Desert Tan"),
+    // else put the listing colour back: that is what makes a colour searchable.
+    const scrapedTitle = String(card.sourceTitle || (card.colorName && card.name ? card.name + " - " + card.colorName : card.name) || "").trim();
     const price = coercePrice(card.price) || coercePrice(found?.offer?.price) || priceFromJobs(jobs, url);
     const offer = found?.offer
       ? { ...found.offer, price: coercePrice(found.offer.price) || price || found.offer.price, sourceTitle: scrapedTitle || found.offer.sourceTitle, url }
       : { store: offerStore(url, card), price, url, image: card.image || "", sourceTitle: scrapedTitle,
           priceSuspect: card.priceSuspect === true ? "harvest" : undefined, priceCurrency: card.currency || undefined };
     if (!Number.isFinite(Number(offer.price)) || Number(offer.price) <= 0) continue;
+    // One offer is one shop listing, so one colour: its listing name, the dot colour and the tone you
+    // set with the eyedropper (search finds "Desert Tan" for "beige" through it).
+    if (card.colorName) offer.colorName = String(card.colorName).trim().slice(0, 80);
+    if (/^#[0-9a-f]{6}$/i.test(String(card.colorHex || ""))) offer.colorHex = String(card.colorHex).toLowerCase();
+    if (colourToneOf(card.colorTone)) offer.colorTone = colourToneOf(card.colorTone);
+    if (["marble", "galaxy"].includes(card.colorEffect)) offer.colorEffect = card.colorEffect;
+    if (/^\d+ g$/.test(String(card.weight || ""))) offer.weight = card.weight;
+    if (Array.isArray(card.colorHexes) && card.colorHexes.some(Boolean)) offer.colorHexes = card.colorHexes.slice(0, 6).map((h) => (/^#[0-9a-f]{6}$/i.test(String(h)) ? String(h).toLowerCase() : ""));
+    if (card.subBrand != null) offer.subBrand = String(card.subBrand).trim().slice(0, 80);
     const shelf = found?.shelf || (card.kind === "filament" ? "filaments" : "products");
     const dest = next[shelf];
     const mergeId = item.action === "merge" ? String(item.candidateId || "") : "";
@@ -432,6 +470,7 @@ function applySelectedListings(live, candidate, items, jobs) {
       if (!already.baselineId && already.offers.length === 1) {
         if (card.name) already.name = card.name;
         if (card.brand != null) already.brand = card.brand;
+        if (card.subBrand != null) already.subBrand = String(card.subBrand).trim().slice(0, 80);
       }
       applied += 1;
       appliedUrls.push(url);
@@ -446,6 +485,7 @@ function applySelectedListings(live, candidate, items, jobs) {
           id,
           name: model.name,
           brand: model.brand || "",
+          subBrand: model.subBrand || "",
           kind: model.category === "filaments" ? "filament" : "printer",
           image: model.image || card.image || "",
           aisle: model.category === "filaments" ? "filament" : "fdm",
@@ -453,6 +493,13 @@ function applySelectedListings(live, candidate, items, jobs) {
           offers: []
         };
         dest.push(target);
+      }
+      // A filament model row needs its polymer / variant / packaging / diameter: without them the storefront
+      // filed every spool under "Other" and merged a brand's models into one card.
+      if (target.kind === "filament") {
+        for (const k of ["polymer", "variant", "packaging", "diameter"]) {
+          if (!target[k] && (model[k] || card[k])) target[k] = model[k] || card[k];
+        }
       }
       if (!target.offers.some((o) => o.url === url)) target.offers.push(offer);
       applied += 1;
@@ -482,11 +529,13 @@ function applySelectedListings(live, candidate, items, jobs) {
         id,
         name: card.name || src.name || url,
         brand: card.brand || src.brand || "",
+        subBrand: card.subBrand != null ? String(card.subBrand).trim().slice(0, 80) : (src.subBrand || ""),
         kind: card.kind || src.kind || (shelf === "filaments" ? "filament" : "printer"),
         image: card.image || src.image || "",
         polymer: card.polymer || src.polymer,
         variant: card.variant || src.variant,
         color: card.color || src.color,
+        colorName: card.colorName || src.colorName || "",
         weight: card.weight || src.weight,
         diameter: card.diameter || src.diameter,
         packaging: card.packaging || src.packaging,
@@ -710,6 +759,7 @@ export default async (req) => {
       recommendations: await readJSON("baseline-recommendations.json", { items: [] }),
       duplicateOffers: findDuplicateOfferUrls(catalog),
       heartbeat: await readJSON("heartbeat.json", null),
+      filamentColours,
       counts: {
         products: (catalog.products || []).length,
         filaments: (catalog.filaments || []).length
@@ -996,7 +1046,7 @@ export default async (req) => {
       case "deleteBaselineItem": {
         const board = await ensureBaseline();
         const id = String(body.id || "");
-        board.items = (board.items || []).filter((i) => i.id !== id);
+        board.items = (board.items || []).filter((i) => i.id !== id && i.parentId !== id);
         await writeJSON("baseline.json", board);
         return json(200, { ok: true, baseline: board });
       }
@@ -1009,6 +1059,20 @@ export default async (req) => {
         patchItem(board, id, patch);
         await writeJSON("baseline.json", board);
         return json(200, { ok: true, baseline: board });
+      }
+
+      case "updateBaselineItems": {
+        const board = await ensureBaseline();
+        const changes = Array.isArray(body.changes) ? body.changes : [];
+        if (!changes.length) throw new Error("No baseline changes supplied");
+        for (const change of changes) {
+          const id = String((change && change.id) || "");
+          const patch = change && change.patch && typeof change.patch === "object" ? { ...change.patch } : {};
+          if (change && change.imageUpload) patch.image = await storeUploadedImage(id, change.imageUpload);
+          patchItem(board, id, patch);
+        }
+        await writeJSON("baseline.json", board);
+        return json(200, { ok: true, saved: changes.length, baseline: board });
       }
 
       case "addBaselineItem": {
@@ -1392,36 +1456,38 @@ export default async (req) => {
         const prev = (raw && (raw.card || raw)) || {};
         const name = String(body.name != null ? body.name : prev.name || "").trim();
         const brand = String(body.brand != null ? body.brand : prev.brand || "").trim();
+        const subBrand = String(body.subBrand != null ? body.subBrand : prev.subBrand || "").trim().slice(0, 80);
+        const polymer = String(body.polymer != null ? body.polymer : prev.polymer || "").trim();
+        const variant = String(body.variant != null ? body.variant : prev.variant || "").trim();
+        const color = String(body.color != null ? body.color : prev.color || "").trim();
+        const kind = body.kind === "filament" || body.kind === "printer" ? body.kind : prev.kind || job.kind || "printer";
+        const spoolMaterial = String(body.spoolMaterial != null ? body.spoolMaterial : prev.spoolMaterial || "").trim();
+        const rfid = body.rfid != null ? body.rfid === true || body.rfid === "yes" : !!prev.rfid;
+        const weight = String(body.weight != null ? body.weight : prev.weight || "").trim();
+        const packaging = String(body.packaging != null ? body.packaging : prev.packaging || (kind === "filament" ? "spool" : "")).trim();
         if (!name) throw new Error("Name required");
-        const kind = prev.kind || job.kind || "printer";
-        const listing = { name, brand, kind: kind === "filament" ? "filament" : "printer" };
+        const listing = { name, brand, polymer, variant, color, packaging, kind: kind === "filament" ? "filament" : "printer" };
         let price = coercePrice(body.price) || coercePrice(prev.price) || coercePrice(raw && raw.price) || priceFromJobs(jobs, url);
         if (!price && /^https:\/\//i.test(url)) {
-          try {
-            const page = await fetch(url, {
-              redirect: "follow",
-              signal: AbortSignal.timeout(12000),
-              headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36", "Accept-Language": "tr-TR,tr;q=0.9,en;q=0.7" }
-            });
-            if (page.ok) {
-              const picked = pickPrice(await page.text());
-              price = picked && picked.price;
-              if (price && picked.plusVat) price = withVat(price, "excluded");
-            }
-          } catch { /* the card price is enough when the shop page cannot be read */ }
+          const shop = (desk.shops || []).find((s) => s.id === hostOfUrl(url) || hostOfUrl(s.url) === hostOfUrl(url));
+          price = (await fetchPagePrice(url, shop && shop.vat)).price || null;
         }
         if (!price) throw new Error("No price on this card, so it was not added or published");
         const board = await ensureBaseline();
         const category = listing.kind === "filament" && (board.categories || []).some((c) => c.id === "filaments") ? "filaments" : "printers";
-        const sameName = (it) => foldName(it.name) === foldName(name) && foldName(it.brand || "") === foldName(brand);
+        // Same name and brand is not enough for a filament: a changed sub-brand, polymer or variant is a
+        // different model and gets its own baseline row.
+        const identity = (v) => foldName(String(v || "").split(",")[0] || "");
+        const sameName = (it) => foldName(it.name) === foldName(name) && foldName(it.brand || "") === foldName(brand)
+          && (listing.kind !== "filament" || (identity(it.subBrand) === identity(subBrand) && identity(it.polymer) === identity(polymer) && foldName(it.variant || "") === foldName(variant)));
         let created = (board.items || []).find((it) => sameName(it) && (it.category === "filaments") === (category === "filaments"));
-        if (!created) created = addItem(board, { name, brand, category, image: prev.image || "" });
+        if (!created) created = addItem(board, { name, brand, subBrand, category, image: prev.image || "", polymer, variant, packaging, spoolMaterial, rfid });
         stripOfferUrl(catalog, url, created.id);
         const next = applySelectedListings(catalog, candidate, [{
           url,
           action: "create",
           baselineModel: created,
-          card: { ...prev, url, name, brand, kind: listing.kind, price, image: prev.image || "" }
+          card: { ...prev, url, name, brand, subBrand, polymer, variant, color, packaging, spoolMaterial, rfid, weight, kind: listing.kind, price, image: prev.image || "" }
         }], jobs);
         const applied = next._applied || 0;
         const appliedUrls = next._appliedUrls || [];
@@ -1437,6 +1503,13 @@ export default async (req) => {
           url,
           name,
           brand,
+          polymer,
+          variant,
+          color,
+          packaging,
+          spoolMaterial,
+          rfid,
+          subBrand,
           decision: { action: "merge", candidateId: "baseline:" + created.id, baselineId: created.id, candidateName: created.name }
         };
         jobs = jobs.map((j) => (j.id === job.id ? { ...j, cards, published: [...new Set([...(j.published || []), ...appliedUrls])] } : j));
@@ -1445,15 +1518,108 @@ export default async (req) => {
         return json(200, { ok: true, baseline: board, item: created, published: applied });
       }
 
+      // The colour picker reads pixels in the browser; shop images are cross-origin, so hand them over as a data URL.
+      case "imageData": {
+        const src = String(body.url || "");
+        if (!/^https?:\/\//i.test(src)) throw new Error("Image URL required");
+        const res = await fetch(src, { redirect: "follow", signal: AbortSignal.timeout(8000), headers: { accept: "image/*" } });
+        const type = (res.headers.get("content-type") || "").split(";")[0].trim();
+        if (!res.ok || !/^image\//i.test(type)) throw new Error("Could not load the image");
+        const bytes = new Uint8Array(await res.arrayBuffer());
+        if (bytes.length > 3 * 1024 * 1024) throw new Error("Image too large");
+        let bin = "";
+        for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+        return json(200, { ok: true, dataUrl: "data:" + type + ";base64," + btoa(bin) });
+      }
+
+      // Spool material per model group (brand · sub-brand · polymer · variant). Linked: one value for the
+      // whole group. Broken: each card keeps its own (a shop can sell one series on plastic, one on cardboard).
+      case "setFilamentGroup": {
+        const key = String(body.key || "").slice(0, 200);
+        if (!key) throw new Error("Pick a filament group");
+        const groups = { ...(desk.filamentGroups || {}) };
+        const cur = { ...(groups[key] || {}) };
+        if (body.spoolLinked === true || body.spoolLinked === false) cur.spoolLinked = body.spoolLinked;
+        if (body.spoolMaterial != null) cur.spoolMaterial = ["cardboard", "plastic"].includes(body.spoolMaterial) ? body.spoolMaterial : "";
+        if (body.rfid === true || body.rfid === false) cur.rfid = body.rfid;
+        groups[key] = cur;
+        const next = { ...desk, filamentGroups: groups };
+        await writeJSON("desk.json", next);
+        return json(200, { ok: true, desk: next });
+      }
+
+      // Uncertain cards the harvest left without a price: open each product page again and read it.
+      // A few pages at a time; the admin page sends small batches so each request stays short.
+      case "refetchUncertainPrices": {
+        const wanted = (Array.isArray(body.items) ? body.items : [{ jobId: body.jobId, url: body.url }])
+          .filter((it) => it && typeof it.url === "string" && it.url).slice(0, 12);
+        const results = await Promise.all(wanted.map(async (it) => {
+          const shop = (desk.shops || []).find((s) => s.id === hostOfUrl(it.url) || hostOfUrl(s.url) === hostOfUrl(it.url));
+          return { ...it, ...(await fetchPagePrice(it.url, shop && shop.vat)) };
+        }));
+        const found = results.filter((r) => r.price);
+        if (found.length) {
+          jobs = jobs.map((job) => {
+            const mine = found.filter((r) => r.jobId === job.id || (!r.jobId && job.cards && job.cards[r.url]));
+            if (!mine.length) return job;
+            const cards = { ...(job.cards || {}) };
+            for (const r of mine) {
+              const prev = (cards[r.url] && (cards[r.url].card || cards[r.url])) || { url: r.url };
+              cards[r.url] = { ...prev, url: r.url, price: r.price, was: r.was, vatAdded: r.vatAdded, vatForced: r.vatForced, priceCheckedAt: new Date().toISOString() };
+            }
+            return { ...job, cards };
+          });
+          await saveJobList(jobs);
+        }
+        return json(200, { ok: true, results: results.map(({ url, price, error }) => ({ url, price, error })) });
+      }
+
       case "updateUncertainCard": {
         const url = String(body.url || "");
-        const job = jobs.find((j) => j.id === body.jobId);
-        if (!job || !url) throw new Error("Pick a card");
+        // The run this listing came from; Catalog / Baseline offer cards may not know it, so look it up.
+        const job = jobs.find((j) => j.id === body.jobId)
+          || jobs.find((j) => (j.cards && j.cards[url]) || (j.events || []).some((e) => e && e.card && e.card.url === url));
+        // The published offer too: an edit on any card shows in the catalog, and the other way round.
+        const offer = [...(catalog.products || []), ...(catalog.filaments || [])].flatMap((p) => p.offers || []).find((o) => o.url === url);
+        if (!url || (!job && !offer)) throw new Error("Pick a card");
+        if (offer && body.patch) {
+          const p = body.patch;
+          if (p.colorName != null) offer.colorName = String(p.colorName).trim().slice(0, 80);
+          if (/^#[0-9a-f]{6}$/i.test(String(p.colorHex || ""))) offer.colorHex = String(p.colorHex).toLowerCase();
+          if (Array.isArray(p.colorHexes)) offer.colorHexes = p.colorHexes.slice(0, 6).map((h) => (/^#[0-9a-f]{6}$/i.test(String(h)) ? String(h).toLowerCase() : ""));
+          if (p.colorTone != null) offer.colorTone = colourToneOf(p.colorTone);
+          if (p.colorEffect != null) offer.colorEffect = ["marble", "galaxy"].includes(p.colorEffect) ? p.colorEffect : "";
+          if (/^\d+ g$/.test(String(p.weight || ""))) offer.weight = p.weight;
+          if (p.spoolMaterial != null) offer.spoolMaterial = ["cardboard", "plastic"].includes(p.spoolMaterial) ? p.spoolMaterial : "";
+          if (p.rfid != null) offer.rfid = p.rfid === true || p.rfid === "yes";
+          catalog.savedAt = new Date().toISOString();
+          await writeJSON("catalog.json", catalog);
+        }
+        if (!job) return json(200, { ok: true, catalogOnly: true });
         const cards = { ...(job.cards || {}) };
         const prev = (cards[url] && ((cards[url].card) || cards[url])) || { url };
         const inner = { ...prev, url };
         if (body.patch && body.patch.name != null) inner.name = String(body.patch.name);
         if (body.patch && body.patch.brand != null) inner.brand = String(body.patch.brand);
+        if (body.patch && body.patch.subBrand != null) inner.subBrand = String(body.patch.subBrand).trim().slice(0, 80);
+        if (body.patch && body.patch.polymer != null) inner.polymer = String(body.patch.polymer);
+        if (body.patch && body.patch.variant != null) inner.variant = String(body.patch.variant);
+        if (body.patch && body.patch.color != null) inner.color = String(body.patch.color);
+        if (body.patch && body.patch.colorName != null) inner.colorName = String(body.patch.colorName).trim().slice(0, 80);
+        if (body.patch && body.patch.weight != null) { inner.weight = String(body.patch.weight).trim().slice(0, 20); inner.weightAssumed = false; }
+        if (body.patch && Array.isArray(body.patch.colorSet)) inner.colorSet = body.patch.colorSet.slice(0, 6).map(String);
+        if (body.patch && Array.isArray(body.patch.colorHexes)) inner.colorHexes = body.patch.colorHexes.slice(0, 6).map((h) => (/^#[0-9a-f]{6}$/i.test(String(h)) ? String(h).toLowerCase() : ""));
+        if (body.patch && body.patch.place != null) inner.place = String(body.patch.place).slice(0, 200);
+        if (body.patch && (body.patch.kind === "filament" || body.patch.kind === "printer")) inner.kind = body.patch.kind;
+        if (body.patch && (body.patch.placeLinked === true || body.patch.placeLinked === false)) inner.placeLinked = body.patch.placeLinked;
+        if (body.patch && body.patch.colorEffect != null) inner.colorEffect = ["marble", "galaxy"].includes(body.patch.colorEffect) ? body.patch.colorEffect : "";
+        if (body.patch && body.patch.packaging != null) inner.packaging = String(body.patch.packaging);
+        if (body.patch && body.patch.spoolMaterial != null) inner.spoolMaterial = String(body.patch.spoolMaterial);
+        if (body.patch && body.patch.rfid != null) inner.rfid = body.patch.rfid === true || body.patch.rfid === "yes";
+        if (body.patch && /^#[0-9a-f]{6}$/i.test(String(body.patch.colorHex || ""))) inner.colorHex = String(body.patch.colorHex).toLowerCase();
+        if (body.patch && body.patch.colorTone != null) inner.colorTone = colourToneOf(body.patch.colorTone);
+        inner.handEdited = true;
+        inner.savedAt = new Date().toISOString();
         cards[url] = inner;
         jobs = jobs.map((j) => (j.id === job.id ? { ...j, cards } : j));
         await saveJobList(jobs);

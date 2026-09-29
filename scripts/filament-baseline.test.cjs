@@ -22,6 +22,26 @@ assert.equal(classifyFilament({ name: "Standard Resin Black 1kg", brand: "Acme" 
 assert.notEqual(plus.familyKey, classifyFilament({ name: "eSUN PLA-Plus Siyah 1kg 2.85mm Makarasız", brand: "eSUN" }).familyKey, "diameter is a family axis");
 assert.notEqual(plus.compareKey, classifyFilament({ name: "eSUN PLA-Plus Beyaz 1kg 1.75mm Makarasız", brand: "eSUN" }).compareKey, "colour is a child axis");
 
+const { normalizeFilamentListing } = require('../lib/qwen-website-job.cjs');
+const scraped = normalizeFilamentListing({ kind: 'filament', name: 'eSUN PLA-Plus Siyah 1KG 1.75mm', brand: 'eSUN' });
+assert.equal(scraped.name, 'eSUN PLA-Plus 1KG 1.75mm', 'the visible grouping title is colour-agnostic');
+assert.equal(scraped.color, 'black', 'colour remains an exact child SKU axis');
+assert.equal(scraped.packaging, 'spool', 'scraped listings default to a supplied spool when no refill evidence exists');
+assert.equal(scraped.sourceTitle, 'eSUN PLA-Plus Siyah 1KG 1.75mm', 'the retailer title remains offer evidence');
+assert.equal(normalizeFilamentListing({ kind: 'filament', name: 'eSUN PLA+ Beyaz Makarasız' }).packaging, 'refill', 'Makarasız evidence overrides the spool default');
+
+const { fillMissingFilamentColours } = require('../lib/qwen-website-job.cjs');
+(async () => {
+  const textWins = normalizeFilamentListing({ kind: 'filament', name: 'Acme PLA Mavi', image: 'https://example.test/red.jpg' });
+  let calls = 0;
+  await fillMissingFilamentColours([textWins], null, async () => { calls += 1; return { color: 'red', confidence: 1 }; });
+  assert.equal(textWins.color, 'blue');
+  assert.equal(calls, 0, 'image vision never overrides title colour');
+  const fallback = normalizeFilamentListing({ kind: 'filament', name: 'Acme PLA', image: 'https://example.test/spool.jpg' });
+  await fillMissingFilamentColours([fallback], null, async () => ({ color: 'green', confidence: 0.8 }));
+  assert.equal(fallback.color, 'green', 'image colour is a last resort');
+})().catch((error) => { console.error(error); process.exitCode = 1; });
+
 const complete = (overrides = {}) => ({ name: "Acme Standard PLA Black 1000g 1.75mm Spool", brand: "Acme", kind: "filament", ...overrides });
 for (const [axis, left, right] of [
   ["polymer", { polymer: "pla" }, { polymer: "petg" }],

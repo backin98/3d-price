@@ -43,7 +43,8 @@ const sandbox = {
   auth: { ownerFromHeaders: () => ({ role: 'owner' }), authReady: () => true },
   matcher: require('../lib/product-match.cjs'),
   baselineLib: require('../lib/baseline-catalog.js'),
-  boardLib: require('../lib/baseline-board.cjs')
+  boardLib: require('../lib/baseline-board.cjs'),
+  filamentColours: require('../lib/filament-colours.cjs')
 };
 vm.runInNewContext(source, sandbox);
 const call = (body) => sandbox.handler(req(body)).then(async (res) => ({ status: res.status, body: await res.json() }));

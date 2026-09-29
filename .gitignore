@@ -1,4 +1,5 @@
 .vercel
+work/jev-ultrafast/
 .netlify
 .env
 .env.*

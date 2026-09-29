@@ -164,7 +164,14 @@ function compactEvent(ev) {
       color: l.color || "",
       weight: l.weight || "",
       diameter: l.diameter || "",
-      packaging: l.packaging || ""
+      packaging: l.packaging || "",
+      // The colour as written ("Dark Red") and the untouched shop title: the admin shows both.
+      colorName: String(l.colorName || "").slice(0, 80),
+      sourceTitle: String(l.sourceTitle || "").slice(0, 200),
+      colorSet: Array.isArray(l.colorSet) ? l.colorSet.slice(0, 6).map(String) : [],
+      multicolor: l.multicolor === true,
+      colorEffect: ["marble", "galaxy"].includes(l.colorEffect) ? l.colorEffect : "",
+      weightAssumed: l.weightAssumed === true
     };
     out.decision = {
       action: ev.action || "",

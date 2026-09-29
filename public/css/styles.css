@@ -2158,7 +2158,7 @@ p {
 .suggest-thumb { width: 38px; height: 38px; border-radius: 8px; overflow: hidden; background: #eef1f5; flex: none; }
 .suggest-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .suggest-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.suggest-text strong { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.suggest-text strong { font-size: 13px; font-weight: 600; color: #101820; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .suggest-text em { font-style: normal; font-size: 12px; color: #5b6472; }
 .suggest-related {
   margin-left: auto; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
@@ -2166,3 +2166,18 @@ p {
 }
 .suggest-all { display: block; width: 100%; text-align: left; background: none; border: 0; border-top: 1px solid #eef1f5; margin-top: 4px; padding: 9px 8px; font-size: 12px; font-weight: 600; color: #0b5c93; cursor: pointer; }
 .suggest-empty { padding: 12px 10px; font-size: 13px; color: #5b6472; }
+
+/* Colour dot, the same as the admin: solid, split for dual / tri colour, rainbow; marble flecks, galaxy glitter. */
+.cdot { display: inline-block; flex: none; width: 1rem; height: 1rem; border-radius: 50%; background: var(--dot, #8a96a3); border: 1px solid rgba(15, 23, 42, .28); box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .35); }
+.cdot.fx-marble { background: radial-gradient(circle at 28% 32%, #111 0 11%, transparent 13%), radial-gradient(circle at 68% 30%, #111 0 8%, transparent 10%), radial-gradient(circle at 55% 68%, #111 0 12%, transparent 14%), radial-gradient(circle at 26% 72%, #111 0 7%, transparent 9%), radial-gradient(circle at 78% 60%, #111 0 6%, transparent 8%), var(--dot); }
+.cdot.fx-galaxy { background: radial-gradient(circle at 20% 30%, #fff 0 3%, transparent 5%), radial-gradient(circle at 45% 18%, #fff 0 2%, transparent 4%), radial-gradient(circle at 70% 35%, #fff 0 3%, transparent 5%), radial-gradient(circle at 35% 55%, #fff 0 2%, transparent 4%), radial-gradient(circle at 60% 62%, #fff 0 3%, transparent 5%), radial-gradient(circle at 82% 70%, #fff 0 2%, transparent 4%), radial-gradient(circle at 25% 80%, #fff 0 2%, transparent 4%), radial-gradient(circle at 52% 85%, #fff 0 2%, transparent 4%), var(--dot); }
+.cdot--badge { position: absolute; inset-inline-end: 0.45rem; bottom: 0.45rem; width: 1.6rem; height: 1.6rem; border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0, 0, 0, .35); }
+.fil-group-swatches .cdot { cursor: pointer; }
+.fil-group-swatches .cdot.is-on { outline: 2px solid #f5b72b; outline-offset: 2px; }
+/* Browse a model's colours on its card */
+.fil-group-photo { position: relative; }
+.fil-cycle { position: absolute; top: 50%; transform: translateY(-50%); width: 2rem; height: 2rem; display: grid; place-items: center; border-radius: 50%; background: rgba(12, 18, 24, .72); color: #fff; font-size: 1.35rem; line-height: 1; cursor: pointer; user-select: none; }
+.fil-cycle:hover { background: #f5b72b; color: #141b24; }
+.fil-cycle--prev { inset-inline-start: 0.4rem; }
+.fil-cycle--next { inset-inline-end: 0.4rem; }
+.fil-cycle-name { position: absolute; left: 50%; bottom: 0.4rem; transform: translateX(-50%); padding: 0.1rem 0.55rem; border-radius: 999px; background: rgba(12, 18, 24, .72); color: #fff; font-size: 0.75rem; white-space: nowrap; }

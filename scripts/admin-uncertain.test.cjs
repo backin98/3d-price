@@ -22,7 +22,8 @@ const sandbox = {
   store,
   auth: { ownerFromHeaders: () => ({ role: 'owner' }), authReady: () => true },
   matcher: require('../lib/product-match.cjs'),
-  boardLib: require('../lib/baseline-board.cjs')
+  boardLib: require('../lib/baseline-board.cjs'),
+  filamentColours: require('../lib/filament-colours.cjs')
 };
 vm.runInNewContext(source, sandbox);
 const req = (body) => ({ method: 'POST', url: 'https://3d-price.netlify.app/api/admin', headers: { get: () => 'https://3d-price.netlify.app', entries: () => [][Symbol.iterator]() }, json: async () => body });
@@ -39,16 +40,40 @@ const req = (body) => ({ method: 'POST', url: 'https://3d-price.netlify.app/api/
   const edited = await sandbox.handler(req({ action: 'updateUncertainCard', jobId: 'job-1', url: 'https://shop.example/mystery', patch: { name: 'Hand titled', brand: 'Bambu Lab' } }));
   assert.equal(edited.status, 200, await edited.text());
   assert.equal(files['jobs.json'][0].cards['https://shop.example/mystery'].name, 'Hand titled');
+  assert.equal(files['jobs.json'][0].cards['https://shop.example/mystery'].handEdited, true, 'Save marks the card so harvest events do not overwrite it');
   files['baseline.json'] = { categories: [{ id: 'printers', name: '3D Printers' }], items: [] };
   files['jobs.json'][0].cards['https://shop.example/mystery'].price = 18000;
-  const added = await sandbox.handler(req({ action: 'addUncertainToBaseline', jobId: 'job-1', url: 'https://shop.example/mystery', name: 'Hand titled', brand: 'Bambu Lab' }));
+  const added = await sandbox.handler(req({ action: 'addUncertainToBaseline', jobId: 'job-1', url: 'https://shop.example/mystery', name: 'Hand titled', brand: 'Bambu Lab', subBrand: 'Series example' }));
   const addedBody = await added.json();
   assert.equal(added.status, 200, JSON.stringify(addedBody));
   const made = files['baseline.json'].items.find((i) => i.name === 'Hand titled' && i.brand === 'Bambu Lab');
   assert.ok(made, 'the Uncertain button adds that card to the baseline');
+  assert.equal(made.subBrand, 'Series example');
+  assert.equal(files['jobs.json'][0].cards['https://shop.example/mystery'].subBrand, 'Series example');
+  assert.equal(files['catalog.json'].products.find(p => p.baselineId === made.id).subBrand, 'Series example');
   const row = files['catalog.json'].products.find((p) => p.id === made.id);
   assert.ok(row, 'it is published as its own catalog row');
   assert.equal(row.baselineId, made.id, 'the catalog row is that baseline model');
+  // A spool-type difference never splits a baseline model: the second card joins the same row.
+  const before = files['baseline.json'].items.length;
+  files['jobs.json'][0].cards['https://shop.example/mystery-2'] = { url: 'https://shop.example/mystery-2', name: 'Hand titled', price: 18000, kind: 'printer' };
+  const again = await sandbox.handler(req({ action: 'addUncertainToBaseline', jobId: 'job-1', url: 'https://shop.example/mystery-2', name: 'Hand titled', brand: 'Bambu Lab', spoolMaterial: 'plastic' }));
+  assert.equal(again.status, 200, await again.text());
+  assert.equal(files['baseline.json'].items.length, before, 'same model, other spool type: no second baseline row');
+  // A filament whose sub-brand was changed (Creality TPU → CR) is a different model: Add to baseline makes a new row.
+  files['baseline.json'].items.push({ id: 'crea-tpu', category: 'filaments', entityType: 'family', name: 'Creality TPU Filament', brand: 'Creality', polymer: 'tpu', variant: '' });
+  files['jobs.json'][0].cards['https://shop.example/cr-tpu'] = { url: 'https://shop.example/cr-tpu', name: 'Creality TPU Filament', price: 540, kind: 'filament' };
+  const crTpu = await sandbox.handler(req({ action: 'addUncertainToBaseline', jobId: 'job-1', url: 'https://shop.example/cr-tpu', name: 'Creality TPU Filament', brand: 'Creality', subBrand: 'CR', polymer: 'tpu', variant: '', kind: 'filament' }));
+  const crBody = await crTpu.json();
+  assert.equal(crTpu.status, 200, JSON.stringify(crBody));
+  assert.notEqual(crBody.item.id, 'crea-tpu', 'a new sub-brand is a new baseline model, not the plain one with the same name');
+  assert.equal(crBody.item.subBrand, 'CR');
+  // Spool link per model group, kept on the desk.
+  const linked = await sandbox.handler(req({ action: 'setFilamentGroup', key: 'rhinolab||pla|silk', spoolLinked: false, spoolMaterial: 'plastic' }));
+  assert.equal(linked.status, 200);
+  assert.deepEqual(files['desk.json'].filamentGroups['rhinolab||pla|silk'], { spoolLinked: false, spoolMaterial: 'plastic' });
+  await sandbox.handler(req({ action: 'setFilamentGroup', key: 'rhinolab||pla|silk', spoolMaterial: 'metal' }));
+  assert.equal(files['desk.json'].filamentGroups['rhinolab||pla|silk'].spoolMaterial, '', 'only cardboard or plastic');
   assert.ok(row.offers.some((o) => o.url === 'https://shop.example/mystery'), 'the scraped listing is on that row');
   assert.equal(files['jobs.json'][0].cards['https://shop.example/mystery'].decision.candidateId, 'baseline:' + made.id);
   files['baseline.json'].items.push({ id: 'bl-x1', category: 'printers', name: 'Bambu Lab X1 Carbon', brand: 'Bambu Lab' });
@@ -92,6 +117,11 @@ const req = (body) => ({ method: 'POST', url: 'https://3d-price.netlify.app/api/
   assert.equal(editedRow.name, 'Edited name');
   assert.equal(editedRow.offers[0].stockStatus, 'preorder', 'editing preserves existing offer evidence');
   assert.equal(editedRow.offers[0].sourceTitle, 'Edited name');
+  await sandbox.handler(req({ action: 'publishSelected', placements: [{ url: 'https://shop.example/force-me', action: 'create', card: { name: 'Edited name', brand: 'Edited brand', price: 21999, colorTone: 'beige', colorName: 'Desert Tan' } }] }));
+  assert.equal(files['catalog.json'].products.find(p => p.offers.some(o => o.url === 'https://shop.example/force-me')).offers.find(o => o.url === 'https://shop.example/force-me').colorTone, 'beige', 'an eyedropper tone reaches the catalog offer for search');
+  assert.equal(files['catalog.json'].products.find(p => p.offers.some(o => o.url === 'https://shop.example/force-me')).offers.find(o => o.url === 'https://shop.example/force-me').sourceTitle, 'Edited name - Desert Tan', 'the listing colour stays searchable on the offer');
+  await sandbox.handler(req({ action: 'publishSelected', placements: [{ url: 'https://shop.example/force-me', action: 'create', card: { name: 'Edited name', brand: 'Edited brand', price: 21999, colorTone: 'not-a-colour' } }] }));
+  assert.equal(files['catalog.json'].products.find(p => p.offers.some(o => o.url === 'https://shop.example/force-me')).offers.find(o => o.url === 'https://shop.example/force-me').colorTone, 'beige', 'an unknown tone is ignored');
   const partial = await sandbox.handler(req({ action: 'publishSelected', placements: [
     { url: 'https://shop.example/force-me', card: { name: 'Edited name', price: 21999 } },
     { url: 'https://shop.example/no-price', card: { name: 'No price' } }
@@ -99,5 +129,14 @@ const req = (body) => ({ method: 'POST', url: 'https://3d-price.netlify.app/api/
   assert.deepEqual((await partial.json()).appliedUrls, ['https://shop.example/force-me']);
   const noPrice = await sandbox.handler(req({ action: 'publishSelected', placements: [{ url: 'https://shop.example/no-price' }] }));
   assert.notEqual(noPrice.status, 200);
+  // Get price: a card that only exists in the run's events (no job.cards entry yet) gets its page price stored.
+  sandbox.AbortSignal = AbortSignal;
+  sandbox.fetch = async () => ({ ok: true, status: 200, text: async () => '<div class="product-price">668,28 TL</div>' });
+  files['jobs.json'].push({ id: 'job-2', url: 'https://www.rhino3dprinter.com/', status: 'complete', events: [{ type: 'extract', card: { url: 'https://www.rhino3dprinter.com/filamix-pla-matte-red', name: 'Filamix PLA Matte - Red' } }] });
+  const refetched = await sandbox.handler(req({ action: 'refetchUncertainPrices', items: [{ jobId: 'job-2', url: 'https://www.rhino3dprinter.com/filamix-pla-matte-red' }] }));
+  const refetchBody = await refetched.json();
+  assert.equal(refetched.status, 200, JSON.stringify(refetchBody));
+  assert.equal(refetchBody.results[0].price, 668.28, JSON.stringify(refetchBody));
+  assert.equal(files['jobs.json'].find((j) => j.id === 'job-2').cards['https://www.rhino3dprinter.com/filamix-pla-matte-red'].price, 668.28, 'the price is stored on the card');
   console.log('PASS: uncertain Laya opinions persist, cards edit, catalog republish, force publish hits live catalog.');
 })().catch((e) => { console.error(e); process.exitCode = 1; });

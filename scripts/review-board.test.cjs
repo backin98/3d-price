@@ -64,7 +64,7 @@ assert.match(html, /data-review-place/);
 const picker = html.match(/<select data-review-place=[\s\S]*?<\/select>/)[0];
 assert.match(picker, /Baseline · Bambu Lab A1 Combo/);
 assert.doesNotMatch(picker, /Rhino|Metatech|Creality K2|qwen-new/, 'shop-run destinations contain baseline models only');
-assert.match(html, /Search baseline…/);
+assert.match(html, /search baseline…/i);
 assert.doesNotMatch(html, /select-all-create/);
 const gathered = context.test.reviewBoardHtml({
   url: 'https://shop.example.com/filament',
@@ -88,6 +88,18 @@ const exactDuplicates = context.test.collectCards({ events: [
 assert.equal(exactDuplicates.length, 2, 'same-shop titles that normalize letter-for-letter collapse to one card');
 assert.equal(exactDuplicates.find((e) => e.card.name.includes('K2-COMBO')).card.price, 42000, 'the richer exact duplicate survives');
 assert.ok(exactDuplicates.some((e) => e.card.name === 'Creality K2 Pro Combo'), 'a different model title remains visible');
+const filamentColours = context.test.collectCards({ events: [
+  { card: { url: 'https://shop.example.com/pla-red', name: 'Acme PLA', kind: 'filament', brand: 'Acme', polymer: 'pla', variant: 'plus', color: 'red' } },
+  { card: { url: 'https://shop.example.com/pla-blue', name: 'Acme PLA', kind: 'filament', color: 'blue' } }
+] }, { catalog: { products: [], filaments: [] } });
+assert.equal(filamentColours.length, 2, 'colour-free family titles never collapse different filament SKUs');
+const filamentHtml = context.test.reviewBoardHtml({ events: filamentColours.map((row) => ({ card: row.card })) });
+assert.match(filamentHtml, /data-uncertain-field="name"/, 'shop-run titles are editable');
+assert.match(filamentHtml, /data-uncertain-field="color"[^>]*value="red"/i, 'shop-run cards expose the extracted colour');
+assert.match(filamentHtml, /data-uncertain-field="brand"[^>]+value="Acme"/, 'shop-run brand is editable');
+assert.match(filamentHtml, /data-uncertain-field="polymer"[^>]+value="pla"/, 'shop-run polymer is editable');
+assert.match(filamentHtml, /data-uncertain-field="variant"[^>]+value="plus"/, 'shop-run material variant is editable');
+assert.match(filamentHtml, /data-uncertain-field="packaging"[^>]*>[\s\S]*?<option value="spool" selected>With spool/, 'shop-run packaging is editable and defaults to a supplied spool');
 const mismatchHtml = context.test.reviewBoardHtml({
   events: [{
     type: "mismatch",
@@ -166,6 +178,7 @@ apiContext.money = require('../lib/parse-money.cjs'); // the function imports th
 apiContext.matcher = require('../lib/product-match.cjs');
 apiContext.baselineLib = require('../lib/baseline-catalog.js');
 apiContext.boardLib = require('../lib/baseline-board.cjs');
+apiContext.filamentColours = require('../lib/filament-colours.cjs');
 vm.runInNewContext(adminSrc, apiContext);
 const post = (body) => new Request('https://example.com/api/admin', { method: 'POST', headers: { origin: 'https://example.com', 'content-type': 'application/json' }, body: JSON.stringify(body) });
 

@@ -18,7 +18,8 @@ const sandbox = {
   store: { readJSON: async (key, fallback) => JSON.parse(JSON.stringify(files[key] || fallback)) },
   catalogUnion: require('../lib/catalog-union.cjs'),
   search: require('../lib/search-match.cjs'),
-  boardLib: require('../lib/baseline-board.cjs')
+  boardLib: require('../lib/baseline-board.cjs'),
+  filamentColours: require('../lib/filament-colours.cjs')
 };
 vm.runInNewContext(source, sandbox);
 

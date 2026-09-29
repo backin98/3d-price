@@ -5,6 +5,21 @@ const vm = require('node:vm');
 const { emptyBoard, fromProduct, fromRunCard, upsertItems, loadBackupPrinters, sanitizeItem, addCategory, renameCategory, patchItem, addItem, itemForProduct, applyBaselineImages, renameLinkedItem, addRecommendations, absorbWorkerCreates, catalogProductForItem } = require('../lib/baseline-board.cjs');
 
 const board = emptyBoard();
+const seriesBoard = emptyBoard();
+const series = addItem(seriesBoard, { name: 'Creality Ender 3', brand: 'Creality', subBrand: 'Ender', category: 'printers' });
+assert.equal(sanitizeItem(series).subBrand, 'Ender');
+patchItem(seriesBoard, series.id, { subBrand: 'CR' });
+assert.equal(sanitizeItem(series).subBrand, 'CR');
+patchItem(seriesBoard, series.id, { subBrand: '' });
+assert.equal(sanitizeItem(series).subBrand, '', 'optional series can be cleared');
+patchItem(seriesBoard, series.id, { spoolMaterial: 'Plastic' });
+assert.equal(sanitizeItem(series).spoolMaterial, 'plastic', 'spool material saves as cardboard or plastic');
+patchItem(seriesBoard, series.id, { spoolMaterial: 'metal' });
+assert.equal(sanitizeItem(series).spoolMaterial, '', 'anything else is not recorded');
+patchItem(seriesBoard, series.id, { rfid: 'yes' });
+assert.equal(sanitizeItem(series).rfid, true, 'RFID button on saves true');
+patchItem(seriesBoard, series.id, { rfid: '' });
+assert.equal(sanitizeItem(series).rfid, false, 'RFID button off saves false');
 assert.ok(board.categories.some((c) => c.id === 'printers'));
 assert.ok(board.categories.some((c) => c.id === 'filaments'));
 const printers = loadBackupPrinters();
@@ -87,7 +102,8 @@ const sandbox = {
   store,
   auth: { ownerFromHeaders: () => ({ role: 'owner' }), authReady: () => true },
   matcher: require('../lib/product-match.cjs'),
-  boardLib: require('../lib/baseline-board.cjs')
+  boardLib: require('../lib/baseline-board.cjs'),
+  filamentColours: require('../lib/filament-colours.cjs')
 };
 vm.runInNewContext(source, sandbox);
 const req = (body) => ({ method: 'POST', url: 'https://3d-price.netlify.app/api/admin', headers: { get: () => 'https://3d-price.netlify.app', entries: () => [][Symbol.iterator]() }, json: async () => body });
@@ -105,6 +121,11 @@ const get = () => sandbox.handler({ method: 'GET', url: 'https://3d-price.netlif
   assert.equal(movedBody.baseline.items[0].category, 'filaments');
   assert.equal(movedBody.baseline.items[0].name, 'Bambu Lab P1S Combo');
   assert.equal(movedBody.baseline.items[0].buildVolumeZ, 256);
+  const bulk = await sandbox.handler(req({ action: 'updateBaselineItems', changes: [{ id: 'keep-me', patch: { diameter: '1.75 mm', packaging: 'Spool' } }] }));
+  const bulkBody = await bulk.json();
+  assert.equal(bulk.status, 200, JSON.stringify(bulkBody));
+  assert.equal(bulkBody.saved, 1);
+  assert.deepEqual([bulkBody.baseline.items[0].diameter, bulkBody.baseline.items[0].packaging], ['1.75 mm', 'Spool'], 'save all writes every pending baseline field in one request');
   const cat = await sandbox.handler(req({ action: 'addBaselineCategory', name: 'Resin' }));
   assert.equal(cat.status, 200, await cat.text());
   const added = await sandbox.handler(req({ action: 'addBaselineItem', name: 'Saturn 4 Ultra', brand: 'Elegoo', category: 'resin' }));

@@ -253,7 +253,8 @@ export default async (req) => {
               card: {
                 name: p.name, brand: p.brand, kind: p.kind, price: o.price, url: o.url,
                 image: o.image || p.image, polymer: p.polymer, variant: p.variant, color: p.color,
-                weight: p.weight, diameter: p.diameter, packaging: p.packaging
+                weight: p.weight, diameter: p.diameter, packaging: p.packaging,
+                colorName: p.colorName || "", sourceTitle: o.sourceTitle || ""
               },
               liveUrl: liveUrls.has(o.url),
               decision: { action: liveIds.has(p.id) ? "merge" : "create", candidateId: p.id, candidateName: p.name, shelf: p.kind }
