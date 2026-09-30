@@ -49,8 +49,23 @@ never('Bambu Lab A1 Mini Uyumlu PEI Plaka', 'Bambu Lab A1 Mini 3D Yazıcı', 'a 
 same('Bambu Lab H2D Laser Full Combo 10W', 'Bambu Lab H2D Laser Full Combo 10W 3d Yazıcı Fiyatı Ve Özellikleri');
 same('Bambu Lab A1 Combo 3D Yazıcı', 'Bambu Lab A1 Combo');
 same('Bambu Lab P1S AMS 2 Pro 3D Yazıcı', 'Bambu Lab P1S AMS 2 Pro Combo 3D Yazıcı');
+// "AMS2 Pro" glued is the same feeder as "AMS 2 Pro" (a live catalog had both on one row, correctly):
+// never a feeder conflict, whatever band the title wording lands in.
+const agree = (a, b) => {
+  const d = decide(a, b);
+  assert.ok(!(d.action === 'create' && d.conflict), 'the same machine: ' + JSON.stringify(a) + ' vs ' + JSON.stringify(b) + ' (' + d.reason + ')');
+};
+agree('BambuLab P1S Combo AMS2 PRO', 'Bambu Lab P1S AMS 2 Pro Combo');
+agree('Bambu Lab P1S Combo 3D Printer (AMS2 Pro üniteli)', 'Bambu Lab P1S AMS 2 Pro Combo');
+never('BambuLab P1S Combo AMS2 PRO', 'Bambu Lab P1S Combo', 'a different feeder generation');
 same('FLASHFORGE Adventurer 5X & Enclosed Kit Bundle (Kamera Hediyeli)', 'FLASHFORGE Adventurer 5X Enclosed Kit Bundle (Kamera Hediyeli)');
 same('Original Prusa CORE One 3D Printer Kit', 'Prusa CORE One Kit');
+// "PLA+" is a polymer, not a printer bundled with filament: a spool never gets bundle extras.
+// (The bundle axis once read "Filamix PLA+ Filament Teal Green" as a bundle and split it from its family.)
+assert.equal(identity({ name: 'Filamix PLA+ Filament Teal Green', kind: 'filament' }).bundleExtras, '');
+assert.equal(identity({ name: 'Esun PLA+ Filament', kind: 'filament' }).bundleExtras, '');
+assert.notEqual(decidePair({ id: 'a', name: 'Filamix PLA+ Filament Teal Green', brand: 'Filamix', kind: 'filament' }, { id: 'b', name: 'Filamix Plus PLA', brand: 'Filamix', kind: 'filament', polymer: 'pla', variant: 'plus' }).reason, 'different bundle');
+assert.equal(identity({ name: 'Creality K1C 3D Yazıcı + Filament', kind: 'printer' }).bundleExtras, 'filament', 'a printer sold with filament is still a bundle');
 assert.equal(decide('Bambu Lab H2S 3D Yazıcı (AMS uyumlu)', 'Bambu Lab H2S 3D Yazıcı').reason.includes('compatible part'), false,
   '"AMS uyumlu" on a real printer is a feature, not a part');
 

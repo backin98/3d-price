@@ -9,10 +9,10 @@
     "diameterFold": "a listing that omits the diameter joins its brand+polymer+variant card when that card has exactly one known diameter",
     "unknown": "An absent axis stays empty; never infer diameter, weight, packaging, colour, or material variant."
   },
-  "generatedAt": "2026-09-30T20:38:01.786Z",
+  "generatedAt": "2026-09-30T21:00:39.228Z",
   "source": {
-    "nameNodesSeen": 4004,
-    "distinctListings": 3932,
+    "nameNodesSeen": 4013,
+    "distinctListings": 3941,
     "listingsWithPolymer": 1381,
     "filesScanned": 11,
     "shops": [
@@ -110,7 +110,47 @@
       "shops": [
         "Rhino 3D Printer"
       ],
-      "colours": []
+      "colours": [
+        {
+          "id": "peach",
+          "name": "Peach",
+          "hex": "#F6B99A",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Apex3D Rainbow PLA Filament - Peach Blush",
+              "url": "https://www.rhino3dprinter.com/apex3d-rainbow-pla-filament-peach-blush"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "filament/apex3d/rainbow-pla/unknown/peach",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/apex3d/rainbow-pla/unknown",
+      "name": "Apex3D Rainbow PLA Peach",
+      "brand": "Apex3D",
+      "polymer": "pla",
+      "variant": "rainbow",
+      "diameter": "",
+      "color": "peach",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "Apex3D Rainbow PLA Filament - Peach Blush",
+          "url": "https://www.rhino3dprinter.com/apex3d-rainbow-pla-filament-peach-blush"
+        }
+      ]
     },
     {
       "id": "filament/apex3d/rainbow-pla/unknown/unknown",
@@ -127,7 +167,7 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 9,
+      "seenCount": 8,
       "seenIn": [
         {
           "shop": "Rhino 3D Printer",
@@ -994,6 +1034,21 @@
           ]
         },
         {
+          "id": "desert-tan",
+          "name": "Desert Tan",
+          "hex": "#D9C3A0",
+          "parent": "beige",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Bambu Lab PLA Matte Filament - Desert Tan",
+              "url": "https://www.rhino3dprinter.com/bambu-lab-pla-matte-filament-desert-tan"
+            }
+          ]
+        },
+        {
           "id": "green",
           "name": "Green",
           "hex": "#388E3C",
@@ -1020,6 +1075,36 @@
               "shop": "Rhino 3D Printer",
               "name": "Bambu Lab Pla Matte Filament - Ice Blue",
               "url": "https://www.rhino3dprinter.com/bambu-lab-pla-matte-filament-ice-blue"
+            }
+          ]
+        },
+        {
+          "id": "ivory",
+          "name": "Ivory",
+          "hex": "#F4EEDC",
+          "parent": "white",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Bambu Lab PLA Matte Filament - Ivory White",
+              "url": "https://www.rhino3dprinter.com/bambu-lab-pla-matte-filament-ivory-white"
+            }
+          ]
+        },
+        {
+          "id": "lavender-purple",
+          "name": "Lavender Purple",
+          "hex": "#B57EDC",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Bambu Lab PLA Matte Filament - Lilac Purple",
+              "url": "https://www.rhino3dprinter.com/bambu-lab-pla-matte-filament-lilac-purple"
             }
           ]
         },
@@ -1071,6 +1156,30 @@
       ]
     },
     {
+      "id": "filament/bambu-lab/matte-pla/unknown/desert-tan",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/bambu-lab/matte-pla/unknown",
+      "name": "Bambu Lab Matte PLA Desert Tan",
+      "brand": "Bambu Lab",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "",
+      "color": "desert-tan",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "Bambu Lab PLA Matte Filament - Desert Tan",
+          "url": "https://www.rhino3dprinter.com/bambu-lab-pla-matte-filament-desert-tan"
+        }
+      ]
+    },
+    {
       "id": "filament/bambu-lab/matte-pla/unknown/green",
       "entityType": "sku",
       "kind": "filament",
@@ -1115,6 +1224,54 @@
           "shop": "Rhino 3D Printer",
           "name": "Bambu Lab Pla Matte Filament - Ice Blue",
           "url": "https://www.rhino3dprinter.com/bambu-lab-pla-matte-filament-ice-blue"
+        }
+      ]
+    },
+    {
+      "id": "filament/bambu-lab/matte-pla/unknown/ivory",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/bambu-lab/matte-pla/unknown",
+      "name": "Bambu Lab Matte PLA Ivory",
+      "brand": "Bambu Lab",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "",
+      "color": "ivory",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "Bambu Lab PLA Matte Filament - Ivory White",
+          "url": "https://www.rhino3dprinter.com/bambu-lab-pla-matte-filament-ivory-white"
+        }
+      ]
+    },
+    {
+      "id": "filament/bambu-lab/matte-pla/unknown/lavender-purple",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/bambu-lab/matte-pla/unknown",
+      "name": "Bambu Lab Matte PLA Lavender Purple",
+      "brand": "Bambu Lab",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "",
+      "color": "lavender-purple",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "Bambu Lab PLA Matte Filament - Lilac Purple",
+          "url": "https://www.rhino3dprinter.com/bambu-lab-pla-matte-filament-lilac-purple"
         }
       ]
     },
@@ -1210,17 +1367,12 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 2,
+      "seenCount": 1,
       "seenIn": [
         {
           "shop": "Rhino 3D Printer",
           "name": "Bambu Lab PLA Matte Çeşitleri",
           "url": "https://www.rhino3dprinter.com/urun/bambu-lab-pla-matte-cesitleri"
-        },
-        {
-          "shop": "Rhino 3D Printer",
-          "name": "Bambu Lab PLA Matte Filament - Desert Tan",
-          "url": "https://www.rhino3dprinter.com/bambu-lab-pla-matte-filament-desert-tan"
         }
       ]
     },
@@ -1674,21 +1826,6 @@
           ]
         },
         {
-          "id": "blue",
-          "name": "Blue",
-          "hex": "#1976D2",
-          "parent": "",
-          "source": "gathered",
-          "seenCount": 1,
-          "seenIn": [
-            {
-              "shop": "3D Teknomarket",
-              "name": "Beta PETG High-Speed Carbon Navy Blue",
-              "url": "https://www.3dteknomarket.com/products/beta-petg-high-speed-carbon-navy-blue?variant=47704394498235"
-            }
-          ]
-        },
-        {
           "id": "green",
           "name": "Green",
           "hex": "#388E3C",
@@ -1704,6 +1841,21 @@
           ]
         },
         {
+          "id": "navy-blue",
+          "name": "Navy Blue",
+          "hex": "#1F2A4D",
+          "parent": "blue",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "3D Teknomarket",
+              "name": "Beta PETG High-Speed Carbon Navy Blue",
+              "url": "https://www.3dteknomarket.com/products/beta-petg-high-speed-carbon-navy-blue?variant=47704394498235"
+            }
+          ]
+        },
+        {
           "id": "olive-green",
           "name": "Olive Green",
           "hex": "#6B8E23",
@@ -1715,6 +1867,21 @@
               "shop": "3D Teknomarket",
               "name": "Beta PETG High-Speed Carbon Olive Green",
               "url": "https://www.3dteknomarket.com/products/beta-petg-high-speed-carbon-olive-green?variant=47704394531003"
+            }
+          ]
+        },
+        {
+          "id": "terracotta",
+          "name": "Terracotta",
+          "hex": "#C8643B",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "3D Teknomarket",
+              "name": "Beta PETG High-Speed Carbon Terracotta",
+              "url": "https://www.3dteknomarket.com/products/beta-petg-high-speed-carbon-terracotta?variant=47704394563771"
             }
           ]
         }
@@ -1745,30 +1912,6 @@
       ]
     },
     {
-      "id": "filament/beta/high-speed-petg/unknown/blue",
-      "entityType": "sku",
-      "kind": "filament",
-      "category": "filaments",
-      "parentId": "filament/beta/high-speed-petg/unknown",
-      "name": "Beta High Speed PETG Blue",
-      "brand": "Beta",
-      "polymer": "petg",
-      "variant": "high-speed",
-      "diameter": "",
-      "color": "blue",
-      "weight": "",
-      "packaging": "",
-      "productForm": "filament",
-      "seenCount": 1,
-      "seenIn": [
-        {
-          "shop": "3D Teknomarket",
-          "name": "Beta PETG High-Speed Carbon Navy Blue",
-          "url": "https://www.3dteknomarket.com/products/beta-petg-high-speed-carbon-navy-blue?variant=47704394498235"
-        }
-      ]
-    },
-    {
       "id": "filament/beta/high-speed-petg/unknown/green",
       "entityType": "sku",
       "kind": "filament",
@@ -1789,6 +1932,30 @@
           "shop": "3D Teknomarket",
           "name": "Beta PETG High-Speed Carbon Army Green",
           "url": "https://www.3dteknomarket.com/products/beta-petg-high-speed-carbon-army-green?variant=47704394596539"
+        }
+      ]
+    },
+    {
+      "id": "filament/beta/high-speed-petg/unknown/navy-blue",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/beta/high-speed-petg/unknown",
+      "name": "Beta High Speed PETG Navy Blue",
+      "brand": "Beta",
+      "polymer": "petg",
+      "variant": "high-speed",
+      "diameter": "",
+      "color": "navy-blue",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "3D Teknomarket",
+          "name": "Beta PETG High-Speed Carbon Navy Blue",
+          "url": "https://www.3dteknomarket.com/products/beta-petg-high-speed-carbon-navy-blue?variant=47704394498235"
         }
       ]
     },
@@ -1817,17 +1984,17 @@
       ]
     },
     {
-      "id": "filament/beta/high-speed-petg/unknown/unknown",
+      "id": "filament/beta/high-speed-petg/unknown/terracotta",
       "entityType": "sku",
       "kind": "filament",
       "category": "filaments",
       "parentId": "filament/beta/high-speed-petg/unknown",
-      "name": "Beta High Speed PETG",
+      "name": "Beta High Speed PETG Terracotta",
       "brand": "Beta",
       "polymer": "petg",
       "variant": "high-speed",
       "diameter": "",
-      "color": "",
+      "color": "terracotta",
       "weight": "",
       "packaging": "",
       "productForm": "filament",
@@ -2090,6 +2257,26 @@
           ]
         },
         {
+          "id": "emerald",
+          "name": "Emerald",
+          "hex": "#1F8A5B",
+          "parent": "green",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "3D Teknomarket",
+              "name": "Beta PLA-Matte Filament Emerald",
+              "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-emerald?variant=47704391942331"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Beta PLA-Matte Filament - Zümrüt - 1Kg",
+              "url": "https://www.robolinkmarket.com/beta-pla-matte-filament-emerald"
+            }
+          ]
+        },
+        {
           "id": "gray",
           "name": "Gray",
           "hex": "#808080",
@@ -2106,6 +2293,26 @@
               "shop": "3D Teknomarket",
               "name": "Beta PLA-Matte Filament Warm Grey",
               "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-warm-grey?variant=47704227152059"
+            }
+          ]
+        },
+        {
+          "id": "kraft",
+          "name": "Kraft",
+          "hex": "#B89468",
+          "parent": "brown",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "3D Teknomarket",
+              "name": "Beta PLA-Matte Filament Kraft",
+              "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-kraft?variant=47704227381435"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Beta PLA Matte Filament Kraft 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/beta-pla-matte-filament-kraft-175mm-1000gr"
             }
           ]
         },
@@ -2146,6 +2353,26 @@
               "shop": "3D Teknomarket",
               "name": "Beta PLA-Matte Filament Purple",
               "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-purple?variant=47704392040635"
+            }
+          ]
+        },
+        {
+          "id": "terracotta",
+          "name": "Terracotta",
+          "hex": "#C8643B",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "3D Teknomarket",
+              "name": "Beta PLA-Matte Filament Terracotta",
+              "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-terracotta?variant=47704227283131"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Beta PLA Matte Filament Terracotta 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/beta-pla-matte-filament-terracotta-175mm-1000gr"
             }
           ]
         },
@@ -2196,6 +2423,21 @@
               "shop": "3D Teknomarket",
               "name": "Beta PLA-Matte Filament Orange",
               "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-orange?variant=47704392335547"
+            }
+          ]
+        },
+        {
+          "id": "peach",
+          "name": "Peach",
+          "hex": "#F6B99A",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "3D Teknomarket",
+              "name": "Beta PLA-Matte Filament Peach",
+              "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-peach?variant=47704392270011"
             }
           ]
         },
@@ -2309,6 +2551,54 @@
       ]
     },
     {
+      "id": "filament/beta/matte-pla/1.75/emerald",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/beta/matte-pla/1.75",
+      "name": "Beta Matte PLA 1.75 mm Emerald",
+      "brand": "Beta",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "1.75 mm",
+      "color": "emerald",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "3D Teknomarket",
+          "name": "Beta PLA-Matte Filament Emerald",
+          "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-emerald?variant=47704391942331"
+        }
+      ]
+    },
+    {
+      "id": "filament/beta/matte-pla/1.75/emerald/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/beta/matte-pla/1.75",
+      "name": "Beta Matte PLA 1.75 mm Emerald 1000 g",
+      "brand": "Beta",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "1.75 mm",
+      "color": "emerald",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Beta PLA-Matte Filament - Zümrüt - 1Kg",
+          "url": "https://www.robolinkmarket.com/beta-pla-matte-filament-emerald"
+        }
+      ]
+    },
+    {
       "id": "filament/beta/matte-pla/1.75/gray",
       "entityType": "sku",
       "kind": "filament",
@@ -2362,6 +2652,54 @@
       ]
     },
     {
+      "id": "filament/beta/matte-pla/1.75/kraft",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/beta/matte-pla/1.75",
+      "name": "Beta Matte PLA 1.75 mm Kraft",
+      "brand": "Beta",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "1.75 mm",
+      "color": "kraft",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "3D Teknomarket",
+          "name": "Beta PLA-Matte Filament Kraft",
+          "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-kraft?variant=47704227381435"
+        }
+      ]
+    },
+    {
+      "id": "filament/beta/matte-pla/1.75/kraft/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/beta/matte-pla/1.75",
+      "name": "Beta Matte PLA 1.75 mm Kraft 1000 g",
+      "brand": "Beta",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "1.75 mm",
+      "color": "kraft",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Beta PLA Matte Filament Kraft 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/beta-pla-matte-filament-kraft-175mm-1000gr"
+        }
+      ]
+    },
+    {
       "id": "filament/beta/matte-pla/1.75/orange",
       "entityType": "sku",
       "kind": "filament",
@@ -2382,6 +2720,30 @@
           "shop": "3D Teknomarket",
           "name": "Beta PLA-Matte Filament Orange",
           "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-orange?variant=47704392335547"
+        }
+      ]
+    },
+    {
+      "id": "filament/beta/matte-pla/1.75/peach",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/beta/matte-pla/1.75",
+      "name": "Beta Matte PLA 1.75 mm Peach",
+      "brand": "Beta",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "1.75 mm",
+      "color": "peach",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "3D Teknomarket",
+          "name": "Beta PLA-Matte Filament Peach",
+          "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-peach?variant=47704392270011"
         }
       ]
     },
@@ -2487,6 +2849,54 @@
       ]
     },
     {
+      "id": "filament/beta/matte-pla/1.75/terracotta",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/beta/matte-pla/1.75",
+      "name": "Beta Matte PLA 1.75 mm Terracotta",
+      "brand": "Beta",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "1.75 mm",
+      "color": "terracotta",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "3D Teknomarket",
+          "name": "Beta PLA-Matte Filament Terracotta",
+          "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-terracotta?variant=47704227283131"
+        }
+      ]
+    },
+    {
+      "id": "filament/beta/matte-pla/1.75/terracotta/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/beta/matte-pla/1.75",
+      "name": "Beta Matte PLA 1.75 mm Terracotta 1000 g",
+      "brand": "Beta",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "1.75 mm",
+      "color": "terracotta",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Beta PLA Matte Filament Terracotta 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/beta-pla-matte-filament-terracotta-175mm-1000gr"
+        }
+      ]
+    },
+    {
       "id": "filament/beta/matte-pla/1.75/unknown",
       "entityType": "sku",
       "kind": "filament",
@@ -2501,7 +2911,7 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 8,
+      "seenCount": 4,
       "seenIn": [
         {
           "shop": "3D Teknomarket",
@@ -2515,42 +2925,8 @@
         },
         {
           "shop": "3D Teknomarket",
-          "name": "Beta PLA-Matte Filament Emerald",
-          "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-emerald?variant=47704391942331"
-        }
-      ]
-    },
-    {
-      "id": "filament/beta/matte-pla/1.75/unknown/1000",
-      "entityType": "sku",
-      "kind": "filament",
-      "category": "filaments",
-      "parentId": "filament/beta/matte-pla/1.75",
-      "name": "Beta Matte PLA 1.75 mm 1000 g",
-      "brand": "Beta",
-      "polymer": "pla",
-      "variant": "matte",
-      "diameter": "1.75 mm",
-      "color": "",
-      "weight": "1000 g",
-      "packaging": "",
-      "productForm": "filament",
-      "seenCount": 3,
-      "seenIn": [
-        {
-          "shop": "Robolink Market",
-          "name": "Beta PLA Matte Filament Kraft 1.75mm 1000gr",
-          "url": "https://www.robolinkmarket.com/beta-pla-matte-filament-kraft-175mm-1000gr"
-        },
-        {
-          "shop": "Robolink Market",
-          "name": "Beta PLA Matte Filament Terracotta 1.75mm 1000gr",
-          "url": "https://www.robolinkmarket.com/beta-pla-matte-filament-terracotta-175mm-1000gr"
-        },
-        {
-          "shop": "Robolink Market",
-          "name": "Beta PLA-Matte Filament - Zümrüt - 1Kg",
-          "url": "https://www.robolinkmarket.com/beta-pla-matte-filament-emerald"
+          "name": "Beta PLA-Matte Filament Lotus Powder",
+          "url": "https://www.3dteknomarket.com/products/beta-pla-matte-filament-lotus-powder?variant=47704392302779"
         }
       ]
     },
@@ -3161,6 +3537,26 @@
           ]
         },
         {
+          "id": "cream",
+          "name": "Cream",
+          "hex": "#F3E9C6",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "3D Teknomarket",
+              "name": "Beta PLA+ Filament Cream",
+              "url": "https://www.3dteknomarket.com/products/beta-pla-filament-cream?variant=47704206803131"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Beta PLA Plus Filament Krem 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/beta-pla-plus-filament-krem-175mm-1000gr"
+            }
+          ]
+        },
+        {
           "id": "green",
           "name": "Green",
           "hex": "#388E3C",
@@ -3217,6 +3613,26 @@
               "shop": "Robolink Market",
               "name": "Beta PLA Plus Filament Gül Pembe 1.75mm 1000gr",
               "url": "https://www.robolinkmarket.com/beta-pla-plus-filament-gul-pembe-175mm-1000gr"
+            }
+          ]
+        },
+        {
+          "id": "violet-purple",
+          "name": "Violet Purple",
+          "hex": "#8F00FF",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "3D Teknomarket",
+              "name": "Beta PLA+ Filament Violet Purple",
+              "url": "https://www.3dteknomarket.com/products/beta-pla-filament-violet-purple?variant=47704206639291"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Beta PLA Plus Filament Violet Mor 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/beta-pla-plus-filament-violet-mor-175mm-1000gr"
             }
           ]
         },
@@ -3297,21 +3713,6 @@
               "shop": "Robolink Market",
               "name": "Beta PLA Plus Filament Gül Pembe 1.75mm 1000gr",
               "url": "https://www.robolinkmarket.com/beta-pla-plus-filament-gul-pembe-175mm-1000gr"
-            }
-          ]
-        },
-        {
-          "id": "violet-purple",
-          "name": "Violet Purple",
-          "hex": "#8F00FF",
-          "parent": "",
-          "source": "gathered",
-          "seenCount": 1,
-          "seenIn": [
-            {
-              "shop": "3D Teknomarket",
-              "name": "Beta PLA+ Filament Violet Purple",
-              "url": "https://www.3dteknomarket.com/products/beta-pla-filament-violet-purple?variant=47704206639291"
             }
           ]
         }
@@ -3521,6 +3922,54 @@
           "shop": "Robolink Market",
           "name": "Beta PLA Plus Filament Kahverengi 1.75mm 1000gr",
           "url": "https://www.robolinkmarket.com/beta-pla-plus-filament-kahverengi-175mm-1000gr"
+        }
+      ]
+    },
+    {
+      "id": "filament/beta/plus-pla/1.75/cream",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/beta/plus-pla/1.75",
+      "name": "Beta Plus PLA 1.75 mm Cream",
+      "brand": "Beta",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "cream",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "3D Teknomarket",
+          "name": "Beta PLA+ Filament Cream",
+          "url": "https://www.3dteknomarket.com/products/beta-pla-filament-cream?variant=47704206803131"
+        }
+      ]
+    },
+    {
+      "id": "filament/beta/plus-pla/1.75/cream/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/beta/plus-pla/1.75",
+      "name": "Beta Plus PLA 1.75 mm Cream 1000 g",
+      "brand": "Beta",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "cream",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Beta PLA Plus Filament Krem 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/beta-pla-plus-filament-krem-175mm-1000gr"
         }
       ]
     },
@@ -3866,13 +4315,8 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 2,
+      "seenCount": 1,
       "seenIn": [
-        {
-          "shop": "3D Teknomarket",
-          "name": "Beta PLA+ Filament Cream",
-          "url": "https://www.3dteknomarket.com/products/beta-pla-filament-cream?variant=47704206803131"
-        },
         {
           "shop": "Rhino 3D Printer",
           "name": "Beta PLA+ Filament Çeşitleri",
@@ -3895,13 +4339,8 @@
       "weight": "1000 g",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 2,
+      "seenCount": 1,
       "seenIn": [
-        {
-          "shop": "Robolink Market",
-          "name": "Beta PLA Plus Filament Krem 1.75mm 1000gr",
-          "url": "https://www.robolinkmarket.com/beta-pla-plus-filament-krem-175mm-1000gr"
-        },
         {
           "shop": "Robolink Market",
           "name": "Beta PLA Plus Filament Su Yeşili 1.75mm 1000gr",
@@ -3930,6 +4369,30 @@
           "shop": "3D Teknomarket",
           "name": "Beta PLA+ Filament Violet Purple",
           "url": "https://www.3dteknomarket.com/products/beta-pla-filament-violet-purple?variant=47704206639291"
+        }
+      ]
+    },
+    {
+      "id": "filament/beta/plus-pla/1.75/violet-purple/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/beta/plus-pla/1.75",
+      "name": "Beta Plus PLA 1.75 mm Violet Purple 1000 g",
+      "brand": "Beta",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "violet-purple",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Beta PLA Plus Filament Violet Mor 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/beta-pla-plus-filament-violet-mor-175mm-1000gr"
         }
       ]
     },
@@ -5190,6 +5653,21 @@
           ]
         },
         {
+          "id": "peach",
+          "name": "Peach",
+          "hex": "#F6B99A",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "Creality Hyper PLA Şeftali Tozu Filament 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/creality-hyper-pla-seftali-tozu-filament-1.75mm-1kg"
+            }
+          ]
+        },
+        {
           "id": "purple",
           "name": "Purple",
           "hex": "#7B1FA2",
@@ -5453,6 +5931,30 @@
       ]
     },
     {
+      "id": "filament/creality-3d/high-speed-pla/1.75/peach/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/creality-3d/high-speed-pla/1.75",
+      "name": "Creality 3D High Speed PLA 1.75 mm Peach 1000 g",
+      "brand": "Creality 3D",
+      "polymer": "pla",
+      "variant": "high-speed",
+      "diameter": "1.75 mm",
+      "color": "peach",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "Creality Hyper PLA Şeftali Tozu Filament 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/creality-hyper-pla-seftali-tozu-filament-1.75mm-1kg"
+        }
+      ]
+    },
+    {
       "id": "filament/creality-3d/high-speed-pla/1.75/purple/1000",
       "entityType": "sku",
       "kind": "filament",
@@ -5515,13 +6017,8 @@
       "weight": "1000 g",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 2,
+      "seenCount": 1,
       "seenIn": [
-        {
-          "shop": "robotizmo.net",
-          "name": "Creality Hyper PLA Şeftali Tozu Filament 1.75mm 1Kg",
-          "url": "https://www.robotizmo.net/creality-hyper-pla-seftali-tozu-filament-1.75mm-1kg"
-        },
         {
           "shop": "robotizmo.net",
           "name": "Creality Hyper PLA Very Peri Filament 1.75mm 1Kg",
@@ -5591,6 +6088,21 @@
           ]
         },
         {
+          "id": "ivory",
+          "name": "Ivory",
+          "hex": "#F4EEDC",
+          "parent": "white",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "Creality CR PLA Fildişi Beyaz Filament 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/creality-cr-pla-fildisi-beyaz-filament-1.75mm-1kg"
+            }
+          ]
+        },
+        {
           "id": "silver",
           "name": "Silver",
           "hex": "#C0C0C0",
@@ -5604,6 +6116,30 @@
               "url": "https://www.robotizmo.net/creality-cr-pla-gumus-filament-1.75mm-1kg"
             }
           ]
+        }
+      ]
+    },
+    {
+      "id": "filament/creality-3d/pla/1.75/ivory/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/creality-3d/pla/1.75",
+      "name": "Creality 3D PLA 1.75 mm Ivory 1000 g",
+      "brand": "Creality 3D",
+      "polymer": "pla",
+      "variant": "",
+      "diameter": "1.75 mm",
+      "color": "ivory",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "Creality CR PLA Fildişi Beyaz Filament 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/creality-cr-pla-fildisi-beyaz-filament-1.75mm-1kg"
         }
       ]
     },
@@ -6552,6 +7088,21 @@
               "url": "https://www.rhino3dprinter.com/creality-hyper-pla-filament-skin"
             }
           ]
+        },
+        {
+          "id": "peach",
+          "name": "Peach",
+          "hex": "#F6B99A",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "Robolink Market",
+              "name": "Creality Hyper PLA RFID Peach Fuzz Filament 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/creality-hyper-pla-rfid-peach-fuzz-filament-175mm-1000gr"
+            }
+          ]
         }
       ]
     },
@@ -6936,6 +7487,30 @@
       ]
     },
     {
+      "id": "filament/creality/high-speed-pla/1.75/peach/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/creality/high-speed-pla/1.75",
+      "name": "Creality High Speed PLA 1.75 mm Peach 1000 g",
+      "brand": "Creality",
+      "polymer": "pla",
+      "variant": "high-speed",
+      "diameter": "1.75 mm",
+      "color": "peach",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Creality Hyper PLA RFID Peach Fuzz Filament 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/creality-hyper-pla-rfid-peach-fuzz-filament-175mm-1000gr"
+        }
+      ]
+    },
+    {
       "id": "filament/creality/high-speed-pla/1.75/purple",
       "entityType": "sku",
       "kind": "filament",
@@ -7075,7 +7650,7 @@
       "weight": "1000 g",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 5,
+      "seenCount": 4,
       "seenIn": [
         {
           "shop": "Robolink Market · Rhino 3D Printer",
@@ -9494,6 +10069,26 @@
           ]
         },
         {
+          "id": "navy-blue",
+          "name": "Navy Blue",
+          "hex": "#1F2A4D",
+          "parent": "blue",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "3D Teknomarket",
+              "name": "ELEGOO PLA Matte Filament Navy Blue",
+              "url": "https://www.3dteknomarket.com/products/elegoo-pla-matte-filament-navy-blue?variant=47704419500219"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "ELEGOO PLA Matte Lacivert Filament 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/elegoo-pla-matte-lacivert-filament-175mm-1000gr"
+            }
+          ]
+        },
+        {
           "id": "turquoise",
           "name": "Turquoise",
           "hex": "#40E0D0",
@@ -9545,21 +10140,6 @@
               "shop": "3D Teknomarket",
               "name": "ELEGOO PLA Matte Filament Black",
               "url": "https://www.3dteknomarket.com/products/elegoo-pla-matte-filament-black?variant=47704413601979"
-            }
-          ]
-        },
-        {
-          "id": "blue",
-          "name": "Blue",
-          "hex": "#1976D2",
-          "parent": "",
-          "source": "gathered",
-          "seenCount": 1,
-          "seenIn": [
-            {
-              "shop": "3D Teknomarket",
-              "name": "ELEGOO PLA Matte Filament Navy Blue",
-              "url": "https://www.3dteknomarket.com/products/elegoo-pla-matte-filament-navy-blue?variant=47704419500219"
             }
           ]
         },
@@ -9698,30 +10278,6 @@
       ]
     },
     {
-      "id": "filament/elegoo/matte-pla/1.75/blue",
-      "entityType": "sku",
-      "kind": "filament",
-      "category": "filaments",
-      "parentId": "filament/elegoo/matte-pla/1.75",
-      "name": "Elegoo Matte PLA 1.75 mm Blue",
-      "brand": "Elegoo",
-      "polymer": "pla",
-      "variant": "matte",
-      "diameter": "1.75 mm",
-      "color": "blue",
-      "weight": "",
-      "packaging": "",
-      "productForm": "filament",
-      "seenCount": 1,
-      "seenIn": [
-        {
-          "shop": "3D Teknomarket",
-          "name": "ELEGOO PLA Matte Filament Navy Blue",
-          "url": "https://www.3dteknomarket.com/products/elegoo-pla-matte-filament-navy-blue?variant=47704419500219"
-        }
-      ]
-    },
-    {
       "id": "filament/elegoo/matte-pla/1.75/ice-blue",
       "entityType": "sku",
       "kind": "filament",
@@ -9842,6 +10398,54 @@
       ]
     },
     {
+      "id": "filament/elegoo/matte-pla/1.75/navy-blue",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/elegoo/matte-pla/1.75",
+      "name": "Elegoo Matte PLA 1.75 mm Navy Blue",
+      "brand": "Elegoo",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "1.75 mm",
+      "color": "navy-blue",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "3D Teknomarket",
+          "name": "ELEGOO PLA Matte Filament Navy Blue",
+          "url": "https://www.3dteknomarket.com/products/elegoo-pla-matte-filament-navy-blue?variant=47704419500219"
+        }
+      ]
+    },
+    {
+      "id": "filament/elegoo/matte-pla/1.75/navy-blue/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/elegoo/matte-pla/1.75",
+      "name": "Elegoo Matte PLA 1.75 mm Navy Blue 1000 g",
+      "brand": "Elegoo",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "1.75 mm",
+      "color": "navy-blue",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "ELEGOO PLA Matte Lacivert Filament 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/elegoo-pla-matte-lacivert-filament-175mm-1000gr"
+        }
+      ]
+    },
+    {
       "id": "filament/elegoo/matte-pla/1.75/red",
       "entityType": "sku",
       "kind": "filament",
@@ -9934,30 +10538,6 @@
           "shop": "Robolink Market",
           "name": "ELEGOO PLA Matte Turkuaz Filament 1.75mm 1000gr",
           "url": "https://www.robolinkmarket.com/elegoo-pla-matte-turkuaz-filament-175mm-1000gr"
-        }
-      ]
-    },
-    {
-      "id": "filament/elegoo/matte-pla/1.75/unknown/1000",
-      "entityType": "sku",
-      "kind": "filament",
-      "category": "filaments",
-      "parentId": "filament/elegoo/matte-pla/1.75",
-      "name": "Elegoo Matte PLA 1.75 mm 1000 g",
-      "brand": "Elegoo",
-      "polymer": "pla",
-      "variant": "matte",
-      "diameter": "1.75 mm",
-      "color": "",
-      "weight": "1000 g",
-      "packaging": "",
-      "productForm": "filament",
-      "seenCount": 1,
-      "seenIn": [
-        {
-          "shop": "Robolink Market",
-          "name": "ELEGOO PLA Matte Lacivert Filament 1.75mm 1000gr",
-          "url": "https://www.robolinkmarket.com/elegoo-pla-matte-lacivert-filament-175mm-1000gr"
         }
       ]
     },
@@ -13021,6 +13601,21 @@
           ]
         },
         {
+          "id": "lavender-purple",
+          "name": "Lavender Purple",
+          "hex": "#B57EDC",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "Robolink Market",
+              "name": "Esun PLA-HS Yüksek Hızlı Filament Lilac 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/esun-pla-hs-yuksek-hizli-filament-lilac-175mm-1000gr"
+            }
+          ]
+        },
+        {
           "id": "light-blue",
           "name": "Light Blue",
           "hex": "#ADD8E6",
@@ -13518,6 +14113,30 @@
           "shop": "Robolink Market",
           "name": "Esun PLA-HS Yüksek Hızlı Filament Holly Green 1.75mm 1000gr",
           "url": "https://www.robolinkmarket.com/esun-pla-hs-holy-green"
+        }
+      ]
+    },
+    {
+      "id": "filament/esun/high-speed-pla/1.75/lavender-purple/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/esun/high-speed-pla/1.75",
+      "name": "eSUN High Speed PLA 1.75 mm Lavender Purple 1000 g",
+      "brand": "eSUN",
+      "polymer": "pla",
+      "variant": "high-speed",
+      "diameter": "1.75 mm",
+      "color": "lavender-purple",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Esun PLA-HS Yüksek Hızlı Filament Lilac 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/esun-pla-hs-yuksek-hizli-filament-lilac-175mm-1000gr"
         }
       ]
     },
@@ -14026,17 +14645,12 @@
       "weight": "1000 g",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 3,
+      "seenCount": 2,
       "seenIn": [
         {
           "shop": "Robolink Market",
           "name": "Esun PLA-HS Yüksek Hızlı Filament Apricort 1.75mm 1000gr",
           "url": "https://www.robolinkmarket.com/esun-pla-hs-apricot"
-        },
-        {
-          "shop": "Robolink Market",
-          "name": "Esun PLA-HS Yüksek Hızlı Filament Lilac 1.75mm 1000gr",
-          "url": "https://www.robolinkmarket.com/esun-pla-hs-yuksek-hizli-filament-lilac-175mm-1000gr"
         },
         {
           "shop": "Robolink Market",
@@ -14442,6 +15056,21 @@
               "url": "https://www.rhino3dprinter.com/esun-e-silk-pla-filament-dark-orange"
             }
           ]
+        },
+        {
+          "id": "violet-purple",
+          "name": "Violet Purple",
+          "hex": "#8F00FF",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Esun E-Silk PLA+ Filament - Violet",
+              "url": "https://www.rhino3dprinter.com/esun-e-silk-pla-filament-violet"
+            }
+          ]
         }
       ]
     },
@@ -14499,17 +15128,17 @@
       ]
     },
     {
-      "id": "filament/esun/silk-pla/unknown/unknown",
+      "id": "filament/esun/silk-pla/unknown/violet-purple",
       "entityType": "sku",
       "kind": "filament",
       "category": "filaments",
       "parentId": "filament/esun/silk-pla/unknown",
-      "name": "eSUN Silk PLA",
+      "name": "eSUN Silk PLA Violet Purple",
       "brand": "eSUN",
       "polymer": "pla",
       "variant": "silk",
       "diameter": "",
-      "color": "",
+      "color": "violet-purple",
       "weight": "",
       "packaging": "",
       "productForm": "filament",
@@ -16954,6 +17583,21 @@
           ]
         },
         {
+          "id": "ivory",
+          "name": "Ivory",
+          "hex": "#F4EEDC",
+          "parent": "white",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "FilaMark PETG Filament Fildişi 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/filamark-petg-filament-fildisi-1.75mm-1kg"
+            }
+          ]
+        },
+        {
           "id": "orange",
           "name": "Orange",
           "hex": "#F57C00",
@@ -17112,6 +17756,30 @@
       ]
     },
     {
+      "id": "filament/filamark/petg/1.75/ivory/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamark/petg/1.75",
+      "name": "FilaMark PETG 1.75 mm Ivory 1000 g",
+      "brand": "FilaMark",
+      "polymer": "petg",
+      "variant": "",
+      "diameter": "1.75 mm",
+      "color": "ivory",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "FilaMark PETG Filament Fildişi 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/filamark-petg-filament-fildisi-1.75mm-1kg"
+        }
+      ]
+    },
+    {
       "id": "filament/filamark/petg/1.75/orange/1000",
       "entityType": "sku",
       "kind": "filament",
@@ -17156,30 +17824,6 @@
           "shop": "robotizmo.net",
           "name": "FilaMark PETG Filament Kırmızı 1.75mm 1Kg",
           "url": "https://www.robotizmo.net/filamark-petg-filament-kirmizi-1.75mm-1kg"
-        }
-      ]
-    },
-    {
-      "id": "filament/filamark/petg/1.75/unknown/1000",
-      "entityType": "sku",
-      "kind": "filament",
-      "category": "filaments",
-      "parentId": "filament/filamark/petg/1.75",
-      "name": "FilaMark PETG 1.75 mm 1000 g",
-      "brand": "FilaMark",
-      "polymer": "petg",
-      "variant": "",
-      "diameter": "1.75 mm",
-      "color": "",
-      "weight": "1000 g",
-      "packaging": "",
-      "productForm": "filament",
-      "seenCount": 1,
-      "seenIn": [
-        {
-          "shop": "robotizmo.net",
-          "name": "FilaMark PETG Filament Fildişi 1.75mm 1Kg",
-          "url": "https://www.robotizmo.net/filamark-petg-filament-fildisi-1.75mm-1kg"
         }
       ]
     },
@@ -17721,6 +18365,21 @@
           ]
         },
         {
+          "id": "ivory",
+          "name": "Ivory",
+          "hex": "#F4EEDC",
+          "parent": "white",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "FilaMark PLA Plus Filament Fildişi 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/filamark-pla-plus-filament-fildisi-1.75mm-1kg"
+            }
+          ]
+        },
+        {
           "id": "khaki-green",
           "name": "Khaki Green",
           "hex": "#78866B",
@@ -17747,6 +18406,21 @@
               "shop": "robotizmo.net",
               "name": "FilaMark PLA Plus Filament Açık Mavi 1.75mm 1Kg",
               "url": "https://www.robotizmo.net/filamark-pla-plus-filament-acik-mavi-1.75mm-1kg"
+            }
+          ]
+        },
+        {
+          "id": "navy-blue",
+          "name": "Navy Blue",
+          "hex": "#1F2A4D",
+          "parent": "blue",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "FilaMark PLA Plus Filament Lacivert 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/filamark-pla-plus-filament-lacivert-1.75mm-1kg"
             }
           ]
         },
@@ -18093,6 +18767,30 @@
       ]
     },
     {
+      "id": "filament/filamark/plus-pla/1.75/ivory/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamark/plus-pla/1.75",
+      "name": "FilaMark Plus PLA 1.75 mm Ivory 1000 g",
+      "brand": "FilaMark",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "ivory",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "FilaMark PLA Plus Filament Fildişi 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/filamark-pla-plus-filament-fildisi-1.75mm-1kg"
+        }
+      ]
+    },
+    {
       "id": "filament/filamark/plus-pla/1.75/khaki-green/1000",
       "entityType": "sku",
       "kind": "filament",
@@ -18137,6 +18835,30 @@
           "shop": "robotizmo.net",
           "name": "FilaMark PLA Plus Filament Açık Mavi 1.75mm 1Kg",
           "url": "https://www.robotizmo.net/filamark-pla-plus-filament-acik-mavi-1.75mm-1kg"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamark/plus-pla/1.75/navy-blue/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamark/plus-pla/1.75",
+      "name": "FilaMark Plus PLA 1.75 mm Navy Blue 1000 g",
+      "brand": "FilaMark",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "navy-blue",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "FilaMark PLA Plus Filament Lacivert 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/filamark-pla-plus-filament-lacivert-1.75mm-1kg"
         }
       ]
     },
@@ -18275,22 +18997,17 @@
       "weight": "1000 g",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 4,
+      "seenCount": 2,
       "seenIn": [
-        {
-          "shop": "robotizmo.net",
-          "name": "FilaMark PLA Plus Filament Fildişi 1.75mm 1Kg",
-          "url": "https://www.robotizmo.net/filamark-pla-plus-filament-fildisi-1.75mm-1kg"
-        },
-        {
-          "shop": "robotizmo.net",
-          "name": "FilaMark PLA Plus Filament Lacivert 1.75mm 1Kg",
-          "url": "https://www.robotizmo.net/filamark-pla-plus-filament-lacivert-1.75mm-1kg"
-        },
         {
           "shop": "robotizmo.net",
           "name": "FilaMark PLA Plus Filament Mermer 1.75mm 1Kg",
           "url": "https://www.robotizmo.net/filamark-pla-plus-filament-mermer-1.75mm-1kg"
+        },
+        {
+          "shop": "robotizmo.net",
+          "name": "FilaMark PLA Plus Filament Vişne Çürüğü 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/filamark-pla-plus-filament-visne-curugu-1.75mm-1kg"
         }
       ]
     },
@@ -19055,31 +19772,6 @@
           ]
         },
         {
-          "id": "blue",
-          "name": "Blue",
-          "hex": "#1976D2",
-          "parent": "",
-          "source": "gathered",
-          "seenCount": 3,
-          "seenIn": [
-            {
-              "shop": "Rhino 3D Printer",
-              "name": "Filamix Rapid PLA+ Filament - Blue",
-              "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-blue"
-            },
-            {
-              "shop": "Rhino 3D Printer",
-              "name": "Filamix Rapid PLA+ Filament - Navy Blue",
-              "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-navy-blue"
-            },
-            {
-              "shop": "Robolink Market",
-              "name": "Filamix Hyper PLA + Filament Navy Blue 1.75mm 1000gr",
-              "url": "https://www.robolinkmarket.com/filamix-hyper-pla-navy-blue"
-            }
-          ]
-        },
-        {
           "id": "bone-white",
           "name": "Bone White",
           "hex": "#F1EDE4",
@@ -19116,6 +19808,26 @@
               "shop": "Robolink Market",
               "name": "Filamix Hyper PLA + Filament Brown 1.75mm 1000gr",
               "url": "https://www.robolinkmarket.com/filamix-hyper-pla-brown"
+            }
+          ]
+        },
+        {
+          "id": "champagne",
+          "name": "Champagne",
+          "hex": "#E8D3A9",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Filamix Rapid PLA+ Filament - Champagne",
+              "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-champagne"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Filamix Hyper PLA + Filament Champagne 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/filamix-hyper-pla-champagne"
             }
           ]
         },
@@ -19176,6 +19888,26 @@
               "shop": "Robolink Market",
               "name": "Filamix Hyper PLA + Filament Ice Blue 1.75mm 1000gr",
               "url": "https://www.robolinkmarket.com/filamix-hyper-pla-ice-blue"
+            }
+          ]
+        },
+        {
+          "id": "ivory",
+          "name": "Ivory",
+          "hex": "#F4EEDC",
+          "parent": "white",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Filamix Rapid PLA+ Filament - Ivory",
+              "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-ivory"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Filamix Hyper PLA + Filament Ivory 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/filamix-hyper-pla-fildisi"
             }
           ]
         },
@@ -19256,6 +19988,26 @@
               "shop": "Robolink Market",
               "name": "Filamix Hyper PLA + Filament Dark Mint Green 1.75mm 1000gr",
               "url": "https://www.robolinkmarket.com/filamix-hyper-pla-dark-mint-green"
+            }
+          ]
+        },
+        {
+          "id": "navy-blue",
+          "name": "Navy Blue",
+          "hex": "#1F2A4D",
+          "parent": "blue",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Filamix Rapid PLA+ Filament - Navy Blue",
+              "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-navy-blue"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Filamix Hyper PLA + Filament Navy Blue 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/filamix-hyper-pla-navy-blue"
             }
           ]
         },
@@ -19480,6 +20232,26 @@
           ]
         },
         {
+          "id": "violet-purple",
+          "name": "Violet Purple",
+          "hex": "#8F00FF",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Filamix Rapid PLA+ Filament - Violet",
+              "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-violet"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Filamix Hyper PLA + Filament Violet 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/filamix-hyper-pla-violet"
+            }
+          ]
+        },
+        {
           "id": "black",
           "name": "Black",
           "hex": "#000000",
@@ -19491,6 +20263,21 @@
               "shop": "Rhino 3D Printer",
               "name": "Filamix Rapid PLA+ Filament - Black",
               "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-black"
+            }
+          ]
+        },
+        {
+          "id": "blue",
+          "name": "Blue",
+          "hex": "#1976D2",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Filamix Rapid PLA+ Filament - Blue",
+              "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-blue"
             }
           ]
         },
@@ -19713,41 +20500,12 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 2,
+      "seenCount": 1,
       "seenIn": [
         {
           "shop": "Rhino 3D Printer",
           "name": "Filamix Rapid PLA+ Filament - Blue",
           "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-blue"
-        },
-        {
-          "shop": "Rhino 3D Printer",
-          "name": "Filamix Rapid PLA+ Filament - Navy Blue",
-          "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-navy-blue"
-        }
-      ]
-    },
-    {
-      "id": "filament/filamix/plus-high-speed-pla/1.75/blue/1000",
-      "entityType": "sku",
-      "kind": "filament",
-      "category": "filaments",
-      "parentId": "filament/filamix/plus-high-speed-pla/1.75",
-      "name": "Filamix Plus High Speed PLA 1.75 mm Blue 1000 g",
-      "brand": "Filamix",
-      "polymer": "pla",
-      "variant": "plus-high-speed",
-      "diameter": "1.75 mm",
-      "color": "blue",
-      "weight": "1000 g",
-      "packaging": "",
-      "productForm": "filament",
-      "seenCount": 1,
-      "seenIn": [
-        {
-          "shop": "Robolink Market",
-          "name": "Filamix Hyper PLA + Filament Navy Blue 1.75mm 1000gr",
-          "url": "https://www.robolinkmarket.com/filamix-hyper-pla-navy-blue"
         }
       ]
     },
@@ -19868,6 +20626,54 @@
           "shop": "Rhino 3D Printer",
           "name": "Filamix Rapid PLA+ Filament - Fire Engine Red",
           "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-fire-engine-red"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamix/plus-high-speed-pla/1.75/champagne",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-high-speed-pla/1.75",
+      "name": "Filamix Plus High Speed PLA 1.75 mm Champagne",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus-high-speed",
+      "diameter": "1.75 mm",
+      "color": "champagne",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "Filamix Rapid PLA+ Filament - Champagne",
+          "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-champagne"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamix/plus-high-speed-pla/1.75/champagne/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-high-speed-pla/1.75",
+      "name": "Filamix Plus High Speed PLA 1.75 mm Champagne 1000 g",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus-high-speed",
+      "diameter": "1.75 mm",
+      "color": "champagne",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Filamix Hyper PLA + Filament Champagne 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/filamix-hyper-pla-champagne"
         }
       ]
     },
@@ -20156,6 +20962,54 @@
       ]
     },
     {
+      "id": "filament/filamix/plus-high-speed-pla/1.75/ivory",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-high-speed-pla/1.75",
+      "name": "Filamix Plus High Speed PLA 1.75 mm Ivory",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus-high-speed",
+      "diameter": "1.75 mm",
+      "color": "ivory",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "Filamix Rapid PLA+ Filament - Ivory",
+          "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-ivory"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamix/plus-high-speed-pla/1.75/ivory/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-high-speed-pla/1.75",
+      "name": "Filamix Plus High Speed PLA 1.75 mm Ivory 1000 g",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus-high-speed",
+      "diameter": "1.75 mm",
+      "color": "ivory",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Filamix Hyper PLA + Filament Ivory 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/filamix-hyper-pla-fildisi"
+        }
+      ]
+    },
+    {
       "id": "filament/filamix/plus-high-speed-pla/1.75/khaki-green",
       "entityType": "sku",
       "kind": "filament",
@@ -20392,6 +21246,54 @@
           "shop": "Robolink Market",
           "name": "Filamix Hyper PLA + Filament Dark Mint Green 1.75mm 1000gr",
           "url": "https://www.robolinkmarket.com/filamix-hyper-pla-dark-mint-green"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamix/plus-high-speed-pla/1.75/navy-blue",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-high-speed-pla/1.75",
+      "name": "Filamix Plus High Speed PLA 1.75 mm Navy Blue",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus-high-speed",
+      "diameter": "1.75 mm",
+      "color": "navy-blue",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "Filamix Rapid PLA+ Filament - Navy Blue",
+          "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-navy-blue"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamix/plus-high-speed-pla/1.75/navy-blue/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-high-speed-pla/1.75",
+      "name": "Filamix Plus High Speed PLA 1.75 mm Navy Blue 1000 g",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus-high-speed",
+      "diameter": "1.75 mm",
+      "color": "navy-blue",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Filamix Hyper PLA + Filament Navy Blue 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/filamix-hyper-pla-navy-blue"
         }
       ]
     },
@@ -20905,22 +21807,17 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 5,
+      "seenCount": 2,
       "seenIn": [
-        {
-          "shop": "Rhino 3D Printer",
-          "name": "Filamix Rapid PLA+ Filament - Champagne",
-          "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-champagne"
-        },
-        {
-          "shop": "Rhino 3D Printer",
-          "name": "Filamix Rapid PLA+ Filament - Ivory",
-          "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-ivory"
-        },
         {
           "shop": "Rhino 3D Printer",
           "name": "Filamix Rapid PLA+ Filament - Marble",
           "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-marble"
+        },
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "Filamix Rapid PLA+ Filament - Wood",
+          "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-wood"
         }
       ]
     },
@@ -20939,18 +21836,56 @@
       "weight": "1000 g",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 4,
+      "seenCount": 1,
       "seenIn": [
         {
           "shop": "Robolink Market",
-          "name": "Filamix Hyper PLA + Filament Champagne 1.75mm 1000gr",
-          "url": "https://www.robolinkmarket.com/filamix-hyper-pla-champagne"
-        },
+          "name": "Filamix Hyper PLA + Filament Wood Color 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/filamix-hyper-pla-wood-color"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamix/plus-high-speed-pla/1.75/violet-purple",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-high-speed-pla/1.75",
+      "name": "Filamix Plus High Speed PLA 1.75 mm Violet Purple",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus-high-speed",
+      "diameter": "1.75 mm",
+      "color": "violet-purple",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
         {
-          "shop": "Robolink Market",
-          "name": "Filamix Hyper PLA + Filament Ivory 1.75mm 1000gr",
-          "url": "https://www.robolinkmarket.com/filamix-hyper-pla-fildisi"
-        },
+          "shop": "Rhino 3D Printer",
+          "name": "Filamix Rapid PLA+ Filament - Violet",
+          "url": "https://www.rhino3dprinter.com/filamix-rapid-pla-filament-violet"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamix/plus-high-speed-pla/1.75/violet-purple/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-high-speed-pla/1.75",
+      "name": "Filamix Plus High Speed PLA 1.75 mm Violet Purple 1000 g",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus-high-speed",
+      "diameter": "1.75 mm",
+      "color": "violet-purple",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
         {
           "shop": "Robolink Market",
           "name": "Filamix Hyper PLA + Filament Violet 1.75mm 1000gr",
@@ -21076,31 +22011,6 @@
           ]
         },
         {
-          "id": "blue",
-          "name": "Blue",
-          "hex": "#1976D2",
-          "parent": "",
-          "source": "gathered",
-          "seenCount": 4,
-          "seenIn": [
-            {
-              "shop": "Rhino 3D Printer",
-              "name": "Filamix PLA+ Filament - Navy Blue",
-              "url": "https://www.rhino3dprinter.com/filamix-pla-filament-navy-blue"
-            },
-            {
-              "shop": "Rhino 3D Printer",
-              "name": "Filamix PLA+ Filament Blue",
-              "url": "https://www.rhino3dprinter.com/filamix-pla-filament-blue"
-            },
-            {
-              "shop": "Robolink Market",
-              "name": "Filamix PLA Plus Filament Blue 1.75mm 1000gr",
-              "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-mavi-175mm-1000gr"
-            }
-          ]
-        },
-        {
           "id": "orange",
           "name": "Orange",
           "hex": "#F57C00",
@@ -21171,6 +22081,26 @@
           ]
         },
         {
+          "id": "blue",
+          "name": "Blue",
+          "hex": "#1976D2",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Filamix PLA+ Filament Blue",
+              "url": "https://www.rhino3dprinter.com/filamix-pla-filament-blue"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Filamix PLA Plus Filament Blue 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-mavi-175mm-1000gr"
+            }
+          ]
+        },
+        {
           "id": "bone-white",
           "name": "Bone White",
           "hex": "#F1EDE4",
@@ -21227,6 +22157,26 @@
               "shop": "Robolink Market",
               "name": "Filamix PLA Plus Filament Fire Engine Red 1.75mm 1000gr",
               "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-ates-kirmizi-175mm-1000gr"
+            }
+          ]
+        },
+        {
+          "id": "champagne",
+          "name": "Champagne",
+          "hex": "#E8D3A9",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Filamix PLA+ Filament - Champagne",
+              "url": "https://www.rhino3dprinter.com/filamix-pla-filament-champagne"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Filamix PLA Plus Filament Champagne 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-sampanya-175mm-1000gr"
             }
           ]
         },
@@ -21331,6 +22281,26 @@
           ]
         },
         {
+          "id": "ivory",
+          "name": "Ivory",
+          "hex": "#F4EEDC",
+          "parent": "white",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Filamix PLA+ Filament - Ivory",
+              "url": "https://www.rhino3dprinter.com/filamix-pla-filament-ivory"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Filamix PLA Plus Filament Ivory 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-fildisi-175mm-1000gr"
+            }
+          ]
+        },
+        {
           "id": "lavender-purple",
           "name": "Lavender Purple",
           "hex": "#B57EDC",
@@ -21427,6 +22397,26 @@
               "shop": "Robolink Market",
               "name": "Filamix PLA Plus Filament Dark Mint Green 1.75mm 1000gr",
               "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-koyu-nane-yesili-175mm-1000gr"
+            }
+          ]
+        },
+        {
+          "id": "navy-blue",
+          "name": "Navy Blue",
+          "hex": "#1F2A4D",
+          "parent": "blue",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Filamix PLA+ Filament - Navy Blue",
+              "url": "https://www.rhino3dprinter.com/filamix-pla-filament-navy-blue"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Filamix PLA Plus Filament Navy Blue 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/filamix-pla-navy-blue"
             }
           ]
         },
@@ -21567,6 +22557,26 @@
               "shop": "Robolink Market",
               "name": "Filamix PLA Plus Filament Teal Green 1.75mm 1000gr",
               "url": "https://www.robolinkmarket.com/filamix-pla-teal-green"
+            }
+          ]
+        },
+        {
+          "id": "violet-purple",
+          "name": "Violet Purple",
+          "hex": "#8F00FF",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Filamix PLA+ Violet Filament 1.75mm 1 Kg",
+              "url": "https://www.rhino3dprinter.com/filamix-pla-violet-menekse-moru-filament-1.75mm-1-kg"
+            },
+            {
+              "shop": "Robolink Market",
+              "name": "Filamix PLA Plus Filament Violet 1.75mm 1000gr",
+              "url": "https://www.robolinkmarket.com/filamix-pla-violet"
             }
           ]
         },
@@ -21773,13 +22783,8 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 2,
+      "seenCount": 1,
       "seenIn": [
-        {
-          "shop": "Rhino 3D Printer",
-          "name": "Filamix PLA+ Filament - Navy Blue",
-          "url": "https://www.rhino3dprinter.com/filamix-pla-filament-navy-blue"
-        },
         {
           "shop": "Rhino 3D Printer",
           "name": "Filamix PLA+ Filament Blue",
@@ -21802,17 +22807,12 @@
       "weight": "1000 g",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 2,
+      "seenCount": 1,
       "seenIn": [
         {
           "shop": "Robolink Market",
           "name": "Filamix PLA Plus Filament Blue 1.75mm 1000gr",
           "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-mavi-175mm-1000gr"
-        },
-        {
-          "shop": "Robolink Market",
-          "name": "Filamix PLA Plus Filament Navy Blue 1.75mm 1000gr",
-          "url": "https://www.robolinkmarket.com/filamix-pla-navy-blue"
         }
       ]
     },
@@ -21957,6 +22957,54 @@
           "shop": "Robolink Market",
           "name": "Filamix PLA Plus Filament Fire Engine Red 1.75mm 1000gr",
           "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-ates-kirmizi-175mm-1000gr"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamix/plus-pla/1.75/champagne",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-pla/1.75",
+      "name": "Filamix Plus PLA 1.75 mm Champagne",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "champagne",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "Filamix PLA+ Filament - Champagne",
+          "url": "https://www.rhino3dprinter.com/filamix-pla-filament-champagne"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamix/plus-pla/1.75/champagne/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-pla/1.75",
+      "name": "Filamix Plus PLA 1.75 mm Champagne 1000 g",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "champagne",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Filamix PLA Plus Filament Champagne 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-sampanya-175mm-1000gr"
         }
       ]
     },
@@ -22293,6 +23341,54 @@
       ]
     },
     {
+      "id": "filament/filamix/plus-pla/1.75/ivory",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-pla/1.75",
+      "name": "Filamix Plus PLA 1.75 mm Ivory",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "ivory",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "Filamix PLA+ Filament - Ivory",
+          "url": "https://www.rhino3dprinter.com/filamix-pla-filament-ivory"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamix/plus-pla/1.75/ivory/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-pla/1.75",
+      "name": "Filamix Plus PLA 1.75 mm Ivory 1000 g",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "ivory",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Filamix PLA Plus Filament Ivory 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-fildisi-175mm-1000gr"
+        }
+      ]
+    },
+    {
       "id": "filament/filamix/plus-pla/1.75/lavender-purple",
       "entityType": "sku",
       "kind": "filament",
@@ -22529,6 +23625,54 @@
           "shop": "Robolink Market",
           "name": "Filamix PLA Plus Filament Dark Mint Green 1.75mm 1000gr",
           "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-koyu-nane-yesili-175mm-1000gr"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamix/plus-pla/1.75/navy-blue",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-pla/1.75",
+      "name": "Filamix Plus PLA 1.75 mm Navy Blue",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "navy-blue",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "Filamix PLA+ Filament - Navy Blue",
+          "url": "https://www.rhino3dprinter.com/filamix-pla-filament-navy-blue"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamix/plus-pla/1.75/navy-blue/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-pla/1.75",
+      "name": "Filamix Plus PLA 1.75 mm Navy Blue 1000 g",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "navy-blue",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Filamix PLA Plus Filament Navy Blue 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/filamix-pla-navy-blue"
         }
       ]
     },
@@ -23076,13 +24220,8 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 5,
+      "seenCount": 3,
       "seenIn": [
-        {
-          "shop": "Rhino 3D Printer",
-          "name": "Filamix PLA+ Filament - Champagne",
-          "url": "https://www.rhino3dprinter.com/filamix-pla-filament-champagne"
-        },
         {
           "shop": "Rhino 3D Printer",
           "name": "Filamix PLA+ Filament - Golden",
@@ -23090,8 +24229,13 @@
         },
         {
           "shop": "Rhino 3D Printer",
-          "name": "Filamix PLA+ Filament - Ivory",
-          "url": "https://www.rhino3dprinter.com/filamix-pla-filament-ivory"
+          "name": "Filamix PLA+ Filament - Marble",
+          "url": "https://www.rhino3dprinter.com/filamix-pla-filament-marble"
+        },
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "Filamix PLA+ Filament - Wood",
+          "url": "https://www.rhino3dprinter.com/filamix-pla-filament-wood"
         }
       ]
     },
@@ -23110,7 +24254,36 @@
       "weight": "1000 g",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 6,
+      "seenCount": 2,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Filamix PLA Plus Filament Marble 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-mermer-175mm-1000gr"
+        },
+        {
+          "shop": "Robolink Market",
+          "name": "Filamix PLA Plus Filament Wood Color 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-ahsap-rengi-175mm-1000gr"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamix/plus-pla/1.75/violet-purple/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamix/plus-pla/1.75",
+      "name": "Filamix Plus PLA 1.75 mm Violet Purple 1000 g",
+      "brand": "Filamix",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "violet-purple",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 2,
       "seenIn": [
         {
           "shop": "Rhino 3D Printer",
@@ -23119,13 +24292,8 @@
         },
         {
           "shop": "Robolink Market",
-          "name": "Filamix PLA Plus Filament Champagne 1.75mm 1000gr",
-          "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-sampanya-175mm-1000gr"
-        },
-        {
-          "shop": "Robolink Market",
-          "name": "Filamix PLA Plus Filament Ivory 1.75mm 1000gr",
-          "url": "https://www.robolinkmarket.com/filamix-pla-plus-filament-fildisi-175mm-1000gr"
+          "name": "Filamix PLA Plus Filament Violet 1.75mm 1000gr",
+          "url": "https://www.robolinkmarket.com/filamix-pla-violet"
         }
       ]
     },
@@ -26068,6 +27236,21 @@
           ]
         },
         {
+          "id": "navy-blue",
+          "name": "Navy Blue",
+          "hex": "#1F2A4D",
+          "parent": "blue",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "JAMG HE Matt PLA - Mat PLA Filament Lacivert 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/jamg-he-matt-pla-mat-pla-filament-lacivert-1.75mm-1kg"
+            }
+          ]
+        },
+        {
           "id": "olive-green",
           "name": "Olive Green",
           "hex": "#6B8E23",
@@ -26202,6 +27385,30 @@
       ]
     },
     {
+      "id": "filament/jamg-he/matte-pla/1.75/navy-blue/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/jamg-he/matte-pla/1.75",
+      "name": "JAMG HE Matte PLA 1.75 mm Navy Blue 1000 g",
+      "brand": "JAMG HE",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "1.75 mm",
+      "color": "navy-blue",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "JAMG HE Matt PLA - Mat PLA Filament Lacivert 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/jamg-he-matt-pla-mat-pla-filament-lacivert-1.75mm-1kg"
+        }
+      ]
+    },
+    {
       "id": "filament/jamg-he/matte-pla/1.75/olive-green/1000",
       "entityType": "sku",
       "kind": "filament",
@@ -26246,30 +27453,6 @@
           "shop": "robotizmo.net",
           "name": "JAMG HE Matt PLA - Mat PLA Filament Pembe 1.75mm 1Kg",
           "url": "https://www.robotizmo.net/jamg-he-matt-pla-mat-pla-filament-pembe-1.75mm-1kg"
-        }
-      ]
-    },
-    {
-      "id": "filament/jamg-he/matte-pla/1.75/unknown/1000",
-      "entityType": "sku",
-      "kind": "filament",
-      "category": "filaments",
-      "parentId": "filament/jamg-he/matte-pla/1.75",
-      "name": "JAMG HE Matte PLA 1.75 mm 1000 g",
-      "brand": "JAMG HE",
-      "polymer": "pla",
-      "variant": "matte",
-      "diameter": "1.75 mm",
-      "color": "",
-      "weight": "1000 g",
-      "packaging": "",
-      "productForm": "filament",
-      "seenCount": 1,
-      "seenIn": [
-        {
-          "shop": "robotizmo.net",
-          "name": "JAMG HE Matt PLA - Mat PLA Filament Lacivert 1.75mm 1Kg",
-          "url": "https://www.robotizmo.net/jamg-he-matt-pla-mat-pla-filament-lacivert-1.75mm-1kg"
         }
       ]
     },
@@ -26395,6 +27578,21 @@
               "shop": "robotizmo.net",
               "name": "JAMG HE PETG Filament Yeşil 1.75mm 1Kg",
               "url": "https://www.robotizmo.net/jamg-he-petg-filament-yesil-1.75mm-1kg"
+            }
+          ]
+        },
+        {
+          "id": "khaki-green",
+          "name": "Khaki Green",
+          "hex": "#78866B",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "JAMG HE PETG Filament Haki 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/jamg-he-petg-filament-haki-1.75mm-1kg"
             }
           ]
         },
@@ -26602,6 +27800,30 @@
       ]
     },
     {
+      "id": "filament/jamg-he/petg/1.75/khaki-green/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/jamg-he/petg/1.75",
+      "name": "JAMG HE PETG 1.75 mm Khaki Green 1000 g",
+      "brand": "JAMG HE",
+      "polymer": "petg",
+      "variant": "",
+      "diameter": "1.75 mm",
+      "color": "khaki-green",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "JAMG HE PETG Filament Haki 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/jamg-he-petg-filament-haki-1.75mm-1kg"
+        }
+      ]
+    },
+    {
       "id": "filament/jamg-he/petg/1.75/olive-green/1000",
       "entityType": "sku",
       "kind": "filament",
@@ -26718,30 +27940,6 @@
           "shop": "robotizmo.net",
           "name": "JAMG HE PETG Filament Gümüş 1.75mm 1Kg",
           "url": "https://www.robotizmo.net/jamg-he-petg-filament-gumus-1.75mm-1kg"
-        }
-      ]
-    },
-    {
-      "id": "filament/jamg-he/petg/1.75/unknown/1000",
-      "entityType": "sku",
-      "kind": "filament",
-      "category": "filaments",
-      "parentId": "filament/jamg-he/petg/1.75",
-      "name": "JAMG HE PETG 1.75 mm 1000 g",
-      "brand": "JAMG HE",
-      "polymer": "petg",
-      "variant": "",
-      "diameter": "1.75 mm",
-      "color": "",
-      "weight": "1000 g",
-      "packaging": "",
-      "productForm": "filament",
-      "seenCount": 1,
-      "seenIn": [
-        {
-          "shop": "robotizmo.net",
-          "name": "JAMG HE PETG Filament Haki 1.75mm 1Kg",
-          "url": "https://www.robotizmo.net/jamg-he-petg-filament-haki-1.75mm-1kg"
         }
       ]
     },
@@ -27016,6 +28214,21 @@
           ]
         },
         {
+          "id": "khaki-green",
+          "name": "Khaki Green",
+          "hex": "#78866B",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "JAMG HE Hyper PLA+ Plus Filament Haki 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/jamg-he-hyper-pla-plus-filament-haki-1.75mm-1kg"
+            }
+          ]
+        },
+        {
           "id": "olive-green",
           "name": "Olive Green",
           "hex": "#6B8E23",
@@ -27171,6 +28384,30 @@
       ]
     },
     {
+      "id": "filament/jamg-he/plus-high-speed-pla/1.75/khaki-green/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/jamg-he/plus-high-speed-pla/1.75",
+      "name": "JAMG HE Plus High Speed PLA 1.75 mm Khaki Green 1000 g",
+      "brand": "JAMG HE",
+      "polymer": "pla",
+      "variant": "plus-high-speed",
+      "diameter": "1.75 mm",
+      "color": "khaki-green",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "JAMG HE Hyper PLA+ Plus Filament Haki 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/jamg-he-hyper-pla-plus-filament-haki-1.75mm-1kg"
+        }
+      ]
+    },
+    {
       "id": "filament/jamg-he/plus-high-speed-pla/1.75/olive-green/1000",
       "entityType": "sku",
       "kind": "filament",
@@ -27291,30 +28528,6 @@
       ]
     },
     {
-      "id": "filament/jamg-he/plus-high-speed-pla/1.75/unknown/1000",
-      "entityType": "sku",
-      "kind": "filament",
-      "category": "filaments",
-      "parentId": "filament/jamg-he/plus-high-speed-pla/1.75",
-      "name": "JAMG HE Plus High Speed PLA 1.75 mm 1000 g",
-      "brand": "JAMG HE",
-      "polymer": "pla",
-      "variant": "plus-high-speed",
-      "diameter": "1.75 mm",
-      "color": "",
-      "weight": "1000 g",
-      "packaging": "",
-      "productForm": "filament",
-      "seenCount": 1,
-      "seenIn": [
-        {
-          "shop": "robotizmo.net",
-          "name": "JAMG HE Hyper PLA+ Plus Filament Haki 1.75mm 1Kg",
-          "url": "https://www.robotizmo.net/jamg-he-hyper-pla-plus-filament-haki-1.75mm-1kg"
-        }
-      ]
-    },
-    {
       "id": "filament/jamg-he/plus-high-speed-pla/1.75/white/1000",
       "entityType": "sku",
       "kind": "filament",
@@ -27395,6 +28608,21 @@
           ]
         },
         {
+          "id": "khaki-green",
+          "name": "Khaki Green",
+          "hex": "#78866B",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "JAMG HE PLA+ Plus Filament Haki 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/jamg-he-pla-plus-filament-haki-1.75mm-1kg"
+            }
+          ]
+        },
+        {
           "id": "olive-green",
           "name": "Olive Green",
           "hex": "#6B8E23",
@@ -27451,6 +28679,30 @@
       ]
     },
     {
+      "id": "filament/jamg-he/plus-pla/1.75/khaki-green/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/jamg-he/plus-pla/1.75",
+      "name": "JAMG HE Plus PLA 1.75 mm Khaki Green 1000 g",
+      "brand": "JAMG HE",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "khaki-green",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "JAMG HE PLA+ Plus Filament Haki 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/jamg-he-pla-plus-filament-haki-1.75mm-1kg"
+        }
+      ]
+    },
+    {
       "id": "filament/jamg-he/plus-pla/1.75/olive-green/1000",
       "entityType": "sku",
       "kind": "filament",
@@ -27495,30 +28747,6 @@
           "shop": "robotizmo.net",
           "name": "JAMG HE PLA+ Plus Filament Mor 1.75mm 1Kg",
           "url": "https://www.robotizmo.net/jamg-he-pla-plus-filament-mor-1.75mm-1kg"
-        }
-      ]
-    },
-    {
-      "id": "filament/jamg-he/plus-pla/1.75/unknown/1000",
-      "entityType": "sku",
-      "kind": "filament",
-      "category": "filaments",
-      "parentId": "filament/jamg-he/plus-pla/1.75",
-      "name": "JAMG HE Plus PLA 1.75 mm 1000 g",
-      "brand": "JAMG HE",
-      "polymer": "pla",
-      "variant": "plus",
-      "diameter": "1.75 mm",
-      "color": "",
-      "weight": "1000 g",
-      "packaging": "",
-      "productForm": "filament",
-      "seenCount": 1,
-      "seenIn": [
-        {
-          "shop": "robotizmo.net",
-          "name": "JAMG HE PLA+ Plus Filament Haki 1.75mm 1Kg",
-          "url": "https://www.robotizmo.net/jamg-he-pla-plus-filament-haki-1.75mm-1kg"
         }
       ]
     },
@@ -29857,6 +31085,21 @@
           ]
         },
         {
+          "id": "violet-purple",
+          "name": "Violet Purple",
+          "hex": "#8F00FF",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "Robolink Market",
+              "name": "Polymaker Panchroma PLA Matte Filament Pastel Menekşe",
+              "url": "https://www.robolinkmarket.com/polymaker-panchroma-pla-matte-filament-pastel-menekse"
+            }
+          ]
+        },
+        {
           "id": "white",
           "name": "White",
           "hex": "#FFFFFF",
@@ -30096,7 +31339,7 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 5,
+      "seenCount": 4,
       "seenIn": [
         {
           "shop": "Robolink Market",
@@ -30112,6 +31355,30 @@
           "shop": "Robolink Market",
           "name": "Polymaker Panchroma PLA Matte Filament Pastel Fıstık",
           "url": "https://www.robolinkmarket.com/polymaker-panchroma-pla-matte-filament-pastel-fistik"
+        }
+      ]
+    },
+    {
+      "id": "filament/polymaker/matte-pla/unknown/violet-purple",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/polymaker/matte-pla/unknown",
+      "name": "Polymaker Matte PLA Violet Purple",
+      "brand": "Polymaker",
+      "polymer": "pla",
+      "variant": "matte",
+      "diameter": "",
+      "color": "violet-purple",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Polymaker Panchroma PLA Matte Filament Pastel Menekşe",
+          "url": "https://www.robolinkmarket.com/polymaker-panchroma-pla-matte-filament-pastel-menekse"
         }
       ]
     },
@@ -30386,6 +31653,21 @@
           ]
         },
         {
+          "id": "cream",
+          "name": "Cream",
+          "hex": "#F3E9C6",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "Robolink Market",
+              "name": "Polymaker Panchroma PLA Filament Krem",
+              "url": "https://www.robolinkmarket.com/polymaker-panchroma-pla-filament-krem"
+            }
+          ]
+        },
+        {
           "id": "olive-green",
           "name": "Olive Green",
           "hex": "#6B8E23",
@@ -30510,6 +31792,30 @@
           "shop": "Robolink Market",
           "name": "Polymaker Panchroma PLA Filament Metalik Bronz",
           "url": "https://www.robolinkmarket.com/polymaker-panchroma-pla-filament-metalik-bronz"
+        }
+      ]
+    },
+    {
+      "id": "filament/polymaker/pla/unknown/cream",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/polymaker/pla/unknown",
+      "name": "Polymaker PLA Cream",
+      "brand": "Polymaker",
+      "polymer": "pla",
+      "variant": "",
+      "diameter": "",
+      "color": "cream",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Polymaker Panchroma PLA Filament Krem",
+          "url": "https://www.robolinkmarket.com/polymaker-panchroma-pla-filament-krem"
         }
       ]
     },
@@ -30717,13 +32023,8 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 5,
+      "seenCount": 4,
       "seenIn": [
-        {
-          "shop": "Robolink Market",
-          "name": "Polymaker Panchroma PLA Filament Krem",
-          "url": "https://www.robolinkmarket.com/polymaker-panchroma-pla-filament-krem"
-        },
         {
           "shop": "Robolink Market",
           "name": "Polymaker Panchroma PLA Filament Limon Yeşili",
@@ -30733,6 +32034,11 @@
           "shop": "Robolink Market",
           "name": "Polymaker Panchroma Starlight PLA Filament Aurora",
           "url": "https://www.robolinkmarket.com/polymaker-panchroma-starlight-pla-filament-aurora"
+        },
+        {
+          "shop": "Robolink Market",
+          "name": "Polymaker Panchroma Starlight PLA Filament Jupiter",
+          "url": "https://www.robolinkmarket.com/polymaker-panchroma-starlight-pla-filament-jupiter"
         }
       ]
     },
@@ -32412,6 +33718,21 @@
           ]
         },
         {
+          "id": "emerald",
+          "name": "Emerald",
+          "hex": "#1F8A5B",
+          "parent": "green",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "Porima PLA Premium Zümrüt Yeşil Filament 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/porima-pla-premium-zumrut-yesil-filament-1.75mm-1kg"
+            }
+          ]
+        },
+        {
           "id": "natural",
           "name": "Natural",
           "hex": "#E8D7B9",
@@ -32581,6 +33902,30 @@
           "shop": "robotizmo.net",
           "name": "Porima PLA Koyu Mavi RAL 5003 Filament 1.75mm 1kg",
           "url": "https://www.robotizmo.net/porima-pla-koyu-mavi-ral-5003-filament-1.75mm-1kg"
+        }
+      ]
+    },
+    {
+      "id": "filament/porima/pla/1.75/emerald/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/porima/pla/1.75",
+      "name": "Porima PLA 1.75 mm Emerald 1000 g",
+      "brand": "Porima",
+      "polymer": "pla",
+      "variant": "",
+      "diameter": "1.75 mm",
+      "color": "emerald",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "Porima PLA Premium Zümrüt Yeşil Filament 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/porima-pla-premium-zumrut-yesil-filament-1.75mm-1kg"
         }
       ]
     },
@@ -34359,6 +35704,26 @@
           ]
         },
         {
+          "id": "lavender-purple",
+          "name": "Lavender Purple",
+          "hex": "#B57EDC",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 2,
+          "seenIn": [
+            {
+              "shop": "3D Teknomarket",
+              "name": "R3D PLA+ Filament Brilliant Lavender",
+              "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-brilliant-lavender?variant=47704418648251"
+            },
+            {
+              "shop": "3D Teknomarket",
+              "name": "R3D PLA+ Filament Lavender",
+              "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-lavender?variant=47704408424635"
+            }
+          ]
+        },
+        {
           "id": "beige",
           "name": "Beige",
           "hex": "#DCC9A3",
@@ -34430,6 +35795,36 @@
               "shop": "3D Teknomarket",
               "name": "R3D PLA+ Filament Cobalt Blue",
               "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-cobalt-blue?variant=47704408326331"
+            }
+          ]
+        },
+        {
+          "id": "cream",
+          "name": "Cream",
+          "hex": "#F3E9C6",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "3D Teknomarket",
+              "name": "R3D PLA+ Filament Cream Yellow",
+              "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-cream-yellow?variant=47704407998651"
+            }
+          ]
+        },
+        {
+          "id": "emerald",
+          "name": "Emerald",
+          "hex": "#1F8A5B",
+          "parent": "green",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "3D Teknomarket",
+              "name": "R3D PLA+ Filament Transparent Emerald Green",
+              "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-transparent-emerald-green?variant=47704408490171"
             }
           ]
         },
@@ -34645,6 +36040,54 @@
       ]
     },
     {
+      "id": "filament/r3d/plus-pla/unknown/cream",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/r3d/plus-pla/unknown",
+      "name": "R3D Plus PLA Cream",
+      "brand": "R3D",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "",
+      "color": "cream",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "3D Teknomarket",
+          "name": "R3D PLA+ Filament Cream Yellow",
+          "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-cream-yellow?variant=47704407998651"
+        }
+      ]
+    },
+    {
+      "id": "filament/r3d/plus-pla/unknown/emerald",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/r3d/plus-pla/unknown",
+      "name": "R3D Plus PLA Emerald",
+      "brand": "R3D",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "",
+      "color": "emerald",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "3D Teknomarket",
+          "name": "R3D PLA+ Filament Transparent Emerald Green",
+          "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-transparent-emerald-green?variant=47704408490171"
+        }
+      ]
+    },
+    {
       "id": "filament/r3d/plus-pla/unknown/gray",
       "entityType": "sku",
       "kind": "filament",
@@ -34699,6 +36142,35 @@
           "shop": "3D Teknomarket",
           "name": "R3D PLA+ Filament Transparent Emerald Green",
           "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-transparent-emerald-green?variant=47704408490171"
+        }
+      ]
+    },
+    {
+      "id": "filament/r3d/plus-pla/unknown/lavender-purple",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/r3d/plus-pla/unknown",
+      "name": "R3D Plus PLA Lavender Purple",
+      "brand": "R3D",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "",
+      "color": "lavender-purple",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 2,
+      "seenIn": [
+        {
+          "shop": "3D Teknomarket",
+          "name": "R3D PLA+ Filament Brilliant Lavender",
+          "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-brilliant-lavender?variant=47704418648251"
+        },
+        {
+          "shop": "3D Teknomarket",
+          "name": "R3D PLA+ Filament Lavender",
+          "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-lavender?variant=47704408424635"
         }
       ]
     },
@@ -34809,22 +36281,22 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 6,
+      "seenCount": 4,
       "seenIn": [
-        {
-          "shop": "3D Teknomarket",
-          "name": "R3D PLA+ Filament Brilliant Lavender",
-          "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-brilliant-lavender?variant=47704418648251"
-        },
-        {
-          "shop": "3D Teknomarket",
-          "name": "R3D PLA+ Filament Lavender",
-          "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-lavender?variant=47704408424635"
-        },
         {
           "shop": "3D Teknomarket",
           "name": "R3D PLA+ Filament Mahogany",
           "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-mahogany?variant=47704418517179"
+        },
+        {
+          "shop": "3D Teknomarket",
+          "name": "R3D PLA+ Filament Ochre",
+          "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-ochre?variant=47704408064187"
+        },
+        {
+          "shop": "3D Teknomarket",
+          "name": "R3D PLA+ Filament Pumpkin",
+          "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-pumpkin?variant=47704408031419"
         }
       ]
     },
@@ -36876,6 +38348,21 @@
       ],
       "colours": [
         {
+          "id": "ivory",
+          "name": "Ivory",
+          "hex": "#F4EEDC",
+          "parent": "white",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "RhinoLab PLA Marble Filament - Ivory",
+              "url": "https://www.rhino3dprinter.com/rhinolab-marble-filament-ivory"
+            }
+          ]
+        },
+        {
           "id": "red",
           "name": "Red",
           "hex": "#D32F2F",
@@ -36889,6 +38376,30 @@
               "url": "https://www.rhino3dprinter.com/rhinolab-pla-marble-filament-brick-red"
             }
           ]
+        }
+      ]
+    },
+    {
+      "id": "filament/rhinolab/marble-pla/unknown/ivory",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/rhinolab/marble-pla/unknown",
+      "name": "RhinoLab Marble PLA Ivory",
+      "brand": "RhinoLab",
+      "polymer": "pla",
+      "variant": "marble",
+      "diameter": "",
+      "color": "ivory",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "RhinoLab PLA Marble Filament - Ivory",
+          "url": "https://www.rhino3dprinter.com/rhinolab-marble-filament-ivory"
         }
       ]
     },
@@ -36931,13 +38442,8 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 2,
+      "seenCount": 1,
       "seenIn": [
-        {
-          "shop": "Rhino 3D Printer",
-          "name": "RhinoLab PLA Marble Filament - Ivory",
-          "url": "https://www.rhino3dprinter.com/rhinolab-marble-filament-ivory"
-        },
         {
           "shop": "Rhino 3D Printer",
           "name": "RhinoLab PLA Marble Filament - Marble",
@@ -41015,6 +42521,36 @@
           ]
         },
         {
+          "id": "khaki-green",
+          "name": "Khaki Green",
+          "hex": "#78866B",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "VERTEXFIL ABS Filament Haki 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/vertexfil-abs-filament-haki-1.75mm-1kg"
+            }
+          ]
+        },
+        {
+          "id": "navy-blue",
+          "name": "Navy Blue",
+          "hex": "#1F2A4D",
+          "parent": "blue",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "VERTEXFIL ABS Filament Lacivert 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/vertexfil-abs-filament-lacivert-1.75mm-1kg"
+            }
+          ]
+        },
+        {
           "id": "orange",
           "name": "Orange",
           "hex": "#F57C00",
@@ -41212,6 +42748,54 @@
       ]
     },
     {
+      "id": "filament/vertexfil/abs/1.75/khaki-green/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/vertexfil/abs/1.75",
+      "name": "VERTEXFIL ABS 1.75 mm Khaki Green 1000 g",
+      "brand": "VERTEXFIL",
+      "polymer": "abs",
+      "variant": "",
+      "diameter": "1.75 mm",
+      "color": "khaki-green",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "VERTEXFIL ABS Filament Haki 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/vertexfil-abs-filament-haki-1.75mm-1kg"
+        }
+      ]
+    },
+    {
+      "id": "filament/vertexfil/abs/1.75/navy-blue/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/vertexfil/abs/1.75",
+      "name": "VERTEXFIL ABS 1.75 mm Navy Blue 1000 g",
+      "brand": "VERTEXFIL",
+      "polymer": "abs",
+      "variant": "",
+      "diameter": "1.75 mm",
+      "color": "navy-blue",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "VERTEXFIL ABS Filament Lacivert 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/vertexfil-abs-filament-lacivert-1.75mm-1kg"
+        }
+      ]
+    },
+    {
       "id": "filament/vertexfil/abs/1.75/orange/1000",
       "entityType": "sku",
       "kind": "filament",
@@ -41280,35 +42864,6 @@
           "shop": "robotizmo.net",
           "name": "VERTEXFIL ABS Filament Gümüş 1.75mm 1Kg",
           "url": "https://www.robotizmo.net/vertexfil-abs-filament-gumus-1.75mm-1kg"
-        }
-      ]
-    },
-    {
-      "id": "filament/vertexfil/abs/1.75/unknown/1000",
-      "entityType": "sku",
-      "kind": "filament",
-      "category": "filaments",
-      "parentId": "filament/vertexfil/abs/1.75",
-      "name": "VERTEXFIL ABS 1.75 mm 1000 g",
-      "brand": "VERTEXFIL",
-      "polymer": "abs",
-      "variant": "",
-      "diameter": "1.75 mm",
-      "color": "",
-      "weight": "1000 g",
-      "packaging": "",
-      "productForm": "filament",
-      "seenCount": 2,
-      "seenIn": [
-        {
-          "shop": "robotizmo.net",
-          "name": "VERTEXFIL ABS Filament Haki 1.75mm 1Kg",
-          "url": "https://www.robotizmo.net/vertexfil-abs-filament-haki-1.75mm-1kg"
-        },
-        {
-          "shop": "robotizmo.net",
-          "name": "VERTEXFIL ABS Filament Lacivert 1.75mm 1Kg",
-          "url": "https://www.robotizmo.net/vertexfil-abs-filament-lacivert-1.75mm-1kg"
         }
       ]
     },
@@ -41995,6 +43550,21 @@
           ]
         },
         {
+          "id": "cream",
+          "name": "Cream",
+          "hex": "#F3E9C6",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "VERTEXFIL PLA Basic Filament Krem 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/vertexfil-pla-basic-filament-krem-1.75mm-1kg"
+            }
+          ]
+        },
+        {
           "id": "cyan",
           "name": "Cyan",
           "hex": "#00BCD4",
@@ -42051,6 +43621,21 @@
               "shop": "robotizmo.net",
               "name": "VERTEXFIL PLA Basic Filament Magenta 1.75mm 1Kg",
               "url": "https://www.robotizmo.net/vertexfil-pla-basic-filament-magenta-1.75mm-1kg"
+            }
+          ]
+        },
+        {
+          "id": "navy-blue",
+          "name": "Navy Blue",
+          "hex": "#1F2A4D",
+          "parent": "blue",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "VERTEXFIL PLA Basic Filament Lacivert 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/vertexfil-pla-basic-filament-lacivert-1.75mm-1kg"
             }
           ]
         },
@@ -42278,6 +43863,30 @@
       ]
     },
     {
+      "id": "filament/vertexfil/basic-pla/1.75/cream/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/vertexfil/basic-pla/1.75",
+      "name": "VERTEXFIL Basic PLA 1.75 mm Cream 1000 g",
+      "brand": "VERTEXFIL",
+      "polymer": "pla",
+      "variant": "basic",
+      "diameter": "1.75 mm",
+      "color": "cream",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "VERTEXFIL PLA Basic Filament Krem 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/vertexfil-pla-basic-filament-krem-1.75mm-1kg"
+        }
+      ]
+    },
+    {
       "id": "filament/vertexfil/basic-pla/1.75/cyan/1000",
       "entityType": "sku",
       "kind": "filament",
@@ -42404,6 +44013,30 @@
           "shop": "robotizmo.net",
           "name": "VERTEXFIL PLA Basic Filament Magenta 1.75mm 1Kg",
           "url": "https://www.robotizmo.net/vertexfil-pla-basic-filament-magenta-1.75mm-1kg"
+        }
+      ]
+    },
+    {
+      "id": "filament/vertexfil/basic-pla/1.75/navy-blue/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/vertexfil/basic-pla/1.75",
+      "name": "VERTEXFIL Basic PLA 1.75 mm Navy Blue 1000 g",
+      "brand": "VERTEXFIL",
+      "polymer": "pla",
+      "variant": "basic",
+      "diameter": "1.75 mm",
+      "color": "navy-blue",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "VERTEXFIL PLA Basic Filament Lacivert 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/vertexfil-pla-basic-filament-lacivert-1.75mm-1kg"
         }
       ]
     },
@@ -42595,7 +44228,7 @@
       "weight": "1000 g",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 5,
+      "seenCount": 3,
       "seenIn": [
         {
           "shop": "robotizmo.net",
@@ -42604,13 +44237,13 @@
         },
         {
           "shop": "robotizmo.net",
-          "name": "VERTEXFIL PLA Basic Filament Krem 1.75mm 1Kg",
-          "url": "https://www.robotizmo.net/vertexfil-pla-basic-filament-krem-1.75mm-1kg"
+          "name": "VERTEXFIL PLA Basic Filament Leylak 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/vertexfil-pla-basic-filament-leylak-1.75mm-1kg"
         },
         {
           "shop": "robotizmo.net",
-          "name": "VERTEXFIL PLA Basic Filament Lacivert 1.75mm 1Kg",
-          "url": "https://www.robotizmo.net/vertexfil-pla-basic-filament-lacivert-1.75mm-1kg"
+          "name": "VERTEXFIL PLA Basic Filament Limon Sarısı 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/vertexfil-pla-basic-filament-limon-sarisi-1.75mm-1kg"
         }
       ]
     },
