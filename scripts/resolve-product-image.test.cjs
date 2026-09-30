@@ -58,4 +58,37 @@ assert.equal(resolveProductImage({
   cardHtml: '<a><img data-src="/only-product.webp"></a>'
 }), 'https://shop.example/only-product.webp', 'ordinary single-image cards are unchanged');
 
-console.log('PASS: resolveProductImage lazy attrs, srcset, og, json-ld, junk gate.');
+// Rhino's real card markup nests the badge: <div class="card-product"><div class="card-product-inner">
+// <div class="image-wrapper"><div class="product-label top-left"><img badge></div><div class="image">…
+// A lazy <div>…</div> match stopped at the badge's closing tag and kept it, so every "STOKTAN TESLİM" or
+// "Dropshipping" card showed the badge, and the clone scrub then blanked them all.
+assert.equal(resolveProductImage({
+  pageUrl: 'https://www.rhino3dprinter.com/3d-yazicilar',
+  cardHtml: '<div class="card-product"><div class="card-product-inner"><div class="image-wrapper"><div class="product-label top-left"><img src="https://cdn.qukasoft.com/c/drop-6a3902cfe42b4.webp" alt="Dropshipping"></div><div class="image"><div class="carousel"><div class="carousel-item active"><a href="/photon-p1-combo-msla-3d-yazici"><img class="img-auto lazy-load" data-src="https://cdn.qukasoft.com/p/photon-p1-combo-msla-3d-yazici-36531422.webp" src="data:image/gif;base64,R0lGODlhAQABAJEAAAAAAP"></a></div></div></div></div></div></div>'
+}), 'https://cdn.qukasoft.com/p/photon-p1-combo-msla-3d-yazici-36531422.webp', 'a nested badge cannot replace the product image');
+assert.equal(resolveProductImage({
+  pageUrl: 'https://shop.example/list',
+  cardHtml: '<div class="card"><div class="badge-wrap"><img src="/only-photo.webp"></div></div>'
+}), 'https://shop.example/only-photo.webp', 'a card whose only picture sits in a label container keeps it');
+
+// Every listing on the saved shop pages gets its own product photo: none blank, none shared.
+(async () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const { harvestCategory } = require('../lib/harvest.js');
+  const pages = [
+    ['rhino-3d-yazicilar.html', 'https://www.rhino3dprinter.com/3d-yazicilar', 'printer'],
+    ['rhino-filament-cesitleri.html', 'https://www.rhino3dprinter.com/filament-cesitleri', 'filament'],
+    ['teknomarket-fdm-yazicilar.html', 'https://www.3dteknomarket.com/collections/fdm-yazicilar', 'printer']
+  ];
+  for (const [file, categoryUrl, kind] of pages) {
+    const html = fs.readFileSync(path.join(__dirname, 'fixtures', 'pages', file), 'utf8');
+    const got = await harvestCategory({ categoryUrl, kind, html, inStockOnly: false });
+    const all = [...got.inScope, ...got.mismatches];
+    assert.deepEqual(all.filter((p) => !p.image).map((p) => p.name), [], file + ': every listing has an image');
+    const seen = new Map();
+    for (const p of all) seen.set(p.image, (seen.get(p.image) || 0) + 1);
+    assert.deepEqual([...seen].filter(([, n]) => n > 1).map(([img]) => img), [], file + ': no two listings share a picture (a badge is not a photo)');
+  }
+  console.log('PASS: resolveProductImage lazy attrs, srcset, og, json-ld, junk gate; nested badges never win; every saved-page listing has its own photo.');
+})().catch((err) => { console.error(err); process.exitCode = 1; });
