@@ -57,6 +57,23 @@ function nameFromUrl(url) {
   }
 }
 
+function hostOf(url) {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "").toLowerCase();
+  } catch (_) {
+    return "";
+  }
+}
+
+// A run's review board holds its own shop's listings. The candidate a run uploads is the whole
+// catalog it matched against (live + every unpublished run so far, see unionCatalog), so other
+// shops' pending offers ride along in it. Turning all of them into cards is how a Robolink run
+// showed Rhino listings: the last Rhino run was not published yet. Only this shop's offers count.
+function sameShop(url, job) {
+  const shop = hostOf(job && job.url);
+  return !shop || hostOf(url) === shop;
+}
+
 function unionCatalog(live, candidate) {
   const products = [...((live && live.products) || [])];
   const filaments = [...((live && live.filaments) || [])];
@@ -89,13 +106,15 @@ function unionCatalog(live, candidate) {
 function mergeCards(job, incoming) {
   job.cards = job.cards && typeof job.cards === "object" ? job.cards : {};
   const dropped = new Set(job.dropped || []);
+  // Never a card for a URL that is not this run's shop, whatever sent it.
+  const foreign = (url) => !sameShop(url, job);
   for (const ev of incoming || []) {
     for (const url of ev.urls || []) {
-      if (typeof url !== "string" || dropped.has(url)) continue;
+      if (typeof url !== "string" || dropped.has(url) || foreign(url)) continue;
       if (!job.cards[url]) job.cards[url] = { name: nameFromUrl(url), url };
     }
     for (const it of ev.items || []) {
-      if (!it || typeof it.url !== "string" || dropped.has(it.url)) continue;
+      if (!it || typeof it.url !== "string" || dropped.has(it.url) || foreign(it.url)) continue;
       const prev = job.cards[it.url] || { url: it.url };
       job.cards[it.url] = {
         ...prev,
@@ -105,7 +124,7 @@ function mergeCards(job, incoming) {
       };
     }
     if (ev.card && ev.card.url) {
-      if (dropped.has(ev.card.url)) continue;
+      if (dropped.has(ev.card.url) || foreign(ev.card.url)) continue;
       const prev = job.cards[ev.card.url] || {};
       job.cards[ev.card.url] = {
         ...prev,
@@ -115,7 +134,7 @@ function mergeCards(job, incoming) {
         error: ev.error || prev.error
       };
     } else if (ev.url) {
-      if (dropped.has(ev.url)) continue;
+      if (dropped.has(ev.url) || foreign(ev.url)) continue;
       const prev = job.cards[ev.url] || { name: nameFromUrl(ev.url), url: ev.url };
       job.cards[ev.url] = { ...prev, error: ev.error || ev.text || prev.error };
     }
@@ -274,7 +293,9 @@ export default async (req) => {
           job.progress = "Complete — ready to review/publish";
           job.summary = body.summary || null;
           const known = new Set(Object.keys(job.cards || {}));
-          mergeCards(job, extras.filter((row) => known.has(row.card.url) || !row.liveUrl).map(({ liveUrl, ...row }) => row));
+          mergeCards(job, extras
+            .filter((row) => sameShop(row.card.url, job) && (known.has(row.card.url) || !row.liveUrl))
+            .map(({ liveUrl, ...row }) => row));
         }
         job.events = job.events || [];
         job.events.push({ type: "log", at: new Date().toISOString(), text: body.error ? `Failed: ${body.error}` : "Job finished and candidate uploaded." });

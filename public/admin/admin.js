@@ -769,12 +769,13 @@
               ${(d.jobs || []).slice(0, 25).map((j) => {
                 const cards = Object.keys(j.cards || {}).length;
                 const at = String(j.createdAt || "").replace("T", " ").slice(0, 16);
-                return `<option value="${esc(j.id)}" ${state.reviewJobId === j.id ? "selected" : ""}>${esc(j.id)} · ${esc(at)} · ${esc(j.status || "")} · ${cards} card${cards === 1 ? "" : "s"}${(j.published || []).length ? " · " + (j.published || []).length + " collected" : ""}</option>`;
+                return `<option value="${esc(j.id)}" ${state.reviewJobId === j.id ? "selected" : ""}>${esc(jobSiteLabel(j))} · ${esc(j.kind || "")} · ${esc(at)} · ${esc(j.status || "")} · ${cards} card${cards === 1 ? "" : "s"}${(j.published || []).length ? " · " + (j.published || []).length + " collected" : ""}</option>`;
               }).join("")}
             </select>
           </label>
           <small class="muted">${state.reviewJobId ? "Showing one run by hand — collected cards included, so its decisions stay editable." : "Gather a shop to fill this board."}</small>
         </div>
+        ${boardFallbackNote(d)}
         <p class="muted">Cards appear as products are gathered. Select what to publish, flag anything unsure, and choose which catalog product each listing joins — that is who it will be price-compared against.</p>
         ${reviewBoardHtml(reviewJob(d))}
         <h3>Run activity <button class="btn-sm danger" type="button" id="delete-all-runs" style="margin-left:8px">Delete all runs</button></h3>
@@ -846,6 +847,19 @@
     } catch (_) {
       return String(url || "");
     }
+  }
+
+  // With no run picked, the board falls back to the newest run that still has cards. When that is not
+  // the newest run, say so: a Robolink run that found nothing used to show the last Rhino run's cards
+  // with no hint that they belonged to another shop.
+  function boardFallbackNote(d) {
+    if (state.reviewJobId) return "";
+    const jobs = (d.jobs || []).slice().sort((a, b) => String(b.createdAt || "").localeCompare(String(a.createdAt || "")));
+    const newest = jobs[0];
+    const shown = reviewJob(d);
+    if (!newest || !shown || !shown.id || shown.id === "candidate" || shown.id === newest.id) return "";
+    const when = (j) => String(j.createdAt || "").replace("T", " ").slice(0, 16);
+    return `<p class="board-fallback" role="status">The newest run (${esc(jobSiteLabel(newest))} · ${esc(newest.kind || "")} · ${esc(when(newest))} · ${esc(newest.status || "")}) has no cards to review. Showing the ${esc(jobSiteLabel(shown))} ${esc(shown.kind || "")} run from ${esc(when(shown))} instead — pick a run above to switch.</p>`;
   }
 
   // A chosen run wins, so an older shop run stays usable after Collect emptied the newest one's

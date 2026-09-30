@@ -336,3 +336,4 @@ button, .ghost { min-height: 38px; }
 .rs-chip.is-on { background: var(--accent); border-color: var(--accent); color: #fff; }
 .rs-chip.is-on em { color: #dbe8ff; }
 .rs-chip-label { align-self: center; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-inline: 4px 2px; }
+.board-fallback { margin: 6px 0 10px; padding: 8px 12px; border-radius: 8px; background: #fff7e6; border: 1px solid #f0dcae; color: #7a4d00; font-size: 13px; }

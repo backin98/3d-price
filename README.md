@@ -66,24 +66,18 @@ These are hard rules, not preferences, and no model is allowed to override them:
 - the matcher never invents URLs, colours or weights
 - nothing reaches the storefront until an admin publishes the candidate
 
-## KNOWN BUG (open)
+## Fixed: a Robolink run showed Rhino listings
 
-**Running a Robolink job pulls Rhino listings.**
+**Cause.** The worker matches a run against the live catalog *plus the unpublished candidate*
+(`worker.mjs` `unionCatalog`), so the candidate a run uploads carries every other shop's pending
+offers. On `complete`, the server turned every candidate offer that was not yet live into a card of
+the finishing run. After a Rhino run that was not published, the next Robolink run's review board
+was full of Rhino listings. The job records were never wrong: their `url` was always Robolink's.
 
-Evidence gathered so far, so nobody repeats it:
-
-- The shop→category mapping is **correct**: `robolink` → `3d Printers` →
-  `https://www.robolinkmarket.com/3d-yazicilar`, and `rhino` → its own rhino3dprinter.com URLs. Fetched
-  live from the worker's `?action=poll` payload.
-- The admin validates `urlHostOf(url) === shopHostOf(pickedShop)` before queueing a run, so a
-  cross-shop URL should be refused at the form.
-- The bug is reproducible on `stable-4`, so it was not introduced by the reverted multi-shop form
-  (`feat/multi-shop-run`).
-
-Not yet established: which entry point produced the job (a form submit that bypassed the host check, a
-queued job whose stored `url` is a Rhino URL, or the worker ignoring the shop and using another
-source). The next step is to read the offending job record's stored `url` and `site` fields — that
-alone should identify it.
+**Fix.** A run's cards come only from its own shop's host (`sameShop` in `worker.mjs`, for both
+`complete` and `progress`). Pinned by `scripts/worker-shop-cards.test.cjs`, which fails on the old
+code. The review board also says so when, with no run picked, it falls back to an older run with
+cards (the newest one found none) — that fallback used to look like the same bug.
 
 ## Gotchas that have already cost time here
 
