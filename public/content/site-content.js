@@ -15,7 +15,10 @@
  *    The layout will flip automatically.
  *
  *  Do not rename the keys on the left (brand, header, hunter, …).
- *  You may add extra products, locations, banner slides, or aisle names.
+ *  Words in {curly braces} are filled in by the site — keep them as they are.
+ *
+ *  Banners set in the admin (Storefront tab) replace the default banners
+ *  below. With no banners saved there, these defaults are shown.
  * =============================================================================
  */
 
@@ -26,8 +29,10 @@ window.SITE_CONTENT = {
   /* "ltr" = left-to-right,  "rtl" = right-to-left. */
   dir: "ltr",
 
-  /* Shown in the browser tab. */
-  documentTitle: "3D Price — find your next best price",
+  /* Shown in the browser tab, and in search results and link previews. */
+  documentTitle: "3D Price — compare 3D printer prices in Turkey",
+  metaDescription:
+    "Compare 3D printer and filament prices across Turkish 3D printing shops. The same model, matched like for like, with the best in-stock price first.",
 
   /* -------------------------------------------------------------------------- */
   /* Brand                                                                      */
@@ -38,16 +43,7 @@ window.SITE_CONTENT = {
     tagline: "Product. Place. Price."
   },
 
-  /* How money is printed. position: "before" → $12   "after" → 12 $           */
-  currency: {
-    code: "USD",
-    symbol: "$",
-    position: "before",
-    decimals: 2
-  },
-
   units: {
-    km: "{n} km",
     off: "{n}% off",
     vat: "incl. VAT"
   },
@@ -56,16 +52,15 @@ window.SITE_CONTENT = {
   /* Header — sticky tabs + search + icons                                      */
   /* -------------------------------------------------------------------------- */
   header: {
-    skipToContent: "Skip to hunt",
+    skipToContent: "Skip to search",
     newTab: "New hunt",
     newTabAria: "Open a new hunt tab",
     closeTabAria: "Close this hunt",
-    searchPlaceholder: "Search a product",
+    searchPlaceholder: "Search a printer, brand or model",
     searchSubmitAria: "Search",
-    locationAria: "Choose location",
     homeAria: "Home",
     cartAria: "Saved deals",
-    profileAria: "Profile",
+    profileAria: "Your saved deals",
     defaultTab: "Hunt {n}",
     languageAria: "Language"
   },
@@ -81,24 +76,25 @@ window.SITE_CONTENT = {
   /* -------------------------------------------------------------------------- */
   banners: [
     {
-      image: "assets/banners/aisle.jpg",
-      kicker: "Tonight’s aisle",
-      title: "Walk the aisle. Leave with the lowest ticket.",
-      subtitle: "We scan nearby shelves so you don’t have to."
+      image: "assets/banners/compare.svg",
+      kicker: "Price comparison",
+      title: "Every 3D printer price, side by side.",
+      subtitle: "We check 3D printing shops across Turkey and line up the same printer’s prices in one place."
     },
     {
-      image: "assets/banners/warehouse.jpg",
-      kicker: "Bulk & local",
-      title: "Pallets or corner shop — we pick the cheaper one.",
-      subtitle: "Same product, every store in range, one number."
+      image: "assets/banners/match.svg",
+      kicker: "Like for like",
+      title: "The same printer, matched exactly.",
+      subtitle: "Combo or bare, kit or assembled — every listing is matched to its exact model and bundle before prices are compared."
     },
     {
-      image: "assets/banners/electronics.jpg",
-      kicker: "Tech shelves",
-      title: "Gadgets, scanned nightly.",
-      subtitle: "If the price dropped since yesterday, it shows in green."
+      image: "assets/banners/stock.svg",
+      kicker: "In stock first",
+      title: "Sold-out offers never set the price.",
+      subtitle: "Stock is re-checked on each shop’s own page, so the best price is one you can buy today."
     }
   ],
+  bannerAria: "Show banner {n} of {total}",
 
   /* -------------------------------------------------------------------------- */
   /* Main hunt — the question in the middle of the page                         */
@@ -108,15 +104,13 @@ window.SITE_CONTENT = {
     stamp: "for the Best Price!",
     placeholder: "Name a product…",
     find: "Find it",
-    clearAria: "Clear search",
-    locationHint: "Area · {location}",
-    dotsAria: "Banner slides"
+    clearAria: "Clear search"
   },
 
   live: {
     aisle: "FDM printers",
-    loading: "Scanning Rhino, Metatech, 3D Teknomarket and Robolink Market — printers and filament…",
-    error: "Could not reach the shops. Try Find it again.",
+    loading: "Collecting today’s prices…",
+    error: "The price list could not be loaded. Check your connection and press Find it again.",
     results: "{n} in stock",
     resultsBoth: "{p} printers · {f} spools",
     open: "Open shop",
@@ -124,15 +118,26 @@ window.SITE_CONTENT = {
     storesCount: "{n} shops",
     compared: "Matched",
     preorder: "Pre-order",
-    online: "online",
+    inStock: "In stock",
+    stockUnknown: "Stock not confirmed",
+    checkPrice: "Check price",
+    checkPriceAt: "Check price at {store}",
+    sponsored: "Sponsored",
+    featured: "Featured",
+    related: "related",
+    noMatches: "No matches",
     checkingPrices: "Checking live prices — the order may change…",
     findingBestPrice: "Finding your best live price…",
-    hint: "Find it searches Rhino, Metatech, 3D Teknomarket and Robolink Market, then matches like-for-like prices.",
+    hint: "Find it searches every shop we follow, then matches like-for-like prices.",
     printersWorld: "Printers",
     filamentWorld: "Filament",
     filterAisle: "Aisle",
     printerResults: "Printers",
     printerHint: "Narrow with the filters. The shelf follows.",
+    bundleOptions: "Bundle options",
+    noImage: "No image available",
+    previousImage: "Previous image",
+    nextImage: "Next image",
     aisles: [
       { id: "fdm", name: "FDM printers" },
       { id: "renk-modulu", name: "Color module" },
@@ -230,146 +235,25 @@ window.SITE_CONTENT = {
     }
   },
 
-  /* -------------------------------------------------------------------------- */
-  /* Aisles (the 3D columns of deals)                                           */
-  /* -------------------------------------------------------------------------- */
-  aisles: [
-    { id: "grocery", name: "Grocery" },
-    { id: "tech", name: "Tech" },
-    { id: "home", name: "Home" },
-    { id: "sport", name: "Sport" }
-  ],
-  aisleArrowAria: "This aisle is selected",
   emptyAisle: "Nothing on this shelf yet.",
   emptySearchTitle: "No matches on the shelf",
   emptySearchBody: "Try another word, or clear the hunt to see every aisle.",
-  resultsCount: "{n} deals",
   bestOffer: "Best",
   wasPrice: "was {price}",
-  distanceAway: "{distance} away",
   saveDeal: "Save",
   savedDeal: "Saved",
   viewOffers: "All offers",
   offerCount: "{n} stores",
 
   /* -------------------------------------------------------------------------- */
-  /* Products — translate names, units, store names. Keep "id" and "aisle"      */
-  /*            and image paths unless you add your own photos.                 */
-  /* -------------------------------------------------------------------------- */
-  products: [
-    {
-      id: "olive",
-      aisle: "grocery",
-      name: "Extra virgin olive oil",
-      unit: "750 ml",
-      image: "assets/products/olive-oil.jpg",
-      offers: [
-        { store: "Harbor Mart", price: 8.4, was: 11.9, km: 1.2 },
-        { store: "City Co-op", price: 9.1, km: 0.6 },
-        { store: "North Bulk", price: 7.95, was: 10.5, km: 4.8 }
-      ]
-    },
-    {
-      id: "coffee",
-      aisle: "grocery",
-      name: "Arabica coffee beans",
-      unit: "1 kg",
-      image: "assets/products/coffee.jpg",
-      offers: [
-        { store: "City Co-op", price: 14.2, was: 16.0, km: 0.6 },
-        { store: "Harbor Mart", price: 15.5, km: 1.2 }
-      ]
-    },
-    {
-      id: "rice",
-      aisle: "grocery",
-      name: "Long-grain rice",
-      unit: "5 kg",
-      image: "assets/products/rice.jpg",
-      offers: [
-        { store: "North Bulk", price: 6.3, km: 4.8 },
-        { store: "Harbor Mart", price: 7.8, was: 9.2, km: 1.2 },
-        { store: "City Co-op", price: 7.4, km: 0.6 }
-      ]
-    },
-    {
-      id: "earbuds",
-      aisle: "tech",
-      name: "Wireless earbuds",
-      unit: "pair",
-      image: "assets/products/earbuds.jpg",
-      offers: [
-        { store: "Screen Barn", price: 29.0, was: 49.0, km: 2.1 },
-        { store: "Harbor Mart", price: 34.5, km: 1.2 }
-      ]
-    },
-    {
-      id: "lamp",
-      aisle: "home",
-      name: "Brass desk lamp",
-      unit: "each",
-      image: "assets/products/lamp.jpg",
-      offers: [
-        { store: "Home Yard", price: 42.0, was: 55.0, km: 3.0 },
-        { store: "City Co-op", price: 48.0, km: 0.6 }
-      ]
-    },
-    {
-      id: "kettle",
-      aisle: "home",
-      name: "Matte electric kettle",
-      unit: "1.5 L",
-      image: "assets/products/kettle.jpg",
-      offers: [
-        { store: "Home Yard", price: 24.9, km: 3.0 },
-        { store: "Screen Barn", price: 27.0, was: 32.0, km: 2.1 }
-      ]
-    },
-    {
-      id: "shoes",
-      aisle: "sport",
-      name: "Road running shoes",
-      unit: "pair",
-      image: "assets/products/shoes.jpg",
-      offers: [
-        { store: "Sport Lane", price: 68.0, was: 90.0, km: 1.8 },
-        { store: "Harbor Mart", price: 74.0, km: 1.2 }
-      ]
-    },
-    {
-      id: "bottle",
-      aisle: "sport",
-      name: "Steel water bottle",
-      unit: "750 ml",
-      image: "assets/products/bottle.jpg",
-      offers: [
-        { store: "Sport Lane", price: 12.5, km: 1.8 },
-        { store: "City Co-op", price: 11.9, was: 14.0, km: 0.6 },
-        { store: "North Bulk", price: 13.2, km: 4.8 }
-      ]
-    }
-  ],
-
-  /* -------------------------------------------------------------------------- */
-  /* Google ads slots (replace inner markup later with your AdSense code)       */
+  /* Ad slots. Keep enabled: false until you have real ad code; while it is off */
+  /* the page shows no empty ad boxes.                                          */
   /* -------------------------------------------------------------------------- */
   ads: {
-    label: "Google ads",
+    enabled: false,
+    label: "Advertisement",
     hint: "Ad slot"
   },
-
-  /* -------------------------------------------------------------------------- */
-  /* Locations — replace with your real cities / areas.                         */
-  /* -------------------------------------------------------------------------- */
-  locations: [
-    { id: "near", name: "Near me" },
-    { id: "downtown", name: "Downtown" },
-    { id: "harbor", name: "Harbor" },
-    { id: "north", name: "North side" },
-    { id: "mall", name: "Mall district" }
-  ],
-  locationTitle: "Where should we hunt?",
-  locationClose: "Close",
 
   /* -------------------------------------------------------------------------- */
   /* Saved deals (cart icon)                                                    */
@@ -386,9 +270,8 @@ window.SITE_CONTENT = {
   /* -------------------------------------------------------------------------- */
   profile: {
     title: "Your hunt",
-    greeting: "Hunting from {location}",
     savedCount: "{n} saved deals",
-    hint: "Location and saved deals stay on this device.",
+    hint: "Saved deals and your language stay on this device. No account needed.",
     close: "Close"
   },
 
@@ -406,9 +289,11 @@ window.SITE_CONTENT = {
   /* Footer                                                                     */
   /* -------------------------------------------------------------------------- */
   footer: {
-    note: "Live prices from Rhino, Metatech, 3D Teknomarket and Robolink Market. Wording lives in content/site-content.js.",
-    copyright: "3D Price"
+    note: "Prices come from the shops’ own pages and can change at any time. Always check the final price on the shop’s site before you buy.",
+    copyright: "© {year} 3D Price"
   },
+
+  noscript: "3D Price needs JavaScript to compare prices. Please turn it on and reload the page.",
 
   /* -------------------------------------------------------------------------- */
   /* Product names from Turkish shops → English (used when language is EN)      */
@@ -466,9 +351,16 @@ window.SITE_CONTENT = {
     ["Kamera Hediyeli", "camera included"],
     ["Filament Kurutucu", "Filament Dryer"],
     ["Çok Renkli Baskı Modülü", "Multicolor Print Module"],
+    ["Çok Renkli Baskı", "Multicolor Printing"],
     ["Renk Modülü", "Color Module"],
     ["Upgrade Kiti", "Upgrade Kit"],
     ["Özel Set", "Special Set"],
+    ["Sertleştirilmiş Çelik", "Hardened Steel"],
+    ["Paslanmaz Çelik", "Stainless Steel"],
+    ["Soğutma Fanı", "Cooling Fan"],
+    ["Tam Ünite", "Complete Unit"],
+    ["Endüstriyel", "Industrial"],
+    ["Nozul", "Nozzle"],
     ["Serisi", "Series"],
     ["3D Yazıcı", "3D Printer"],
     ["3d Yazıcı", "3D Printer"],
@@ -484,11 +376,14 @@ window.SITE_CONTENT = {
     tr: {
       lang: "tr",
       dir: "ltr",
-      documentTitle: "3D Price — sıradaki en iyi fiyat",
+      documentTitle: "3D Price — 3D yazıcı fiyatlarını karşılaştırın",
+      metaDescription:
+        "Türkiye’deki 3D baskı mağazalarında 3D yazıcı ve filament fiyatlarını karşılaştırın. Aynı model birebir eşleşir, stoktaki en iyi fiyat önce gelir.",
       brand: {
         tagline: "Ürün. Yer. Fiyat."
       },
       units: {
+        off: "%{n} indirim",
         vat: "KDV dahil"
       },
       header: {
@@ -496,44 +391,79 @@ window.SITE_CONTENT = {
         newTab: "Yeni arama",
         newTabAria: "Yeni arama sekmesi aç",
         closeTabAria: "Bu aramayı kapat",
-        searchPlaceholder: "Ürün ara",
+        searchPlaceholder: "Yazıcı, marka veya model arayın",
         searchSubmitAria: "Ara",
-        locationAria: "Konum seç",
         homeAria: "Ana sayfa",
         cartAria: "Kaydedilenler",
-        profileAria: "Profil",
+        profileAria: "Kayıtlı fırsatlarınız",
         defaultTab: "Arama {n}",
         languageAria: "Dil"
       },
+      banners: [
+        {
+          image: "assets/banners/compare.svg",
+          kicker: "Fiyat karşılaştırma",
+          title: "Tüm 3D yazıcı fiyatları yan yana.",
+          subtitle: "Türkiye’deki 3D baskı mağazalarını tarıyor, aynı yazıcının fiyatlarını tek yerde topluyoruz."
+        },
+        {
+          image: "assets/banners/match.svg",
+          kicker: "Birebir eşleşme",
+          title: "Aynı yazıcı, birebir eşleşir.",
+          subtitle: "Combo ya da tekli, kit ya da kurulu — her ilan, fiyatlar karşılaştırılmadan önce tam modeline ve paketine eşlenir."
+        },
+        {
+          image: "assets/banners/stock.svg",
+          kicker: "Önce stoktakiler",
+          title: "Tükenen teklif fiyatı belirlemez.",
+          subtitle: "Stok, her mağazanın kendi sayfasında yeniden kontrol edilir; en iyi fiyat bugün alabileceğiniz fiyattır."
+        }
+      ],
+      bannerAria: "{total} bannerdan {n}. banneri göster",
       hunter: {
         lead: "Sırada ne bulalım?",
         stamp: "en iyi fiyata!",
         placeholder: "Bir ürün yazın…",
         find: "Bul",
-        clearAria: "Aramayı temizle",
-        locationHint: "Bölge · {location}",
-        dotsAria: "Banner slaytları"
+        clearAria: "Aramayı temizle"
       },
       live: {
-        aisle: "FDM printers",
-        loading: "Rhino, Metatech, 3D Teknomarket ve Robolink Market taranıyor — yazıcılar ve filament…",
-        error: "Mağazalara ulaşılamadı. Bul’a tekrar basın.",
+        aisle: "FDM yazıcılar",
+        loading: "Güncel fiyatlar toplanıyor…",
+        error: "Fiyat listesi yüklenemedi. Bağlantınızı kontrol edip Bul’a tekrar basın.",
         results: "{n} stokta",
         resultsBoth: "{p} yazıcı · {f} makara",
         open: "Mağazayı aç",
-        openStore: "{store}’ta aç",
+        openStore: "{store} sitesinde aç",
         storesCount: "{n} mağaza",
         compared: "Eşleşti",
         preorder: "Ön sipariş",
-        online: "çevrimiçi",
+        inStock: "Stokta",
+        stockUnknown: "Stok doğrulanmadı",
+        checkPrice: "Fiyatı kontrol et",
+        checkPriceAt: "{store} sitesinde fiyatı kontrol et",
+        sponsored: "Sponsorlu",
+        featured: "Öne çıkan",
+        related: "ilgili",
+        noMatches: "Sonuç yok",
         checkingPrices: "Canlı fiyatlar kontrol ediliyor — sıralama değişebilir…",
         findingBestPrice: "Sizin için en iyi canlı fiyat aranıyor…",
-        hint: "Bul, Rhino, Metatech, 3D Teknomarket ve Robolink Market’i tarar, sonra aynı ürünleri fiyatlar.",
+        hint: "Bul, takip ettiğimiz tüm mağazaları tarar, sonra aynı ürünlerin fiyatlarını eşleştirir.",
         printersWorld: "Yazıcılar",
         filamentWorld: "Filament",
         filterAisle: "Raf",
         printerResults: "Yazıcılar",
-        printerHint: "Filtrelerle daraltın. Raf onu izler."
+        printerHint: "Filtrelerle daraltın. Raf onu izler.",
+        bundleOptions: "Paket seçenekleri",
+        noImage: "Görsel yok",
+        previousImage: "Önceki görsel",
+        nextImage: "Sonraki görsel",
+        aisles: [
+          { id: "fdm", name: "FDM yazıcılar" },
+          { id: "renk-modulu", name: "Renk modülü" },
+          { id: "renk-modulu-aksesuari", name: "Renk modülü aksesuarı" },
+          { id: "filament-kurutucu", name: "Filament kurutucu" }
+        ]
       },
       filament: {
         crumb: "Filament",
@@ -585,15 +515,15 @@ window.SITE_CONTENT = {
       emptyAisle: "Bu rafta henüz bir şey yok.",
       emptySearchTitle: "Rafta eşleşme yok",
       emptySearchBody: "Başka bir sözcük deneyin, veya aramayı temizleyip tüm rafları görün.",
-      resultsCount: "{n} fırsat",
       bestOffer: "En iyi",
       wasPrice: "eski {price}",
       saveDeal: "Kaydet",
       savedDeal: "Kayıtlı",
       viewOffers: "Tüm teklifler",
       offerCount: "{n} mağaza",
-      locationTitle: "Nereden arayalım?",
-      locationClose: "Kapat",
+      ads: {
+        label: "Reklam"
+      },
       cart: {
         title: "Kaydedilenler",
         empty: "Henüz kayıt yok. Bir fiyat etiketinde Kaydet’e basın.",
@@ -602,9 +532,8 @@ window.SITE_CONTENT = {
       },
       profile: {
         title: "Aramanız",
-        greeting: "{location} bölgesinden arama",
         savedCount: "{n} kayıtlı fırsat",
-        hint: "Konum ve kayıtlar bu cihazda kalır.",
+        hint: "Kayıtlarınız ve dil seçiminiz bu cihazda kalır. Hesap gerekmez.",
         close: "Kapat"
       },
       sheet: {
@@ -614,9 +543,10 @@ window.SITE_CONTENT = {
         go: "Mağazayı aç"
       },
       footer: {
-        note: "Canlı fiyatlar Rhino, Metatech, 3D Teknomarket ve Robolink Market’ten gelir. Metinler content/site-content.js içindedir.",
-        copyright: "3D Price"
-      }
+        note: "Fiyatlar mağazaların kendi sayfalarından alınır ve her an değişebilir. Satın almadan önce son fiyatı mağazanın sitesinde kontrol edin.",
+        copyright: "© {year} 3D Price"
+      },
+      noscript: "3D Price, fiyatları karşılaştırmak için JavaScript kullanır. Lütfen açıp sayfayı yenileyin."
     }
   }
 };

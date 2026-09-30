@@ -15,8 +15,8 @@ const IMG_LISTING = 'https://cdn.example.com/ender-ke.jpg';
 const IMG_CANDIDATE = 'https://cdn.example.com/ender-se.jpg';
 const IMG_LISTING2 = 'https://cdn.example.com/other-ke.jpg';
 const IMG_CANDIDATE2 = 'https://cdn.example.com/other-se.jpg';
-const bottle = fs.readFileSync('public/assets/products/bottle.jpg');
-const coffee = fs.readFileSync('public/assets/products/coffee.jpg');
+const bottle = fs.readFileSync('scripts/fixtures/images/bottle.jpg');
+const coffee = fs.readFileSync('scripts/fixtures/images/coffee.jpg');
 const picture = (bytes) => new Response(bytes, { status: 200, headers: { 'content-type': 'image/jpeg' } });
 
 const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vision-place-'));

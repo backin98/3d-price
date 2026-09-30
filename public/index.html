@@ -3,26 +3,49 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#121820" />
-    <meta name="description" content="" />
-    <title>3D Price</title>
+    <meta name="theme-color" content="#0a1018" />
+    <title>3D Price — compare 3D printer prices in Turkey</title>
+    <meta
+      name="description"
+      content="Compare 3D printer and filament prices across Turkish 3D printing shops. The same model, matched like for like, with the best in-stock price first."
+    />
+    <link rel="canonical" href="/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="3D Price" />
+    <meta property="og:url" content="/" />
+    <meta property="og:title" content="3D Price — compare 3D printer prices in Turkey" />
+    <meta
+      property="og:description"
+      content="The same printer, matched like for like across Turkish 3D printing shops, with the best in-stock price first."
+    />
+    <meta property="og:image" content="/assets/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="3D Price — every 3D printer price, side by side" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="tr_TR" />
+    <meta name="twitter:card" content="summary_large_image" />
+
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="site.webmanifest" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+Arabic:wght@400;600;700&family=Sora:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=Sora:wght@600;700;800&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="css/styles.css?v=sf8" />
+    <link rel="stylesheet" href="css/styles.css?v=sf9" />
   </head>
   <body>
-    <a class="skip-link" href="#main" data-i18n="header.skipToContent">Skip to hunt</a>
+    <a class="skip-link" href="#main" data-i18n="header.skipToContent">Skip to search</a>
 
     <header class="site-header">
       <div class="tab-bar">
         <button class="brand js-go-home" type="button" data-i18n-title="brand.tagline">
           <span class="brand-mark" aria-hidden="true">3D</span>
-          <span class="brand-name" data-i18n="brand.name">3D Price</span>
+          <span class="brand-name" lang="en" translate="no" data-i18n="brand.name">3D Price</span>
         </button>
         <div class="tab-strip">
           <div class="tabs" id="tabs" role="tablist"></div>
@@ -46,27 +69,24 @@
       </div>
 
       <form class="header-search" id="header-search" role="search">
-        <label class="sr-only" for="header-query" data-i18n="header.searchPlaceholder">Search a product</label>
+        <label class="sr-only" for="header-query" data-i18n="header.searchPlaceholder">Search a printer, brand or model</label>
         <input id="header-query" name="q" type="search" autocomplete="off" enterkeyhint="search" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="header-suggest" />
         <button class="icon-btn" type="submit" data-i18n-aria="header.searchSubmitAria">
           <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/><path d="M16.5 16.5L21 21" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </button>
         <div class="suggest" id="header-suggest" role="listbox" aria-label="Search suggestions" hidden></div>
-        <button class="icon-btn" id="header-location" type="button" data-i18n-aria="header.locationAria">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5.5Z"/></svg>
-        </button>
       </form>
     </header>
 
-    <div class="ad-band ad-band--top" data-ad="top"></div>
+    <div class="ad-band ad-band--top" data-ad="top" hidden></div>
 
-    <section class="banner" id="banner" aria-roledescription="carousel">
+    <section class="banner" id="banner" aria-roledescription="carousel" aria-label="3D Price">
       <div class="banner-slides" id="banner-slides"></div>
       <div class="banner-dots" id="banner-dots"></div>
     </section>
 
     <div class="stage">
-      <aside class="ad-rail ad-rail--start" data-ad="start" aria-label="Advertisement"></aside>
+      <aside class="ad-rail ad-rail--start" data-ad="start" aria-label="Advertisement" hidden></aside>
 
       <main id="main">
         <section class="hunter" aria-labelledby="hunter-lead">
@@ -86,33 +106,21 @@
             <button class="oval-go" type="submit" data-i18n="hunter.find">Find it</button>
           </form>
 
-          <p class="hunter-loc" id="hunter-loc"></p>
-          <div class="hunter-dots" id="hunter-dots" role="tablist"></div>
+          <p class="hunter-loc" id="hunter-loc" aria-live="polite"></p>
         </section>
 
         <section class="aisles" id="aisles" aria-live="polite"></section>
       </main>
 
-      <aside class="ad-rail ad-rail--end" data-ad="end" aria-label="Advertisement"></aside>
+      <aside class="ad-rail ad-rail--end" data-ad="end" aria-label="Advertisement" hidden></aside>
     </div>
 
-    <div class="ad-band ad-band--bottom" data-ad="bottom"></div>
+    <div class="ad-band ad-band--bottom" data-ad="bottom" hidden></div>
 
     <footer class="site-footer">
-      <p data-i18n="footer.note"></p>
-      <p class="foot-copy" data-i18n="footer.copyright"></p>
+      <p class="foot-note" data-i18n="footer.note"></p>
+      <p class="foot-copy" id="foot-copy" lang="en" translate="no">© 3D Price</p>
     </footer>
-
-    <div class="drawer" id="drawer-location" hidden>
-      <div class="drawer-backdrop" data-close="location"></div>
-      <div class="drawer-panel drawer-panel--center" role="dialog" aria-modal="true" aria-labelledby="loc-title">
-        <header class="drawer-head">
-          <h2 id="loc-title" data-i18n="locationTitle">Where should we hunt?</h2>
-          <button class="icon-btn" type="button" data-close="location" data-i18n-aria="locationClose">×</button>
-        </header>
-        <ul class="loc-list" id="loc-list"></ul>
-      </div>
-    </div>
 
     <div class="drawer" id="drawer-cart" hidden>
       <div class="drawer-backdrop" data-close="cart"></div>
@@ -148,10 +156,13 @@
     </div>
 
     <noscript>
-      <p class="noscript">This website needs JavaScript. All wording lives in <code>content/site-content.js</code>.</p>
+      <p class="noscript">
+        3D Price needs JavaScript to compare prices. Please turn it on and reload the page.<br />
+        <span lang="tr">3D Price, fiyatları karşılaştırmak için JavaScript kullanır. Lütfen açıp sayfayı yenileyin.</span>
+      </p>
     </noscript>
 
-    <script src="content/site-content.js"></script>
-    <script src="js/app.js?v=sf8"></script>
+    <script src="content/site-content.js?v=sf9"></script>
+    <script src="js/app.js?v=sf9"></script>
   </body>
 </html>

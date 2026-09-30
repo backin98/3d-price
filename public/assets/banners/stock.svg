@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 400" width="1600" height="400">
+  <!-- A hot end laying the top layer, beside a stock check: in stock, unconfirmed, sold out. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a1018"/>
+      <stop offset="0.55" stop-color="#121822"/>
+      <stop offset="1" stop-color="#2a2412"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity="0.045" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="haze" cx="0.7" cy="0.45" r="0.5">
+      <stop offset="0" stop-color="#ffc43d" stop-opacity="0.16"/>
+      <stop offset="1" stop-color="#0a1018" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="tip" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffe29a" stop-opacity="0.95"/>
+      <stop offset="0.35" stop-color="#ffc43d" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#ffc43d" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="sink" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#2b3c51"/>
+      <stop offset="1" stop-color="#1b2735"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="400" fill="url(#bg)"/>
+  <rect width="1600" height="400" fill="url(#haze)"/>
+  <rect width="1600" height="400" fill="url(#grid)"/>
+
+  <!-- filament feeding the hot end -->
+  <rect x="1044" y="-10" width="12" height="74" rx="6" fill="#ffc43d"/>
+
+  <!-- heat sink -->
+  <rect x="1006" y="60" width="88" height="68" rx="8" fill="url(#sink)" stroke="#3f556e" stroke-width="2"/>
+  <g stroke="#0e1620" stroke-width="4">
+    <line x1="1014" y1="76" x2="1086" y2="76"/>
+    <line x1="1014" y1="90" x2="1086" y2="90"/>
+    <line x1="1014" y1="104" x2="1086" y2="104"/>
+    <line x1="1014" y1="118" x2="1086" y2="118"/>
+  </g>
+  <!-- heat block and nozzle -->
+  <rect x="1014" y="128" width="72" height="40" rx="5" fill="#c49212"/>
+  <rect x="1014" y="128" width="72" height="8" rx="4" fill="#ffc43d" fill-opacity="0.5"/>
+  <path d="M1034 168 H1066 L1057 190 H1043 Z" fill="#ffc43d"/>
+  <circle cx="1050" cy="196" r="30" fill="url(#tip)"/>
+
+  <!-- the part: finished layers, and the top one still going down -->
+  <g>
+    <rect x="930" y="330" width="250" height="12" rx="3" fill="#2b3c51"/>
+    <rect x="930" y="316" width="250" height="12" rx="3" fill="#30435a"/>
+    <rect x="930" y="302" width="250" height="12" rx="3" fill="#2b3c51"/>
+    <rect x="930" y="288" width="250" height="12" rx="3" fill="#30435a"/>
+    <rect x="930" y="274" width="250" height="12" rx="3" fill="#2b3c51"/>
+    <rect x="930" y="260" width="250" height="12" rx="3" fill="#30435a"/>
+    <rect x="930" y="246" width="250" height="12" rx="3" fill="#2b3c51"/>
+    <rect x="930" y="232" width="250" height="12" rx="3" fill="#30435a"/>
+    <rect x="930" y="218" width="120" height="12" rx="3" fill="#ffc43d"/>
+  </g>
+  <rect x="900" y="344" width="310" height="4" rx="2" fill="#3f556e"/>
+
+  <!-- the stock check -->
+  <g transform="translate(1290 128)">
+    <rect x="-24" y="-30" width="276" height="210" rx="18" fill="#101923" stroke="#2e4054" stroke-width="2"/>
+    <!-- in stock -->
+    <circle cx="10" cy="10" r="16" fill="#15803d"/>
+    <path d="M3 10 L8 15 L18 4" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+    <rect x="40" y="4" width="150" height="12" rx="6" fill="#2b3c51"/>
+    <rect x="198" y="0" width="36" height="20" rx="6" fill="#ffc43d"/>
+    <!-- unconfirmed -->
+    <circle cx="10" cy="74" r="15" fill="none" stroke="#b7862a" stroke-width="3"/>
+    <circle cx="10" cy="74" r="3.5" fill="#b7862a"/>
+    <rect x="40" y="68" width="120" height="12" rx="6" fill="#243244"/>
+    <!-- sold out: never the best price -->
+    <circle cx="10" cy="138" r="16" fill="#e11d38" fill-opacity="0.85"/>
+    <path d="M3 131 L17 145 M17 131 L3 145" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+    <rect x="40" y="132" width="170" height="12" rx="6" fill="#1c2735"/>
+    <line x1="36" y1="138" x2="216" y2="138" stroke="#e11d38" stroke-opacity="0.8" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <g fill="#ffc43d">
+    <circle cx="1112" cy="206" r="3" fill-opacity="0.75"/>
+    <circle cx="1130" cy="188" r="2" fill-opacity="0.5"/>
+    <circle cx="1552" cy="74" r="2" fill-opacity="0.4"/>
+  </g>
+</svg>

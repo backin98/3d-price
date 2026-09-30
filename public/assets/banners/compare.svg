@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 400" width="1600" height="400">
+  <!-- Price tags as a bar chart: the shortest (cheapest) tag is the one we point at. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a1018"/>
+      <stop offset="0.55" stop-color="#101a25"/>
+      <stop offset="1" stop-color="#172638"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity="0.045" stroke-width="1"/>
+    </pattern>
+    <pattern id="layers" width="12" height="9" patternUnits="userSpaceOnUse">
+      <rect width="12" height="4" fill="#ffffff" fill-opacity="0.05"/>
+    </pattern>
+    <pattern id="layers-best" width="12" height="9" patternUnits="userSpaceOnUse">
+      <rect width="12" height="4" fill="#ffffff" fill-opacity="0.18"/>
+    </pattern>
+    <linearGradient id="tag" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2b3c51"/>
+      <stop offset="1" stop-color="#1b2735"/>
+    </linearGradient>
+    <linearGradient id="best" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffd46b"/>
+      <stop offset="1" stop-color="#f0ac1c"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffc43d" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#ffc43d" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="haze" cx="0.78" cy="0.25" r="0.6">
+      <stop offset="0" stop-color="#2a4a6e" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#0a1018" stop-opacity="0"/>
+    </radialGradient>
+    <path id="t" d="M0 22 L44 0 L88 22 V200 H0 Z"/>
+  </defs>
+
+  <rect width="1600" height="400" fill="url(#bg)"/>
+  <rect width="1600" height="400" fill="url(#haze)"/>
+  <rect width="1600" height="400" fill="url(#grid)"/>
+
+  <!-- shelf -->
+  <rect x="860" y="348" width="640" height="3" rx="1.5" fill="#3a4d63"/>
+
+  <!-- glow under the cheapest tag -->
+  <ellipse cx="1167" cy="330" rx="130" ry="95" fill="url(#glow)"/>
+
+  <!-- tags: each is 88 wide; heights read as prices -->
+  <g>
+    <g transform="translate(900 108)">
+      <path d="M0 22 L44 0 L88 22 V240 H0 Z" fill="url(#tag)" stroke="#3f556e" stroke-width="2"/>
+      <path d="M0 22 L44 0 L88 22 V240 H0 Z" fill="url(#layers)"/>
+      <circle cx="44" cy="26" r="7" fill="#0a1018" stroke="#3f556e" stroke-width="2"/>
+    </g>
+    <g transform="translate(1012 158)">
+      <path d="M0 22 L44 0 L88 22 V190 H0 Z" fill="url(#tag)" stroke="#3f556e" stroke-width="2"/>
+      <path d="M0 22 L44 0 L88 22 V190 H0 Z" fill="url(#layers)"/>
+      <circle cx="44" cy="26" r="7" fill="#0a1018" stroke="#3f556e" stroke-width="2"/>
+    </g>
+    <!-- the best price -->
+    <g transform="translate(1123 218)">
+      <path d="M0 22 L44 0 L88 22 V130 H0 Z" fill="url(#best)"/>
+      <path d="M0 22 L44 0 L88 22 V130 H0 Z" fill="url(#layers-best)"/>
+      <circle cx="44" cy="26" r="7" fill="#0a1018"/>
+    </g>
+    <g transform="translate(1234 128)">
+      <path d="M0 22 L44 0 L88 22 V220 H0 Z" fill="url(#tag)" stroke="#3f556e" stroke-width="2"/>
+      <path d="M0 22 L44 0 L88 22 V220 H0 Z" fill="url(#layers)"/>
+      <circle cx="44" cy="26" r="7" fill="#0a1018" stroke="#3f556e" stroke-width="2"/>
+    </g>
+    <g transform="translate(1346 178)">
+      <path d="M0 22 L44 0 L88 22 V170 H0 Z" fill="url(#tag)" stroke="#3f556e" stroke-width="2"/>
+      <path d="M0 22 L44 0 L88 22 V170 H0 Z" fill="url(#layers)"/>
+      <circle cx="44" cy="26" r="7" fill="#0a1018" stroke="#3f556e" stroke-width="2"/>
+    </g>
+  </g>
+
+  <!-- the lowest-price line across every tag -->
+  <line x1="872" y1="218" x2="1488" y2="218" stroke="#ffc43d" stroke-opacity="0.55" stroke-width="2" stroke-dasharray="10 9"/>
+
+  <!-- marker above the cheapest tag -->
+  <g transform="translate(1167 164)">
+    <circle r="24" fill="#ffc43d"/>
+    <path d="M-10 1 L-3 8 L11 -7" fill="none" stroke="#0a1018" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- a few loose print sparks -->
+  <g fill="#ffc43d">
+    <circle cx="1470" cy="92" r="3" fill-opacity="0.8"/>
+    <circle cx="1502" cy="130" r="2" fill-opacity="0.5"/>
+    <circle cx="936" cy="72" r="2" fill-opacity="0.45"/>
+  </g>
+</svg>

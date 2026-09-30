@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 400" width="1600" height="400">
+  <!-- Two listings of the same printer, matched: identical machines joined by a check. -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a1018"/>
+      <stop offset="0.55" stop-color="#0f1b22"/>
+      <stop offset="1" stop-color="#12302d"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity="0.045" stroke-width="1"/>
+    </pattern>
+    <radialGradient id="haze" cx="0.73" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#0f9d86" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#0a1018" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#26374b"/>
+      <stop offset="1" stop-color="#18222f"/>
+    </linearGradient>
+    <g id="printer">
+      <!-- frame -->
+      <rect x="0" y="0" width="220" height="236" rx="18" fill="url(#body)" stroke="#3f556e" stroke-width="3"/>
+      <!-- screen + status light -->
+      <circle cx="30" cy="20" r="6" fill="#2dd4bf"/>
+      <rect x="148" y="12" width="52" height="16" rx="4" fill="#0e1620" stroke="#3f556e" stroke-width="2"/>
+      <!-- build chamber -->
+      <rect x="18" y="40" width="184" height="164" rx="10" fill="#0c141d"/>
+      <!-- gantry and print head -->
+      <rect x="18" y="62" width="184" height="8" fill="#3f556e"/>
+      <rect x="90" y="52" width="40" height="32" rx="6" fill="#ffc43d"/>
+      <path d="M103 84 H117 L110 96 Z" fill="#ffc43d"/>
+      <!-- the print, layer by layer -->
+      <g fill="#ffc43d">
+        <rect x="75" y="172" width="70" height="7" rx="2"/>
+        <rect x="79" y="164" width="62" height="7" rx="2" fill-opacity="0.85"/>
+        <rect x="83" y="156" width="54" height="7" rx="2" fill-opacity="0.7"/>
+        <rect x="87" y="148" width="46" height="7" rx="2" fill-opacity="0.55"/>
+      </g>
+      <!-- bed -->
+      <rect x="44" y="180" width="132" height="7" rx="2" fill="#3f556e"/>
+      <!-- feet -->
+      <rect x="22" y="236" width="36" height="8" rx="3" fill="#3f556e"/>
+      <rect x="162" y="236" width="36" height="8" rx="3" fill="#3f556e"/>
+      <!-- model plate: the same code on both -->
+      <rect x="62" y="212" width="96" height="14" rx="4" fill="#0e1620"/>
+      <circle cx="80" cy="219" r="3" fill="#ffc43d"/>
+      <circle cx="94" cy="219" r="3" fill="#ffc43d"/>
+      <rect x="104" y="216" width="40" height="6" rx="3" fill="#3f556e"/>
+    </g>
+  </defs>
+
+  <rect width="1600" height="400" fill="url(#bg)"/>
+  <rect width="1600" height="400" fill="url(#haze)"/>
+  <rect width="1600" height="400" fill="url(#grid)"/>
+
+  <!-- floor -->
+  <rect x="860" y="352" width="660" height="3" rx="1.5" fill="#2e4550"/>
+
+  <use href="#printer" transform="translate(880 100)"/>
+  <use href="#printer" transform="translate(1290 100)"/>
+
+  <!-- the match -->
+  <path d="M1104 218 C 1130 218, 1140 218, 1156 218" fill="none" stroke="#2dd4bf" stroke-width="4" stroke-dasharray="9 8" stroke-linecap="round"/>
+  <path d="M1234 218 C 1250 218, 1262 218, 1286 218" fill="none" stroke="#2dd4bf" stroke-width="4" stroke-dasharray="9 8" stroke-linecap="round"/>
+  <circle cx="1195" cy="218" r="46" fill="#0f9d86" fill-opacity="0.18"/>
+  <circle cx="1195" cy="218" r="34" fill="#0f9d86"/>
+  <path d="M1180 219 L1191 230 L1212 206" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- sparks -->
+  <g fill="#2dd4bf">
+    <circle cx="1560" cy="84" r="3" fill-opacity="0.7"/>
+    <circle cx="1528" cy="60" r="2" fill-opacity="0.45"/>
+    <circle cx="920" cy="70" r="2" fill-opacity="0.45"/>
+  </g>
+</svg>

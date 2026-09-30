@@ -8,8 +8,26 @@
   let C = BASE;
 
   const STORAGE_CART = "3dprice-saved";
-  const STORAGE_LOC = "3dprice-location";
   const STORAGE_LANG = "3dprice-lang";
+  const STORAGE_MERCH = "3dprice-merch";
+
+  // Storage can be switched off (private windows, strict privacy settings) and then throws on
+  // access. Saved deals are a convenience: without storage the site still works, it just forgets.
+  function readStore(key) {
+    try {
+      return localStorage.getItem(key);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function writeStore(key, value) {
+    try {
+      localStorage.setItem(key, value);
+    } catch (e) {
+      /* storage unavailable */
+    }
+  }
 
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => Array.from(root.querySelectorAll(sel));
@@ -49,9 +67,45 @@
     return out.replace(/\s{2,}/g, " ").trim();
   }
 
+  // Some rows carry the folded baseline name ("creality k2 combo 3d yazici"): lower case, with
+  // the Turkish letters stripped. Only those are re-cased for display; a name that a shop or the
+  // admin typed with its own capitals is shown exactly as written.
+  const NAME_WORDS = {
+    "3d": "3D", ams: "AMS", cfs: "CFS", fdm: "FDM", sla: "SLA", msla: "MSLA", lcd: "LCD", uv: "UV",
+    cnc: "CNC", pla: "PLA", petg: "PETG", abs: "ABS", asa: "ASA", tpu: "TPU", pva: "PVA", hips: "HIPS",
+    ptfe: "PTFE", pei: "PEI", idex: "IDEX", usb: "USB", led: "LED", rgb: "RGB", wifi: "Wi-Fi", ai: "AI",
+    xl: "XL", se: "SE", flsun: "FLSUN", qidi: "QIDI", raise3d: "Raise3D", ankermake: "AnkerMake",
+    yazici: "Yazıcı", serisi: "Serisi", kurutucu: "Kurutucu", modulu: "Modülü", aksesuari: "Aksesuarı",
+    ozel: "Özel", cok: "Çok", baski: "Baskı", sertlestirilmis: "Sertleştirilmiş", celik: "Çelik",
+    sogutma: "Soğutma", fani: "Fanı", unite: "Ünite", endustriyel: "Endüstriyel", parca: "Parça",
+    seffaf: "Şeffaf", kirmizi: "Kırmızı", yesil: "Yeşil", sari: "Sarı", ve: "ve", ile: "ile", icin: "için",
+    mm: "mm", cm: "cm", kg: "kg", g: "g", gr: "gr", ml: "ml"
+  };
+
+  function prettyName(name) {
+    const text = String(name == null ? "" : name).trim();
+    if (!text || text !== text.toLowerCase()) return text;
+    return text
+      .split(/(\s+)/)
+      .map((word) => {
+        if (!word.trim()) return word;
+        if (Object.prototype.hasOwnProperty.call(NAME_WORDS, word)) return NAME_WORDS[word];
+        const tenth = /^0(\d)mm$/.exec(word); // "08mm" is a folded "0.8mm"
+        if (tenth) return "0." + tenth[1] + "mm";
+        if (/^\d+([.,]\d+)?(mm|cm|kg|gr?|ml)$/.test(word)) return word;
+        if (/\d/.test(word)) return word.toUpperCase(); // model codes: k2, x1c, h2d, v4
+        return word.charAt(0).toUpperCase() + word.slice(1);
+      })
+      .join("");
+  }
+
   function displayName(p) {
-    const name = translateProduct(p.name);
+    const name = translateProduct(prettyName(p.name));
     return p.polymer === "plabs" ? String(name || "").replace(/\bpla[\s-]*abs\b|\bplabs\b/gi, "PLABS") : name;
+  }
+
+  function displayBrand(p) {
+    return prettyName((p && (p.brand || p.unit)) || "");
   }
 
   function applyI18n(root) {
@@ -80,19 +134,27 @@
     );
   }
 
-  function km(n) {
-    return fill(C.units.km, { n });
-  }
-
   function vatTag() {
-    return `<span class="vat-tag">${escapeHtml(state.lang === "tr" ? "KDV dahil" : "KDV dahil")}</span>`;
+    return `<span class="vat-tag">${escapeHtml((C.units && C.units.vat) || "KDV dahil")}</span>`;
   }
 
-  function shortStore(name) {
-    const s = String(name || "");
-    if (/rhino/i.test(s)) return "Rhino";
-    if (/metatech/i.test(s)) return "Metatech";
-    return s;
+  // Offers carry the shop's host ("valment.com.tr"); the admin's shop list has its display name,
+  // which /api/hunt sends along. Unknown shops fall back to the host itself.
+  function storeLabel(store) {
+    const raw = String(store || "").trim();
+    if (!raw) return "";
+    const host = raw.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "");
+    const named = state.stores[host] || state.stores[raw.toLowerCase()];
+    if (named) return named;
+    if (/rhino/i.test(raw)) return "Rhino";
+    if (/metatech/i.test(raw)) return "Metatech";
+    return raw.replace(/^www\./i, "");
+  }
+
+  // Only real web links become clickable: a scraped `javascript:` URL must never reach an href.
+  function webUrl(url) {
+    const s = String(url || "").trim();
+    return /^https?:\/\//i.test(s) ? s : "";
   }
 
   function offPct(price, was) {
@@ -170,11 +232,6 @@
     return a ? a.name : id;
   }
 
-  function locationName(id) {
-    const loc = (C.locations || []).find((x) => x.id === id);
-    return loc ? loc.name : id;
-  }
-
   function uid() {
     return "t" + Math.random().toString(36).slice(2, 8);
   }
@@ -183,9 +240,8 @@
     tabs: [{ id: "home", n: 1, query: "", scroll: 0 }],
     activeTab: "home",
     query: "",
-    locationId: C.locations[0] ? C.locations[0].id : "near",
     banner: 0,
-    activeAisle: C.aisles[0] ? C.aisles[0].id : null,
+    activeAisle: null,
     saved: [],
     open: null,
     sheetProduct: null,
@@ -200,27 +256,38 @@
     filPath: { polymer: null, variant: null, brand: null },
     // Filament spool sizes (grams) the shopper ticked; null = the default, every size of 1 kg and up.
     filWeights: null,
+    // From /api/hunt: the admin's banners and pins, and shop display names.
+    banners: null,
+    pins: [],
+    stores: {},
     lang: "en"
   };
 
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_CART) || "[]");
+    const saved = JSON.parse(readStore(STORAGE_CART) || "[]");
     if (Array.isArray(saved)) state.saved = saved;
   } catch (e) {
     /* ignore */
   }
-  const storedLoc = localStorage.getItem(STORAGE_LOC);
-  if (storedLoc && (C.locations || []).some((l) => l.id === storedLoc)) {
-    state.locationId = storedLoc;
+  try {
+    // Last visit's admin banners, so a returning visitor does not see the defaults flash first.
+    const merch = JSON.parse(readStore(STORAGE_MERCH) || "null");
+    if (merch && Array.isArray(merch.banners) && merch.banners.length) state.banners = merch.banners;
+  } catch (e) {
+    /* ignore */
   }
-  const storedLang = localStorage.getItem(STORAGE_LANG);
-  if (storedLang && (BASE.languages || []).some((l) => l.id === storedLang)) {
+  const storedLang = readStore(STORAGE_LANG);
+  const hasLang = (id) => (BASE.languages || []).some((l) => l.id === id);
+  if (storedLang && hasLang(storedLang)) {
     state.lang = storedLang;
+  } else if (typeof navigator !== "undefined" && hasLang("tr")) {
+    // First visit: a Turkish browser gets the Turkish page. The switch in the header remembers a choice.
+    const prefs = navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language];
+    if (prefs.some((l) => /^tr\b/i.test(String(l || "")))) state.lang = "tr";
   }
 
   function persist() {
-    localStorage.setItem(STORAGE_CART, JSON.stringify(state.saved));
-    localStorage.setItem(STORAGE_LOC, state.locationId);
+    writeStore(STORAGE_CART, JSON.stringify(state.saved));
   }
 
   function activeTab() {
@@ -289,7 +356,7 @@
   }
 
   function catalog() {
-    return state.liveProducts || C.products || [];
+    return state.liveProducts || [];
   }
 
   let indexedCatalog = null;
@@ -550,9 +617,7 @@
     const rows = suggestRows();
     const total = matchingProducts().length + matchingFilaments().length;
     if (!rows.length) {
-      box.innerHTML = `<div class="suggest-empty">${escapeHtml(
-        state.lang === "tr" ? "Sonuç yok" : "No matches"
-      )}</div>`;
+      box.innerHTML = `<div class="suggest-empty">${escapeHtml(C.live.noMatches || "No matches")}</div>`;
       box.hidden = false;
       $("#header-query").setAttribute("aria-expanded", "true");
       return;
@@ -564,10 +629,10 @@
           const img = productImages(p)[0];
           return `<button class="suggest-row${i === state.suggestIndex ? " is-active" : ""}" type="button" role="option"
             aria-selected="${i === state.suggestIndex ? "true" : "false"}" id="suggest-${i}" data-open-sheet="${escapeHtml(p.id)}" data-suggest-index="${i}">
-            <span class="suggest-thumb">${img ? `<img src="${escapeHtml(img.url)}" alt="" loading="lazy" onerror="window.__imgFail&&window.__imgFail(this)">` : ""}</span>
+            <span class="suggest-thumb">${img ? `<img src="${escapeHtml(img.url)}" alt="" loading="lazy" referrerpolicy="no-referrer" ${imgAttrs(p)}>` : ""}</span>
             <span class="suggest-text"><strong>${escapeHtml(displayName(p) + (isFilamentRow(p) && p.color ? " · " + p.color : ""))}</strong>
               <em>${escapeHtml(bestPriceLabel(p))}</em></span>
-            ${related ? `<span class="suggest-related">${escapeHtml(state.lang === "tr" ? "ilgili" : "related")}</span>` : ""}
+            ${related ? `<span class="suggest-related">${escapeHtml(C.live.related || "related")}</span>` : ""}
           </button>`;
         })
         .join("") +
@@ -639,11 +704,7 @@
   }
 
   function findProduct(id) {
-    return (
-      catalog().find((p) => p.id === id) ||
-      (state.liveFilaments || []).find((p) => p.id === id) ||
-      (C.products || []).find((p) => p.id === id)
-    );
+    return catalog().find((p) => p.id === id) || (state.liveFilaments || []).find((p) => p.id === id);
   }
 
   function matchingProducts() {
@@ -965,8 +1026,11 @@
     } else {
       state.liveStatus = "refreshing";
     }
+    // A hung request must not leave the page on "Collecting…" forever.
+    const ctrl = typeof AbortController === "function" ? new AbortController() : null;
+    const timer = ctrl ? setTimeout(() => ctrl.abort(), 25000) : null;
     try {
-      const res = await fetch("/api/hunt", { cache: "no-store" });
+      const res = await fetch("/api/hunt", { cache: "no-store", signal: ctrl ? ctrl.signal : undefined });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "hunt failed");
       state.liveProducts = data.products || [];
@@ -975,14 +1039,31 @@
       state.liveStatus = "ready";
       state.activeAisle = null;
       state.filPath = { polymer: null, variant: null, brand: null };
+      applyMerch(data);
       selectSearchWorld();
       stockPreviewKey = "";
       scheduleStockPreview();
     } catch (err) {
       state.liveStatus = background ? "ready" : "error";
+    } finally {
+      if (timer) clearTimeout(timer);
     }
     renderAisles();
-    renderLocationLine();
+    renderStockLine();
+  }
+
+  // The storefront settings saved in the admin travel with the catalog.
+  function applyMerch(data) {
+    state.stores = (data && data.stores && typeof data.stores === "object") ? data.stores : {};
+    state.pins = (data && data.merch && Array.isArray(data.merch.pins)) ? data.merch.pins : [];
+    const banners = (data && data.merch && Array.isArray(data.merch.banners)) ? data.merch.banners : [];
+    const next = banners.length ? banners : null;
+    if (JSON.stringify(next) !== JSON.stringify(state.banners)) {
+      state.banners = next;
+      state.banner = 0;
+      renderBanner();
+    }
+    writeStore(STORAGE_MERCH, JSON.stringify({ banners: banners }));
   }
 
   function nextHuntN() {
@@ -1036,66 +1117,129 @@
     });
   }
 
+  // Banners saved in the admin (Storefront tab) win; the defaults in site-content.js fill in
+  // while there are none.
+  function activeBanners() {
+    return state.banners && state.banners.length ? state.banners : C.banners || [];
+  }
+
+  function bannerImage(src) {
+    const s = String(src || "").trim();
+    return /^https:\/\//i.test(s) || /^\/?assets\/[\w./-]+$/i.test(s) ? s : "";
+  }
+
+  function bannerHref(href) {
+    const s = String(href || "").trim();
+    return webUrl(s) || (/^\/(?!\/)/.test(s) ? s : "");
+  }
+
   function renderBanner() {
     const slides = $("#banner-slides");
     const dots = $("#banner-dots");
-    const hunterDots = $("#hunter-dots");
-    slides.innerHTML = (C.banners || [])
+    const list = activeBanners();
+    if (state.banner >= list.length) state.banner = 0;
+    const section = $("#banner");
+    if (section) section.hidden = !list.length;
+    slides.innerHTML = list
       .map((b, i) => {
-        const on = i === state.banner ? " is-active" : "";
-        return `<article class="banner-slide${on}">
-          <img src="${b.image}" alt="">
-          <div class="banner-copy">
-            <span class="banner-kicker">${escapeHtml(b.kicker)}</span>
-            <h2>${escapeHtml(b.title)}</h2>
-            <p>${escapeHtml(b.subtitle)}</p>
-          </div>
-        </article>`;
+        const on = i === state.banner;
+        const img = bannerImage(b.image);
+        const href = bannerHref(b.href);
+        const external = /^https?:/i.test(href);
+        const inner = `${
+          img
+            ? `<img src="${escapeHtml(img)}" alt="" decoding="async"${i === 0 ? ' fetchpriority="high"' : ""}>`
+            : '<span class="banner-blank"></span>'
+        }<div class="banner-copy">
+            ${b.kicker ? `<span class="banner-kicker">${escapeHtml(b.kicker)}</span>` : ""}
+            ${b.title ? `<h2>${escapeHtml(b.title)}</h2>` : ""}
+            ${b.subtitle ? `<p>${escapeHtml(b.subtitle)}</p>` : ""}
+          </div>`;
+        return `<article class="banner-slide${on ? " is-active" : ""}" aria-hidden="${on ? "false" : "true"}">${
+          href
+            ? `<a class="banner-link" href="${escapeHtml(href)}"${external ? ' target="_blank" rel="noopener"' : ""} tabindex="${on ? "0" : "-1"}">${inner}</a>`
+            : inner
+        }</article>`;
       })
       .join("");
-
-    const dotsHtml = (C.banners || [])
-      .map((b, i) => {
-        const on = i === state.banner ? " is-active" : "";
-        return `<button class="dot${on}" type="button" data-banner="${i}" aria-label="${escapeHtml(
-          b.kicker
-        )}"></button>`;
-      })
-      .join("");
-    dots.innerHTML = dotsHtml;
-    hunterDots.innerHTML = dotsHtml;
-    hunterDots.setAttribute("aria-label", C.hunter.dotsAria);
+    dots.innerHTML =
+      list.length > 1
+        ? list
+            .map(
+              (b, i) =>
+                `<button class="dot${i === state.banner ? " is-active" : ""}" type="button" data-banner="${i}" aria-label="${escapeHtml(
+                  fill(C.bannerAria || "{n} / {total}", { n: i + 1, total: list.length })
+                )}"${i === state.banner ? ' aria-current="true"' : ""}></button>`
+            )
+            .join("")
+        : "";
+    scheduleBanner();
   }
 
-  function renderLocationLine() {
+  // Switches slides in place, so the fade in styles.css actually runs.
+  function showBanner(index) {
+    const slides = $$(".banner-slide", $("#banner-slides"));
+    if (!slides.length) return;
+    state.banner = ((index % slides.length) + slides.length) % slides.length;
+    slides.forEach((el, i) => {
+      const on = i === state.banner;
+      el.classList.toggle("is-active", on);
+      el.setAttribute("aria-hidden", on ? "false" : "true");
+      const link = el.querySelector(".banner-link");
+      if (link) link.tabIndex = on ? 0 : -1;
+    });
+    $$(".dot", $("#banner-dots")).forEach((el, i) => {
+      el.classList.toggle("is-active", i === state.banner);
+      if (i === state.banner) el.setAttribute("aria-current", "true");
+      else el.removeAttribute("aria-current");
+    });
+    scheduleBanner();
+  }
+
+  let bannerTimer = null;
+  let bannerPaused = false;
+
+  function scheduleBanner() {
+    clearTimeout(bannerTimer);
+    if (activeBanners().length < 2) return;
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    bannerTimer = setTimeout(() => {
+      if (bannerPaused || document.visibilityState === "hidden") scheduleBanner();
+      else showBanner(state.banner + 1);
+    }, 7000);
+  }
+
+  function renderStockLine() {
     const el = $("#hunter-loc");
     if (state.liveProducts || state.liveFilaments) {
-      const p = (state.liveProducts || []).length;
-      const f = (state.liveFilaments || []).length;
+      // Count what a visitor can buy: a product whose every shop sold out is not on the shelf.
+      const p = (state.liveProducts || []).filter(isSellable).length;
+      const f = (state.liveFilaments || []).filter(isSellable).length;
       el.textContent =
         f > 0
           ? fill(C.live.resultsBoth, { p: p, f: f })
           : fill(C.live.results, { n: p });
     } else {
-      el.textContent = C.live && C.live.hint
-        ? C.live.hint
-        : fill(C.hunter.locationHint, { location: locationName(state.locationId) });
+      el.textContent = (C.live && C.live.hint) || "";
     }
   }
 
+  // Ad slots stay out of the page until ads.enabled is switched on in site-content.js.
   function renderAds() {
-    const slot = (tall) =>
-      `<div class="ad-slot"${tall ? ' style="min-height:37.5rem"' : ""}><span>${escapeHtml(
-        C.ads.label
-      )}</span><small>${escapeHtml(C.ads.hint)}</small></div>`;
+    const on = !!(C.ads && C.ads.enabled);
+    document.body.classList.toggle("has-ads", on);
     $$("[data-ad]").forEach((el) => {
-      const side = el.classList.contains("ad-rail");
-      el.innerHTML = slot(side);
+      el.hidden = !on;
+      el.innerHTML = on
+        ? `<div class="ad-slot"><span>${escapeHtml(C.ads.label)}</span><small>${escapeHtml(C.ads.hint)}</small></div>`
+        : "";
     });
   }
 
   function worldSwitchHtml(printers, filaments) {
     if (!state.liveProducts && !state.liveFilaments) return "";
+    // A catalog with only one kind of product has one shelf: no switch to one that is always empty.
+    if (!(state.liveFilaments || []).length || !(state.liveProducts || []).length) return "";
     const filOn = state.world === "filament" ? " is-on" : "";
     const printOn = state.world !== "filament" ? " is-on" : "";
     return `<div class="world-switch" role="tablist">
@@ -1147,11 +1291,12 @@
   }
 
   // A vendor's thumbnail 404s constantly (CDNs, hotlink defence). The same product sits on
-  // the other compared sites, so walk their images instead of showing a hole.
+  // the other compared sites, so walk their images instead of showing a hole. The walk is
+  // started by one capturing "error" listener (see bind), not inline onerror attributes, so
+  // the page runs under a Content-Security-Policy without 'unsafe-inline' scripts.
   function imgAttrs(product) {
     const list = productImages(product).map((i) => i.url);
-    if (!list.length) return "";
-    return `data-imgs="${escapeHtml(JSON.stringify(list))}" data-i="0" onerror="window.__imgFail&&window.__imgFail(this)"`;
+    return `data-imgs="${escapeHtml(JSON.stringify(list))}" data-i="0"`;
   }
 
   function imgFail(el) {
@@ -1193,17 +1338,14 @@
   function productGallery(product) {
     const images = productImages(product);
     const first = images[0];
-    const label = state.lang === "tr"
-      ? { previous: "Önceki görsel", next: "Sonraki görsel", empty: "Görsel yok" }
-      : { previous: "Previous image", next: "Next image", empty: "No image available" };
-    if (!first) return `<span class="gallery-empty">${label.empty}</span>`;
-    const onerr = imgAttrs(product);
+    const L = C.live || {};
+    if (!first) return `<span class="gallery-empty">${escapeHtml(L.noImage || "No image available")}</span>`;
     return `<div class="product-gallery" data-gallery="${escapeHtml(product.id)}" data-image-index="0">
-      <img src="${escapeHtml(first.url)}" alt="${escapeHtml(displayName(product) + (first.store ? " — " + first.store : ""))}" loading="lazy" referrerpolicy="no-referrer" ${onerr}>
+      <img src="${escapeHtml(first.url)}" alt="${escapeHtml(displayName(product) + (first.store ? " — " + storeLabel(first.store) : ""))}" loading="lazy" referrerpolicy="no-referrer" ${imgAttrs(product)}>
       ${images.length > 1 ? `
-        <button type="button" class="gallery-arrow gallery-prev" data-image-step="-1" aria-label="${label.previous}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
-        <button type="button" class="gallery-arrow gallery-next" data-image-step="1" aria-label="${label.next}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
-        <span class="gallery-count" aria-live="polite">1 / ${images.length} · ${escapeHtml(shortStore(first.store))}</span>
+        <button type="button" class="gallery-arrow gallery-prev" data-image-step="-1" aria-label="${escapeHtml(L.previousImage || "Previous image")}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
+        <button type="button" class="gallery-arrow gallery-next" data-image-step="1" aria-label="${escapeHtml(L.nextImage || "Next image")}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m10 6 6 6-6 6"/></svg></button>
+        <span class="gallery-count" aria-live="polite">1 / ${images.length} · ${escapeHtml(storeLabel(first.store))}</span>
       ` : ""}
     </div>`;
   }
@@ -1213,15 +1355,16 @@
     const pct = offPct(best.price, best.was);
     const saved = state.saved.includes(p.id);
     const color = p.colorName || ((p.offers || []).find((o) => o && o.colorName) || {}).colorName || translateProduct(p.color || filLabel("variants", p.variant) || displayName(p));
-    const stores = Array.from(new Set((p.offers || []).map((o) => o.store)));
+    const stores = liveStores(p);
+    const link = webUrl(best.url || p.url);
     const crumbs = [
       filLabel("polymers", p.polymer),
       filLabel("variants", p.variant),
-      p.brand,
+      prettyName(p.brand),
       weightLabel(p.weight),
       p.packaging === "refill" ? (state.lang === "tr" ? "Makarasız" : "Refill")
         : p.packaging === "spool" ? (state.lang === "tr" ? "Makaralı" : "With spool") : "",
-      stores.join(" · ")
+      stores.map(storeLabel).join(" · ")
     ].filter(Boolean);
     return `<article class="fil-hit" data-open-sheet="${p.id}">
       <div class="fil-hit-photo">
@@ -1255,9 +1398,9 @@
               : ""
           }
           ${
-            best.url || p.url
-              ? `<a class="chip" href="${escapeHtml(best.url || p.url)}" target="_blank" rel="noopener">${escapeHtml(
-                  fill(C.live.openStore, { store: shortStore(best.store || p.source || "") })
+            link
+              ? `<a class="chip" href="${escapeHtml(link)}" target="_blank" rel="noopener">${escapeHtml(
+                  fill(C.live.openStore, { store: storeLabel(best.store || p.source || "") })
                 )}</a>`
               : ""
           }
@@ -1267,6 +1410,11 @@
         </div>
       </div>
     </article>`;
+  }
+
+  // Shops that can sell it right now: the ones the offer sheet lists.
+  function liveStores(product) {
+    return Array.from(new Set(liveOffers(product).map((o) => o.store)));
   }
 
   function filHitsHtml(cut) {
@@ -1426,7 +1574,7 @@
     const packaging = p.packaging === "refill" ? (state.lang === "tr" ? "Makarasız" : "Refill")
       : p.packaging === "spool" ? (state.lang === "tr" ? "Makaralı" : "With spool")
       : "";
-    return [p.brand, filLabel("polymers", p.polymer), filLabel("variants", p.variant), packaging, weightLabel(p.weight), p.diameter].filter(Boolean).join(" · ");
+    return [prettyName(p.brand), filLabel("polymers", p.polymer), filLabel("variants", p.variant), packaging, weightLabel(p.weight), p.diameter].filter(Boolean).join(" · ");
   }
 
   function filGroupPreview(items) {
@@ -1447,7 +1595,7 @@
     const arrows = dots.length > 1
       ? `<span class="fil-cycle fil-cycle--prev" data-fil-cycle="-1" role="button" tabindex="-1" aria-label="${tr ? "Önceki renk" : "Previous colour"}">‹</span><span class="fil-cycle fil-cycle--next" data-fil-cycle="1" role="button" tabindex="-1" aria-label="${tr ? "Sonraki renk" : "Next colour"}">›</span><span class="fil-cycle-name">${escapeHtml(first.label || "")}</span>`
       : "";
-    return `<span class="fil-group-photo" data-colour-imgs="${escapeHtml(JSON.stringify(dots.map((d) => d.img)))}" data-colour-names="${escapeHtml(JSON.stringify(dots.map((d) => d.label)))}" data-ci="${at}">${first.img ? `<img src="${escapeHtml(first.img)}" alt="" loading="lazy" onerror="window.__imgFail&&window.__imgFail(this)">` : `<span class="gallery-empty">${tr ? "Görsel yok" : "No image available"}</span>`}${arrows}</span>
+    return `<span class="fil-group-photo" data-colour-imgs="${escapeHtml(JSON.stringify(dots.map((d) => d.img)))}" data-colour-names="${escapeHtml(JSON.stringify(dots.map((d) => d.label)))}" data-ci="${at}">${first.img ? `<img src="${escapeHtml(first.img)}" alt="" loading="lazy" referrerpolicy="no-referrer" data-imgs="${escapeHtml(JSON.stringify([first.img]))}" data-i="0">` : `<span class="gallery-empty">${escapeHtml((C.live && C.live.noImage) || "No image available")}</span>`}${arrows}</span>
       <span class="fil-group-colors">
         <span class="fil-group-swatches">${shown.map(({ p }, i) => colourDotHtml(p, i === at ? "is-on" : "", ` data-fil-dot="${i}"`)).join("")}${dots.length > shown.length ? `<span>+${dots.length - shown.length}</span>` : ""}</span>
         <span>${escapeHtml(state.lang === "en" && dots.length === 1 ? "1 color" : fill(C.filament.colorCount, { n: dots.length }))}</span>
@@ -1492,11 +1640,11 @@
       <div class="fil-group-list">${groups.map(([id, items]) => {
         const label = filamentFamilyLabel(items[0]);
         const stats = priceStats(items);
-        const stores = Array.from(new Set(items.flatMap((p) => (p.offers || []).map((o) => o.store))));
+        const stores = Array.from(new Set(items.flatMap(liveStores)));
         return `<button type="button" class="fil-group-card" aria-label="${escapeHtml(label)}" data-fil-family="${escapeHtml(id)}">
           ${filGroupPreview(items)}
           <span class="fil-group-title">${escapeHtml(label)} <span aria-hidden="true">→</span></span>
-          <span class="fil-group-meta">${items.length} ${state.lang === "tr" ? "seçenek" : items.length === 1 ? "option" : "options"} · ${escapeHtml(stores.map(shortStore).join(" · "))}</span>
+          <span class="fil-group-meta">${items.length} ${state.lang === "tr" ? "seçenek" : items.length === 1 ? "option" : "options"} · ${escapeHtml(stores.map(storeLabel).join(" · "))}</span>
           <strong>${escapeHtml(fill(F.fromPrice, { price: money(stats.min, cur) }))}</strong>
         </button>`;
       }).join("")}</div>
@@ -1532,17 +1680,46 @@
     return `<div class="fil-layout">${filFiltersHtml(list, cur)}${results}</div>`;
   }
 
+  // Admin pins (Storefront tab). A pin leads the printer shelf when every word of its search
+  // query is in the visitor's search; a pin without a query leads the home shelf. Paid pins are
+  // labelled as sponsored, so an advert never passes for the cheapest offer.
+  function activePins() {
+    const typed = searchTokens(state.query);
+    return (state.pins || []).filter((pin) => {
+      if (!pin || pin.enabled === false || !pin.productId) return false;
+      const want = searchTokens(pin.query || "");
+      if (!want.length) return !typed.length;
+      return want.every((t) => typed.some((w) => w === t || w.startsWith(t)));
+    });
+  }
+
+  function pinnedFirst(list) {
+    const pins = activePins();
+    const pinOf = new Map();
+    if (!pins.length) return { list, pinOf };
+    const lead = [];
+    pins.forEach((pin) => {
+      const product = (state.liveProducts || []).find((p) => String(p.id) === String(pin.productId));
+      if (!product || pinOf.has(product.id) || !isSellable(product)) return;
+      if (state.activeAisle && product.aisle !== state.activeAisle) return;
+      pinOf.set(product.id, pin);
+      lead.push(product);
+    });
+    return { list: lead.concat(list.filter((p) => !pinOf.has(p.id))), pinOf };
+  }
+
   function renderPrinters(products) {
     const usedAisles = liveAisles().filter((a) => products.some((p) => p.aisle === a.id));
     if (state.activeAisle && !usedAisles.some((a) => a.id === state.activeAisle)) {
       state.activeAisle = null;
     }
-    const cut = state.activeAisle
-      ? products.filter((p) => p.aisle === state.activeAisle)
-      : products.slice();
+    const pinned = pinnedFirst(
+      state.activeAisle ? products.filter((p) => p.aisle === state.activeAisle) : products.slice()
+    );
+    const cut = pinned.list;
     const filters = usedAisles
       .map((aisle) => {
-        const n = products.filter((p) => p.aisle === aisle.id).length;
+        const n = products.filter((p) => p.aisle === aisle.id && isSellable(p)).length;
         const on = aisle.id === state.activeAisle ? " is-on" : "";
         return `<button class="fil-filter${on}" type="button" data-aisle="${escapeHtml(aisle.id)}">
           <span class="fil-filter-name">${escapeHtml(aisle.name)}</span>
@@ -1550,11 +1727,15 @@
         </button>`;
       })
       .join("");
-    const cards = cut.filter(isSellable).map(dealCard).join("");
+    const sellable = cut.filter(isSellable);
+    const cards = sellable.map((p) => dealCard(p, pinned.pinOf.get(p.id))).join("");
     const q = state.query.trim();
     const hint = q
       ? fill(C.filament.hitsHint, { q: q })
       : C.live.printerHint;
+    const empty = q
+      ? `<div class="shelf-empty"><h3>${escapeHtml(C.emptySearchTitle)}</h3><p>${escapeHtml(C.emptySearchBody)}</p></div>`
+      : `<p class="deal-meta">${escapeHtml(C.emptyAisle)}</p>`;
     return `<div class="fil-layout fil-layout--printers">
       <aside class="fil-filters">
         <h2 class="fil-filters-title">${escapeHtml(C.live.printersWorld)}</h2>
@@ -1566,11 +1747,9 @@
       <section class="fil-hits">
         <header class="fil-head">
           <h2>${escapeHtml(C.live.printerResults)}</h2>
-          <p>${escapeHtml(hint)} · ${escapeHtml(fill(C.live.results, { n: cut.length }))}</p>
+          <p>${escapeHtml(hint)} · ${escapeHtml(fill(C.live.results, { n: sellable.length }))}</p>
         </header>
-        <div class="fil-hit-list">${
-          cards || `<p class="deal-meta">${escapeHtml(C.emptyAisle)}</p>`
-        }</div>
+        <div class="fil-hit-list">${cards || empty}</div>
       </section>
     </div>`;
   }
@@ -1585,73 +1764,36 @@
       root.innerHTML = `<div class="empty"><h2>${escapeHtml(C.live.error)}</h2></div>`;
       return;
     }
+    // Before the first catalog arrives there is nothing to shelve yet.
+    if (!state.liveProducts && !state.liveFilaments) {
+      root.innerHTML = `<div class="empty"><h2>${escapeHtml(C.live.loading)}</h2></div>`;
+      return;
+    }
     const products = matchingProducts();
     const filaments = matchingFilaments();
-    const live = !!(state.liveProducts || state.liveFilaments);
     const cut = filCut(filaments);
-    const printerCut = state.activeAisle
+    const printerCut = (state.activeAisle
       ? products.filter((p) => p.aisle === state.activeAisle)
-      : products;
-    const count = live
-      ? state.world === "filament"
-        ? fill(C.filament.spoolCount, { n: cut.length })
-        : fill(C.live.results, { n: printerCut.length })
-      : fill(C.resultsCount, { n: products.length });
+      : products
+    ).filter(isSellable);
+    const count = state.world === "filament"
+      ? fill(C.filament.spoolCount, { n: cut.length })
+      : fill(C.live.results, { n: printerCut.length });
 
-    if (live && state.world === "filament") {
+    // The toolbar is the printers/filament switch; with one kind of product there is nothing to
+    // switch, and the shelf header already carries the count.
+    const worlds = worldSwitchHtml(products, filaments);
+    const toolbar = worlds
+      ? `<div class="aisle-toolbar">${worlds}<span class="results-count">${escapeHtml(count)}</span></div>`
+      : "";
+
+    if (state.world === "filament") {
       const cur = (filaments[0] && filaments[0].currency) || { code: "TRY", symbol: "TL", position: "after", decimals: 2 };
-      root.innerHTML = `<div class="aisle-toolbar">${worldSwitchHtml(
-        products,
-        filaments
-      )}<span class="results-count">${escapeHtml(count)}</span></div>
-      <div class="fil-bay">${renderFilament(filaments, cur)}</div>`;
+      root.innerHTML = `${toolbar}<div class="fil-bay">${renderFilament(filaments, cur)}</div>`;
       return;
     }
 
-    if (live && state.world === "printers") {
-      root.innerHTML = `<div class="aisle-toolbar">${worldSwitchHtml(
-        products,
-        filaments
-      )}<span class="results-count">${escapeHtml(count)}</span></div>
-      <div class="fil-bay">${renderPrinters(products)}</div>`;
-      return;
-    }
-
-    if (!products.length) {
-      const extra = live ? worldSwitchHtml(products, filaments) : "";
-      root.innerHTML = `${extra ? `<div class="aisle-toolbar">${extra}</div>` : ""}<div class="empty"><h2>${escapeHtml(
-        C.emptySearchTitle
-      )}</h2><p>${escapeHtml(C.emptySearchBody)}</p></div>`;
-      return;
-    }
-
-    const usedAisles = state.liveProducts
-      ? liveAisles().filter((a) => products.some((p) => p.aisle === a.id))
-      : (C.aisles || []).filter((a) => products.some((p) => p.aisle === a.id));
-
-    const cols = usedAisles
-      .map((aisle) => {
-        const items = products.filter((p) => p.aisle === aisle.id && isSellable(p));
-        const on = aisle.id === state.activeAisle ? " is-active" : "";
-        const cards = items.map(dealCard).join("");
-        return `<div class="aisle-col${on}" data-aisle="${aisle.id}">
-          <div class="aisle-head">
-            <h3 class="aisle-name">${escapeHtml(aisle.name)}</h3>
-            <svg class="aisle-arrow" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M11 4h2v10.2l3.6-3.6L18 12l-6 6-6-6 1.4-1.4 3.6 3.6V4Z"/></svg>
-          </div>
-          <div class="aisle-shelves">${cards || `<p class="deal-meta">${escapeHtml(
-            C.emptyAisle
-          )}</p>`}</div>
-        </div>`;
-      })
-      .join("");
-
-    root.innerHTML = `<div class="aisle-toolbar">${worldSwitchHtml(
-      products,
-      filaments
-    )}<span class="results-count">${escapeHtml(
-      count
-    )}</span></div><div class="aisle-stage"><div class="aisle-floor">${cols}</div></div>`;
+    root.innerHTML = `${toolbar}<div class="fil-bay">${renderPrinters(products)}</div>`;
   }
 
   function revealHits() {
@@ -1671,17 +1813,26 @@
     return offerStatus(p) !== "out_of_stock";
   }
 
-  function dealCard(product) {
+  function dealCard(product, pin) {
     const best = bestOffer(product);
     const pct = offPct(best.price, best.was);
     const saved = state.saved.includes(product.id);
     const cur = product.currency;
-    const stores = Array.from(new Set((product.offers || []).map((o) => o.store)));
-    const metaBits = [product.unit || product.brand, stores.join(" · ")];
-    if (best.km != null) metaBits.push(km(best.km));
-    return `<article class="deal" data-open-sheet="${product.id}">
+    const stores = liveStores(product);
+    const link = webUrl(best.url || product.url);
+    const metaBits = [
+      displayBrand(product),
+      stores.length === 1 ? storeLabel(stores[0]) : stores.length > 1 ? fill(C.live.storesCount, { n: stores.length }) : ""
+    ];
+    const badge = pin
+      ? `<span class="pin-badge${pin.slot === "paid" ? " is-paid" : ""}">${escapeHtml(
+          pin.slot === "paid" ? C.live.sponsored || "Sponsored" : C.live.featured || "Featured"
+        )}</span>`
+      : "";
+    return `<article class="deal${pin ? " is-pinned" : ""}" data-open-sheet="${escapeHtml(product.id)}">
       <div class="deal-photo">${productGallery(product)}</div>
       <div class="deal-body">
+        ${badge}
         <div class="deal-name">${escapeHtml(displayName(product))}</div>
         <div class="deal-meta">${escapeHtml(metaBits.filter(Boolean).join(" · "))}</div>
         <div class="price-row">
@@ -1705,23 +1856,23 @@
         <div class="deal-actions">
           ${
             stores.length > 1 || product.bundleOptions
-              ? `<button class="chip" type="button" data-open-sheet="${product.id}">${escapeHtml(
-                  product.bundleOptions ? (state.lang === "tr" ? "Paket seçenekleri" : "Bundle options") : fill(C.live.storesCount, { n: stores.length })
+              ? `<button class="chip" type="button" data-open-sheet="${escapeHtml(product.id)}">${escapeHtml(
+                  product.bundleOptions ? C.live.bundleOptions || "Bundle options" : fill(C.live.storesCount, { n: stores.length })
                 )}</button>`
               : ""
           }
           ${
-            best.url || product.url
-              ? `<a class="chip" href="${escapeHtml(best.url || product.url)}" target="_blank" rel="noopener">${escapeHtml(
-                  fill(C.live.openStore, { store: shortStore(best.store || product.source || "") })
+            link
+              ? `<a class="chip" href="${escapeHtml(link)}" target="_blank" rel="noopener">${escapeHtml(
+                  fill(C.live.openStore, { store: storeLabel(best.store || product.source || "") })
                 )}</a>`
-              : `<button class="chip" type="button" data-open-sheet="${product.id}">${escapeHtml(
-                  fill(C.offerCount, { n: product.offers.length })
+              : `<button class="chip" type="button" data-open-sheet="${escapeHtml(product.id)}">${escapeHtml(
+                  fill(C.offerCount, { n: (product.offers || []).length })
                 )}</button>`
           }
-          <button class="chip${saved ? " is-on" : ""}" type="button" data-save="${
+          <button class="chip${saved ? " is-on" : ""}" type="button" data-save="${escapeHtml(
       product.id
-    }">${escapeHtml(saved ? C.savedDeal : C.saveDeal)}</button>
+    )}">${escapeHtml(saved ? C.savedDeal : C.saveDeal)}</button>
         </div>
       </div>
     </article>`;
@@ -1743,13 +1894,18 @@
     body.innerHTML = items
       .map((p) => {
         const best = bestOffer(p);
+        const img = productImages(p)[0];
         return `<div class="saved-row">
-          ${productImages(p)[0] ? `<img src="${escapeHtml(productImages(p)[0].url)}" alt="" width="54" height="54" style="width:3.4rem;height:3.4rem;object-fit:cover;border-radius:8px" ${imgAttrs(p)}>` : ""}
+          ${img ? `<img class="saved-thumb" src="${escapeHtml(img.url)}" alt="" width="54" height="54" loading="lazy" referrerpolicy="no-referrer" ${imgAttrs(p)}>` : ""}
           <div>
             <strong>${escapeHtml(displayName(p))}</strong>
-            <div class="deal-meta">${escapeHtml(best.store)} · ${money(best.price, p.currency)}</div>
+            <div class="deal-meta">${
+              best.store
+                ? `${escapeHtml(storeLabel(best.store))} · ${money(best.price, p.currency)}`
+                : escapeHtml(C.live.stockUnknown || "")
+            }</div>
           </div>
-          <button class="ghost" type="button" data-save="${p.id}">${escapeHtml(
+          <button class="ghost" type="button" data-save="${escapeHtml(p.id)}">${escapeHtml(
           C.cart.remove
         )}</button>
         </div>`;
@@ -1759,23 +1915,16 @@
 
   function renderProfile() {
     $("#profile-body").innerHTML = `<div class="profile-card">
-        <strong>${escapeHtml(
-          fill(C.profile.greeting, { location: locationName(state.locationId) })
-        )}</strong>
-        <span>${escapeHtml(fill(C.profile.savedCount, { n: state.saved.length }))}</span>
+        <strong>${escapeHtml(fill(C.profile.savedCount, { n: state.saved.length }))}</strong>
       </div>
       <p class="profile-hint">${escapeHtml(C.profile.hint)}</p>`;
   }
 
-  function renderLocations() {
-    $("#loc-list").innerHTML = (C.locations || [])
-      .map((loc) => {
-        const on = loc.id === state.locationId ? " is-active" : "";
-        return `<li><button class="loc-item${on}" type="button" data-loc="${loc.id}">${escapeHtml(
-          loc.name
-        )}</button></li>`;
-      })
-      .join("");
+  function stockNote(offer) {
+    if (isPreorderOffer(offer)) return { text: C.live.preorder, cls: "is-pre" };
+    return offerStatus(offer) === "in_stock"
+      ? { text: C.live.inStock || "In stock", cls: "is-in" }
+      : { text: C.live.stockUnknown || "Stock not confirmed", cls: "is-unknown" };
   }
 
   function renderSheet() {
@@ -1790,27 +1939,32 @@
     const checking = state.sheetPriceLoading;
     const settled = body.classList.contains("is-price-checking") && !checking;
     const best = bestOffer(p);
-    // Only live vendors are compared; the ones that ran out are left out, not shown dead.
-    const compared = liveOffers(p).slice().sort((a, b) => a.price - b.price);
+    // Only live vendors are compared; the ones that ran out are left out, not shown dead. The
+    // headline offer leads — the same one the card shows — and the rest follow by price, each
+    // saying why it is not the headline (unconfirmed stock, pre-order).
+    const others = liveOffers(p)
+      .filter((o) => o !== best)
+      .sort((a, b) => a.price - b.price);
+    const compared = best && best.store ? [best].concat(others) : others;
     const rows = compared
       .map((o, i) => {
-        const tag = i === 0 ? `<span class="off-pill">${escapeHtml(C.bestOffer)}</span>` : "";
-        const preorder = isPreorderOffer(o);
-        const pre = preorder
-          ? `<span class="offer-preorder">${escapeHtml(C.live.preorder)}</span>`
-          : "";
+        const tag = i === 0 && best && best.store ? `<span class="off-pill">${escapeHtml(C.bestOffer)}</span>` : "";
+        const label = storeLabel(o.store);
+        const host = String(o.store || "").replace(/^www\./i, "");
+        const note = stockNote(o);
+        const link = webUrl(o.url);
+        const checkAria = fill(C.live.checkPriceAt || "Check price at {store}", { store: label }) + (o.bundleName ? " — " + o.bundleName : "");
         return `<div class="offer-row">
-          <div>
-            <strong>${escapeHtml(o.store)}</strong>${pre}
+          <div class="offer-main">
+            <strong>${escapeHtml(label)}</strong>
+            ${host && host.toLowerCase() !== label.toLowerCase() ? `<div class="offer-host">${escapeHtml(host)}</div>` : ""}
             ${o.bundleName ? `<div class="deal-meta">${escapeHtml(o.bundleName)}</div>` : ""}
-            <div class="deal-meta">${escapeHtml(
-              [o.km != null ? km(o.km) : C.live.online, o.was ? fill(C.wasPrice, { price: money(o.was, p.currency) }) : ""]
-                .filter(Boolean)
-                .join(" · ")
-            )}</div>
-            ${/^https?:\/\//i.test(o.url || "") ? `<a class="offer-check" href="${escapeHtml(o.url)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml((state.lang === "tr" ? "Fiyatı kontrol et: " : "Check price at ") + o.store + (o.bundleName ? " — " + o.bundleName : ""))}">${state.lang === "tr" ? "Fiyatı kontrol et" : "Check price"} <span aria-hidden="true">↗</span></a>` : ""}
+            <div class="deal-meta"><span class="stock-note ${note.cls}">${escapeHtml(note.text)}</span>${
+              o.was ? " · " + escapeHtml(fill(C.wasPrice, { price: money(o.was, p.currency) })) : ""
+            }</div>
+            ${link ? `<a class="offer-check" href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(checkAria)}">${escapeHtml(C.live.checkPrice || "Check price")} <span aria-hidden="true">↗</span></a>` : ""}
           </div>
-          <div style="text-align:end">
+          <div class="offer-price">
             <div class="price-now${o.was ? " is-sale" : ""}">${money(o.price, p.currency)}</div>
             ${vatTag()}
             ${tag}
@@ -1818,52 +1972,62 @@
         </div>`;
       })
       .join("");
+    const meta = [displayBrand(p), aisleName(p.aisle)].filter(Boolean).join(" · ");
     body.innerHTML = `${checking ? `<div class="price-check-status" role="status" aria-live="polite"><span class="price-check-orbit" aria-hidden="true"></span>${escapeHtml(C.live.checkingPrices)}</div>` : ""}<div class="sheet-hero">
         ${productGallery(p)}
         <div>
-          <div class="deal-meta">${escapeHtml(p.unit)} · ${escapeHtml(aisleName(p.aisle))}</div>
-          <p style="margin-top:.5rem">${escapeHtml(
-            fill(C.sheet.bestAt, { store: best.store })
-          )}</p>
+          ${meta ? `<div class="deal-meta">${escapeHtml(meta)}</div>` : ""}
+          ${best && best.store ? `<p class="sheet-best">${escapeHtml(fill(C.sheet.bestAt, { store: storeLabel(best.store) }))}</p>` : ""}
         </div>
       </div>${rows}`;
     body.classList.toggle("is-price-checking", checking);
     body.classList.toggle("prices-settled", settled);
   }
 
+  const DRAWERS = ["cart", "profile", "sheet"];
+  let focusBeforeDrawer = null;
+
   function openDrawer(name) {
+    if (!state.open) focusBeforeDrawer = document.activeElement;
     state.open = name;
-    ["location", "cart", "profile", "sheet"].forEach((id) => {
+    DRAWERS.forEach((id) => {
       const el = $("#drawer-" + id);
       el.hidden = id !== name;
     });
     if (name === "cart") renderCart();
     if (name === "profile") renderProfile();
-    if (name === "location") renderLocations();
     if (name === "sheet") {
       state.sheetPriceLoading = true;
       renderSheet();
       scheduleStockPreview(findProduct(state.sheetProduct));
     }
+    // Keyboard and screen-reader users land inside the dialog, on its close button.
+    const close = $("#drawer-" + name + " .drawer-head [data-close]");
+    if (close && close.focus) close.focus();
   }
 
   function closeDrawers() {
+    const wasOpen = !!state.open;
     state.open = null;
     state.sheetProduct = null;
-    ["location", "cart", "profile", "sheet"].forEach((id) => {
+    DRAWERS.forEach((id) => {
       $("#drawer-" + id).hidden = true;
     });
+    if (wasOpen && focusBeforeDrawer && focusBeforeDrawer.focus && document.contains(focusBeforeDrawer)) {
+      focusBeforeDrawer.focus();
+    }
+    focusBeforeDrawer = null;
   }
 
-  window.__imgFail = imgFail;
-  window.__3dp = { state, bestOffer, liveOffers, isPreorderOffer, isSellable, productImages, imgFail, matchingProducts, matchingFilaments, searchRelevance, searchHaystack, foldText, setQuery, catalogIsStale, huntRhino };
+  window.__3dp = { state, bestOffer, liveOffers, isPreorderOffer, isSellable, productImages, imgFail, matchingProducts, matchingFilaments, searchRelevance, searchHaystack, foldText, setQuery, catalogIsStale, huntRhino, prettyName, storeLabel, webUrl, applyMerch, activePins, pinnedFirst, bannerImage, bannerHref };
 
   function escapeHtml(str) {
-    return String(str)
+    return String(str == null ? "" : str)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
   }
 
   function toggleSave(id) {
@@ -1884,7 +2048,7 @@
     root.innerHTML = (BASE.languages || [])
       .map(
         (l) =>
-          `<button class="lang-btn${l.id === state.lang ? " is-on" : ""}" type="button" data-lang="${l.id}">${escapeHtml(
+          `<button class="lang-btn${l.id === state.lang ? " is-on" : ""}" type="button" data-lang="${escapeHtml(l.id)}" lang="${escapeHtml(l.id)}" aria-pressed="${l.id === state.lang ? "true" : "false"}">${escapeHtml(
             l.label
           )}</button>`
       )
@@ -1901,20 +2065,22 @@
         : deepMerge(BASE, BASE.locale[chosen.id]);
     C.lang = chosen.id;
     C.dir = chosen.dir || C.dir || "ltr";
-    if (!skipStore) localStorage.setItem(STORAGE_LANG, state.lang);
+    if (!skipStore) writeStore(STORAGE_LANG, state.lang);
     document.documentElement.lang = C.lang;
     document.documentElement.dir = C.dir;
     document.title = C.documentTitle || C.brand.name;
     const desc = document.querySelector('meta[name="description"]');
-    if (desc) desc.setAttribute("content", C.brand.tagline || "");
+    if (desc) desc.setAttribute("content", C.metaDescription || C.brand.tagline || "");
     applyI18n(document);
+    const copy = $("#foot-copy");
+    if (copy && C.footer) copy.textContent = fill(C.footer.copyright || "", { year: new Date().getFullYear() });
     $("#header-query").placeholder = C.header.searchPlaceholder;
     $("#hunter-query").placeholder = C.hunter.placeholder;
     $("#new-tab").setAttribute("title", C.header.newTab);
     renderLangSwitch();
     renderTabs();
     renderBanner();
-    renderLocationLine();
+    renderStockLine();
     renderAds();
     renderAisles();
     renderCartBadge();
@@ -1985,28 +2151,49 @@
       restoreTabScroll();
     });
 
+    // Home resets the hunt (tabs, search, filters), not the catalog: the prices already loaded
+    // stay, and are refreshed in the background once they are stale.
     function goHome() {
       state.tabs = [{ id: "home", n: 1, query: "", scroll: 0 }];
       state.activeTab = "home";
-      state.liveProducts = null;
-      state.liveFilaments = null;
-      state.liveStatus = "idle";
       state.world = "printers";
       state.filPath = { polymer: null, variant: null, brand: null };
-      state.banner = 0;
-      state.activeAisle = C.aisles[0] ? C.aisles[0].id : null;
+      state.activeAisle = null;
       setQuery("");
-      renderBanner();
-      renderLocationLine();
+      showBanner(0);
+      renderStockLine();
       closeDrawers();
       window.scrollTo({ top: 0, behavior: "smooth" });
+      if (state.liveStatus === "error") huntRhino("");
+      else if (catalogIsStale()) huntRhino("", "", true);
     }
 
     $$(".js-go-home").forEach((el) => el.addEventListener("click", goHome));
 
     $("#nav-cart").addEventListener("click", () => openDrawer("cart"));
     $("#nav-profile").addEventListener("click", () => openDrawer("profile"));
-    $("#header-location").addEventListener("click", () => openDrawer("location"));
+
+    // Product photos come from the shops' own CDNs and fail often. "error" does not bubble, so
+    // listen in the capture phase and walk to the next shop's photo (see imgAttrs / imgFail).
+    document.addEventListener(
+      "error",
+      (e) => {
+        const el = e.target;
+        if (el && el.tagName === "IMG" && el.hasAttribute("data-imgs")) imgFail(el);
+      },
+      true
+    );
+
+    const banner = $("#banner");
+    if (banner) {
+      const pause = (on) => () => {
+        bannerPaused = on;
+      };
+      banner.addEventListener("mouseenter", pause(true));
+      banner.addEventListener("mouseleave", pause(false));
+      banner.addEventListener("focusin", pause(true));
+      banner.addEventListener("focusout", pause(false));
+    }
 
     document.addEventListener("click", (e) => {
       if ($("#header-suggest") && !e.target.closest("#header-search")) hideSuggest();
@@ -2046,8 +2233,7 @@
       }
       const banner = e.target.closest("[data-banner]");
       if (banner) {
-        state.banner = Number(banner.getAttribute("data-banner"));
-        renderBanner();
+        showBanner(Number(banner.getAttribute("data-banner")));
         return;
       }
       const imageArrow = e.target.closest("[data-image-step]");
@@ -2060,9 +2246,13 @@
         const index = (Number(gallery.dataset.imageIndex || 0) + Number(imageArrow.dataset.imageStep) + images.length) % images.length;
         gallery.dataset.imageIndex = String(index);
         const img = gallery.querySelector("img");
+        if (!img) return;
+        // Keep the fallback walk in step with the arrows: a failed photo moves on from here.
+        img.dataset.i = String(index);
+        delete img.dataset.twin;
         img.src = images[index].url;
-        img.alt = displayName(product) + " — " + images[index].store;
-        gallery.querySelector(".gallery-count").textContent = `${index + 1} / ${images.length} · ${shortStore(images[index].store)}`;
+        img.alt = displayName(product) + " — " + storeLabel(images[index].store);
+        gallery.querySelector(".gallery-count").textContent = `${index + 1} / ${images.length} · ${storeLabel(images[index].store)}`;
         return;
       }
       const save = e.target.closest("[data-save]");
@@ -2174,15 +2364,6 @@
         state.filPath.brand = state.filPath.brand === id ? null : id;
         renderAisles();
         revealHits();
-        return;
-      }
-      const loc = e.target.closest("[data-loc]");
-      if (loc) {
-        state.locationId = loc.getAttribute("data-loc");
-        persist();
-        renderLocationLine();
-        renderLocations();
-        closeDrawers();
         return;
       }
       const aisle = e.target.closest("[data-aisle]");
