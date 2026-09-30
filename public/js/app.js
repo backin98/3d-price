@@ -1930,7 +1930,14 @@
   function bind() {
     $("#header-search").addEventListener("submit", (e) => {
       e.preventDefault();
+      // Enter means "show me the results": close the suggestions (and the refresh the last keystroke
+      // queued, which reopened them), run the search, then bring the results into view.
+      clearTimeout(suggestTimer);
+      hideSuggest();
       setQuery($("#header-query").value, "header");
+      $("#header-query").blur();
+      const results = document.getElementById("aisles");
+      if (results) requestAnimationFrame(() => results.scrollIntoView({ block: "start", behavior: "smooth" }));
     });
     $("#hunter-form").addEventListener("submit", (e) => {
       e.preventDefault();

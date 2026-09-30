@@ -68,6 +68,16 @@ const req = (body) => ({ method: 'POST', url: 'https://3d-price.netlify.app/api/
   assert.equal(crTpu.status, 200, JSON.stringify(crBody));
   assert.notEqual(crBody.item.id, 'crea-tpu', 'a new sub-brand is a new baseline model, not the plain one with the same name');
   assert.equal(crBody.item.subBrand, 'CR');
+  // Diameter: saved on the card, and a 2.85 mm spool is its own baseline model next to the 1.75 mm one.
+  const dia = await sandbox.handler(req({ action: 'updateUncertainCard', jobId: 'job-1', url: 'https://shop.example/cr-tpu', patch: { diameter: '2,85' } }));
+  assert.equal(dia.status, 200);
+  assert.equal(files['jobs.json'][0].cards['https://shop.example/cr-tpu'].diameter, '2.85 mm', 'diameter saves as 1.75 mm / 2.85 mm');
+  files['jobs.json'][0].cards['https://shop.example/thick'] = { url: 'https://shop.example/thick', name: 'Creality TPU Filament', price: 540, kind: 'filament' };
+  const thick = await sandbox.handler(req({ action: 'addUncertainToBaseline', jobId: 'job-1', url: 'https://shop.example/thick', name: 'Creality TPU Filament', brand: 'Creality', subBrand: 'CR', polymer: 'tpu', variant: '', kind: 'filament', diameter: '2.85 mm' }));
+  const thickBody = await thick.json();
+  assert.equal(thick.status, 200, JSON.stringify(thickBody));
+  assert.equal(thickBody.item.diameter, '2.85 mm', 'the new model carries its diameter');
+  assert.notEqual(thickBody.item.id, crBody.item.id, 'same model at 2.85 mm is a separate baseline model, not the 1.75 mm one');
   // Spool link per model group, kept on the desk.
   const linked = await sandbox.handler(req({ action: 'setFilamentGroup', key: 'rhinolab||pla|silk', spoolLinked: false, spoolMaterial: 'plastic' }));
   assert.equal(linked.status, 200);

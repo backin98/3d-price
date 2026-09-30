@@ -213,4 +213,19 @@ assert.equal(autoTone({ set: ['a', 'b', 'c'], hexes: ['#d1efe3', '#68abb1', '#57
 assert.equal(autoTone(cardColour({}, {}, 'Sky Blue Purple Yellow')), 'blue+purple+yellow', 'no picks needed');
 assert.match(uncertainCard({ card: { url: 'dt', name: 'Bambu Lab PLA Matte Filament', colorName: 'Desert Tan', colorHex: '#c8bb8e', kind: 'filament', decision: { action: 'held' } }, jobId: 'j', decision: { action: 'held' } }), /value="Desert Tan"[\s\S]*Looks Beige \(for search\)/i, 'shows the maker name, searches by the plain one');
 
+// Diameter: 1.75 mm unless the listing (or you) say 2.85 mm; Goes to only matches a model of the same diameter.
+assert.equal(normalizeFilamentListing({ kind: 'filament', name: 'Acme PLA Filament' }).diameter, '1.75 mm', 'scraped spools default to 1.75 mm');
+assert.equal(normalizeFilamentListing({ kind: 'filament', name: 'Porima PLA 2.85 mm Black' }).diameter, '2.85 mm', 'a title that says 2.85 mm keeps it');
+const dCard = (extra) => ({ card: { url: 'dia', name: 'Acme PLA Filament', brand: 'Acme', polymer: 'pla', kind: 'filament', decision: { action: 'held' }, ...extra }, jobId: 'j', decision: { action: 'held' } });
+state.data = { baseline: { items: [
+  { id: 'a175', category: 'filaments', entityType: 'family', name: 'Acme PLA', brand: 'Acme', polymer: 'pla', diameter: '1.75 mm' },
+  { id: 'a285', category: 'filaments', entityType: 'family', name: 'Acme PLA 2.85', brand: 'Acme', polymer: 'pla', diameter: '2.85 mm' }] }, jobs: [], catalog: { products: [], filaments: [] }, desk: {}, filamentColours: require('../lib/filament-colours.cjs') };
+const d175 = uncertainCard(dCard({}));
+assert.match(d175, /data-uncertain-field="diameter"[\s\S]*?<option value="1.75 mm" selected>/, 'no diameter stored → 1.75 mm shown');
+assert.ok(d175.includes('<option value="2.85 mm" >2.85 mm</option>') || d175.includes('2.85 mm</option>'), '2.85 mm is in the menu');
+assert.ok(d175.includes('Auto: matched baseline Acme PLA<'), '1.75 mm card matches the 1.75 mm model');
+const d285 = uncertainCard(dCard({ diameter: '2.85 mm' }));
+assert.match(d285, /<option value="2.85 mm" selected>/, 'a 2.85 mm card shows 2.85 mm');
+assert.ok(d285.includes('Auto: matched baseline Acme PLA 2.85<'), 'and matches the 2.85 mm model, not the 1.75 mm one');
+
 console.log('PASS: code matches, brand repair, cross-run saves, colour from pixels, scraper brand from title.');

@@ -23,6 +23,8 @@
     pickedPin: null,
     reviewSelected: new Set(),
     reviewFlags: new Set(),
+    // Shop Runs search box text
+    reviewQuery: "",
     reviewPlace: new Map(),
     catalogSelected: new Set(),
     catalogShop: "",
@@ -460,7 +462,13 @@
     if (!el) return;
     if (painted.get(sel) === html) return;
     painted.set(sel, html);
+    const active = document.activeElement;
+    const keep = active && active.id === "review-search" && typeof el.contains === "function" && el.contains(active) ? { start: active.selectionStart, end: active.selectionEnd } : null;
     el.innerHTML = html;
+    if (sel === "#tab-runs") {
+      applyReviewSearch();
+      if (keep) { const box = document.getElementById("review-search"); if (box) { box.focus(); try { box.setSelectionRange(keep.start, keep.end); } catch (_) { /* no caret in a search input on some browsers */ } } }
+    }
   }
 
   function render() {
@@ -743,7 +751,7 @@
               <span class="muted" style="font-size:12px">Runs them top to bottom, one at a time, so each shop is matched against the ones already run.</span>
             </div>
           </div>
-                    <div class="field"><label for="shop-max">Max products</label><input id="shop-max" type="number" min="1" max="400" value="${(job && job.maxProducts) || 200}"></div>
+                    <div class="field"><label for="shop-max">Max products <span class="muted" style="font-weight:400">(empty = all)</span></label><input id="shop-max" type="number" min="1" step="1" placeholder="All products" title="Leave empty to scrape everything the category has. A number stops at that many." value="${(job && job.maxProducts) || ""}"></div>
           <label class="muted" style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="run-llm" ${llmOn ? "checked" : ""}> AI help on very close matches</label>
           <button class="primary" type="submit" ${job ? "disabled" : ""}>Queue run</button>
           ${job ? `<button class="ghost danger" type="button" id="abort-active">Abort job</button>` : ""}
@@ -996,7 +1004,9 @@
     return null;
   }
 
-  function placementOptions(card, decision, query) {
+  // limit: the select keeps a short list; the ▾ list and the search show every model of the right category.
+  // cheap: names only (no offer lookups), for the select that every card carries.
+  function placementOptions(card, decision, query, limit, cheap) {
     const q = adminFold(query || "");
     // cardKind, not the stored kind: a spool the shop filed as a printer must still list filament baselines.
     const kind = cardKind(card) === "filament" ? "filaments" : "printers";
@@ -1006,7 +1016,7 @@
       if (!q) return true;
       return adminFold([it.name, it.brand, it.id].join(" ")).includes(q);
     });
-    const list = models.map((it) => catalogProduct("baseline:" + it.id));
+    const list = models.map((it) => (cheap ? { id: "baseline:" + it.id, name: it.name, brand: it.brand || "", baseline: true, shownId: it.id } : catalogProduct("baseline:" + it.id)));
     if (decision.candidateId) {
       const picked = catalogProduct(decision.candidateId);
       if (picked && picked.baseline) {
@@ -1020,7 +1030,7 @@
       if (b.id === decision.candidateId) return 1;
       return 0;
     });
-    return list.slice(0, q ? 50 : 25);
+    return list.slice(0, limit || (q ? 50 : 25));
   }
 
   function workerPlace(e) {
@@ -1140,6 +1150,7 @@
         // A sub-brand is part of the identity: "Creality TPU" is not "Creality CR TPU", in either direction.
         const itSub = adminFold(splitTags(it.subBrand)[0] || ""), cardSub = adminFold(splitTags(f.subBrand)[0] || "");
         if (itSub !== cardSub) continue;
+        if (diameterValue(it.diameter) !== diameterValue(f.diameter)) continue;
         const s = 1 + (itSub ? 2 : 0);
         if (s > score) { best = it; score = s; }
       }
@@ -1160,7 +1171,7 @@
       const own = edit.place != null ? edit.place : c.place;
       return { ...(own ? parsePlace(own) : defaultPlace(ev)), linked: false };
     }
-    const f = fields || { kind: c.kind, name: edit.name != null ? edit.name : c.name, brand: edit.brand != null ? edit.brand : c.brand, subBrand: edit.subBrand != null ? edit.subBrand : c.subBrand, polymer: edit.polymer != null ? edit.polymer : c.polymer, variant: edit.variant != null ? edit.variant : c.variant };
+    const f = fields || { kind: c.kind, name: edit.name != null ? edit.name : c.name, brand: edit.brand != null ? edit.brand : c.brand, subBrand: edit.subBrand != null ? edit.subBrand : c.subBrand, polymer: edit.polymer != null ? edit.polymer : c.polymer, variant: edit.variant != null ? edit.variant : c.variant, diameter: edit.diameter != null ? edit.diameter : c.diameter };
     return { ...(autoBaselinePlace(f) || defaultPlace(ev)), linked: true };
   }
   // While linked, Goes to follows the card live: typing a new brand, sub-brand, polymer or variant
@@ -1172,7 +1183,7 @@
     const url = card.dataset.uncertainUrl;
     const ev = cardEvent(url);
     const f = uncertainFields(card);
-    const place = uncertainPlace(ev, { kind: card.dataset.kind || cardKind(ev.card), name: f.name, brand: f.brand, subBrand: f.subBrand, polymer: f.polymer, variant: f.variant });
+    const place = uncertainPlace(ev, { kind: card.dataset.kind || cardKind(ev.card), name: f.name, brand: f.brand, subBrand: f.subBrand, polymer: f.polymer, variant: f.variant, diameter: f.diameter });
     sel.innerHTML = placeOptionsHtml(ev, place, "");
     sel.value = placeValue(place);
     const wrap = sel.closest(".review-place-label");
@@ -1193,11 +1204,13 @@
     return place.action === "merge" && place.candidateId ? "merge:" + place.candidateId : "create";
   }
 
-  function placeOptionsHtml(e, place, query) {
+  // full: every baseline model of the card's category (filled when the dropdown is opened; a page of 200
+  // cards would otherwise carry 200 × every model).
+  function placeOptionsHtml(e, place, query, full) {
     const c = e.card || {};
     const url = c.url || "";
     const dec = e.decision || {};
-    const options = placementOptions(c, dec, query);
+    const options = placementOptions(c, dec, query, full ? 2000 : 25, true);
     if (place.action === "merge" && place.candidateId && !options.some((p) => p.id === place.candidateId)) {
       const extra = catalogProduct(place.candidateId);
       if (extra && extra.baseline) options.unshift(extra);
@@ -1214,6 +1227,9 @@
   function cardEvent(url) {
     const fromAll = collectUncertain(state.data || {}).find((x) => x.card && x.card.url === url);
     if (fromAll) return fromAll;
+    // A published offer card (Catalog / Baseline) is not in the Uncertain queue: use the event it was drawn from.
+    const asOffer = offerEventsByUrl.get(url);
+    if (asOffer) return asOffer;
     const job = reviewJob(state.data || { jobs: [] });
     if (!job) return { card: { url }, decision: {}, compared: [] };
     return collectCards(job, state.data).find((x) => x.card && x.card.url === url) || { card: { url }, decision: {}, compared: [] };
@@ -1264,7 +1280,7 @@
     }
     if (!box) return;
     if (!q && !openAll) { box.hidden = true; box.innerHTML = ""; return; }
-    const hits = placementOptions(ev.card || { url }, ev.decision || {}, q);
+    const hits = placementOptions(ev.card || { url }, ev.decision || {}, q, 1000);
     const id = encodeURIComponent(url);
     const btns = [`<button type="button" class="place-hit" data-place-pick="${esc(id)}" data-place-val="create">New product — not compared yet</button>`]
       .concat(hits.map((p) => {
@@ -1315,6 +1331,15 @@
       return !e.error && !!(e.card && e.card.url) && a !== "merge" && a !== "updated" && a !== "create";
     }).length;
     return `
+      <div class="review-search">
+        <input id="review-search" type="search" value="${esc(state.reviewQuery)}" autocomplete="off" spellcheck="false" aria-label="Search this run" placeholder='Search this run…  bambu red   "exact phrase"   -wood   price:<700   weight:1kg   shop:rhino    (press / to focus)'>
+        <span class="muted" id="review-search-info"></span>
+        <details class="review-search-help"><summary>How to search</summary>
+          <p class="muted">Every word must match, in any order, and typos are forgiven. Partial words work (<code>bam</code> finds Bambu) and Turkish colours too (<code>siyah</code>, <code>kırmızı</code>). Use <code>"quotes"</code> for an exact phrase and <code>-word</code> to leave something out.</p>
+          <p class="muted">Filters: <code>brand:</code> <code>sub:</code> <code>polymer:</code> <code>variant:</code> <code>color:</code> <code>weight:1kg</code> <code>price:&lt;700</code> <code>price:500-800</code> <code>diameter:2.85</code> <code>shop:</code> <code>status:</code> (<code>held</code> <code>unmatched</code> <code>mismatch</code> <code>flagged</code> <code>selected</code> <code>edited</code> <code>rfid</code> <code>no price</code>) <code>place:</code> (the baseline it goes to) <code>name:</code> <code>url:</code>. Best matches come first.</p>
+        </details>
+        <div class="rs-chips" id="review-search-chips"></div>
+      </div>
       <div class="review-toolbar">
         <button class="btn-sm" type="button" id="select-all">Select all</button>
         <button class="btn-sm" type="button" id="flag-all">Flag all</button>
@@ -1367,6 +1392,236 @@
       </div>
     `;
   }
+
+  // ============================================================================================
+  // Shop Runs search, built to behave like a web search box:
+  //  - every word must match, in any order; partial words work ("bam" finds Bambu)
+  //  - typos are forgiven ("bmabu", "sillk"); Turkish letters fold ("siyah" = black, "kırmızı" = red)
+  //  - "exact phrase", -exclude, and operators: brand: sub: polymer: variant: color: weight: price:
+  //    shop: status: name: url: place: diameter:   e.g.  price:<700  weight:1kg  price:500-800  is:flagged
+  //  - best matches first; refinement chips for the cards that are left; "did you mean" on a miss
+  // ============================================================================================
+  const RS_KEYS = { brand: "brand", marka: "brand", sub: "sub", series: "sub", subbrand: "sub", polymer: "polymer", material: "polymer", type: "polymer", variant: "variant", color: "color", colour: "color", renk: "color", weight: "weight", kg: "weight", size: "weight", price: "price", fiyat: "price", tl: "price", shop: "shop", store: "shop", site: "shop", status: "status", is: "status", name: "name", title: "name", url: "url", place: "place", baseline: "place", goes: "place", diameter: "diameter", mm: "diameter" };
+  const RS_SYNONYMS = [["grey", "gray", "gri"], ["siyah", "black"], ["beyaz", "white"], ["kirmizi", "red"], ["mavi", "blue"], ["yesil", "green"], ["sari", "yellow"], ["turuncu", "orange"], ["mor", "purple", "violet"], ["pembe", "pink"], ["kahverengi", "brown"], ["gumus", "silver"], ["altin", "gold"], ["seffaf", "transparent", "clear"], ["yazici", "printer"], ["makarali", "spool"], ["makarasiz", "refill"], ["karbon", "carbon"], ["ahsap", "wood"], ["hiz", "speed"], ["hizli", "speed", "rapid"], ["pla+", "plus"]];
+  const RS_ALTS = new Map();
+  RS_SYNONYMS.forEach((group) => group.forEach((w) => RS_ALTS.set(w, group)));
+  const rsSplit = (text) => adminFold(text).split(/[^\p{L}\p{N}+]+/u).filter(Boolean);
+
+  // Edits between two words, a swap of two neighbours counting as one; gives up past `max`.
+  function editDistance(a, b, max) {
+    if (a === b) return 0;
+    if (Math.abs(a.length - b.length) > max) return max + 1;
+    let prev2 = null;
+    let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+    for (let i = 1; i <= a.length; i++) {
+      const cur = [i];
+      let rowMin = i;
+      for (let j = 1; j <= b.length; j++) {
+        let v = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        if (prev2 && i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) v = Math.min(v, prev2[j - 2] + 1);
+        cur[j] = v;
+        if (v < rowMin) rowMin = v;
+      }
+      if (rowMin > max) return max + 1;
+      prev2 = prev;
+      prev = cur;
+    }
+    return prev[b.length];
+  }
+
+  // Everything a person could search a card by, folded and split once.
+  const rsIndexCache = { data: null, byUrl: new Map() };
+  function reviewIndexOf(ev) {
+    const d = state.data;
+    if (rsIndexCache.data !== d) { rsIndexCache.data = d; rsIndexCache.byUrl = new Map(); }
+    const url = (ev.card && ev.card.url) || "";
+    if (rsIndexCache.byUrl.has(url)) return rsIndexCache.byUrl.get(url);
+    const c = withEarlierSave(ev.card || {});
+    const table = (d && d.filamentColours) || {};
+    const filament = cardKind(c) === "filament";
+    const colourName = colourNameOf(c) || c.colorName || "";
+    const ids = [...new Set([...coloursIn(colourName), ...String(c.colorTone || "").split("+").filter((x) => table[x]), ...String(c.color || "").split("+").filter((x) => table[x])])];
+    const grams = gramsOf(weightOf(c)) || (filament ? 1000 : 0);
+    const dec = ev.decision || {};
+    const place = uncertainPlace(ev);
+    const model = place.candidateId ? (((d && d.baseline && d.baseline.items) || []).find((i) => "baseline:" + i.id === place.candidateId) || {}) : {};
+    const host = hostOf(c.url) || "";
+    const fields = {
+      name: [c.name, c.sourceTitle, ...(c.listingTitles || [])].filter(Boolean).join(" "),
+      brand: c.brand || "",
+      sub: (c.subBrand || "").replace(/,/g, " "),
+      polymer: [c.polymer, c.polymer && (((window.__filLabels || {}).polymers || {})[c.polymer])].filter(Boolean).join(" "),
+      variant: (c.variant || "").replace(/[-,]/g, " "),
+      color: [colourName, c.color, c.colorTone, ...ids.flatMap((id) => [id.replace(/-/g, " "), table[id] && table[id].name, ...(((table[id] && table[id].aliases) || []))])].filter(Boolean).join(" ").replace(/[+]/g, " "),
+      weight: grams ? [grams + "g", grams + " g", grams + "gr", grams >= 1000 ? (grams / 1000) + "kg " + (grams / 1000) + " kg" : ""].join(" ") : "",
+      shop: host + " " + (ev.shopName || ""),
+      url: String(c.url || "").replace(/^https?:\/\//, "").replace(/[-_/.]+/g, " "),
+      status: [dec.action, magellanUnsure(ev) ? "unmatched" : "", ev.mismatch || c.mismatch ? "mismatch category" : "", ev.error ? "error blocked " + ev.error : "", Number(c.price) > 0 ? "" : "no price missing", state.reviewSelected.has(c.url) ? "selected" : "", state.reviewFlags.has(c.url) ? "flagged" : "", c.rfid ? "rfid" : "", c.handEdited ? "edited saved" : ""].filter(Boolean).join(" "),
+      place: (model.name || "") + " " + (place.candidateId ? "" : "new product"),
+      diameter: filament ? diameterValue(c.diameter) + " " + diameterValue(c.diameter).replace(" mm", "mm") : ""
+    };
+    const words = {};
+    let all = [];
+    for (const [k, v] of Object.entries(fields)) { words[k] = rsSplit(v); all = all.concat(words[k]); }
+    const ix = { c, fields, words, all, allSet: new Set(all), allText: " " + all.join(" ") + " ", keyWords: new Set([...words.name, ...words.brand, ...words.color]), price: Number(c.price) || 0, grams, mm: parseFloat(diameterValue(c.diameter)) || 0, order: 0 };
+    rsIndexCache.byUrl.set(url, ix);
+    return ix;
+  }
+
+  // One word of the query against a list of words: exact > starts with > inside > a typo away.
+  function rsWordScore(alts, words, set, text) {
+    let best = 0;
+    for (const alt of alts) {
+      if (!alt) continue;
+      if (set.has(alt)) return 3;
+      if (alt.length >= 2 && words.some((w) => w.startsWith(alt))) best = Math.max(best, 2);
+      else if (alt.length >= 3 && text.includes(alt)) best = Math.max(best, 1.5);
+      else if (alt.length >= 4) {
+        const max = alt.length >= 8 ? 2 : 1;
+        if (words.some((w) => Math.abs(w.length - alt.length) <= max && (editDistance(w, alt, max) <= max || (w.length > alt.length && editDistance(w.slice(0, alt.length), alt, max) <= max)))) best = Math.max(best, 1);
+      }
+    }
+    return best;
+  }
+  const rsAlts = (term) => { const t = adminFold(term); return RS_ALTS.get(t) || [t]; };
+
+  // 'bambu "pla matte" -wood price:<700 color:"light blue"' → a parsed query.
+  function parseReviewQuery(raw) {
+    const q = { terms: [], phrases: [], not: [], ops: [] };
+    const re = /(-?)(?:([\p{L}]+):)?(?:"([^"]*)"|(\S+))/gu;
+    let m;
+    while ((m = re.exec(String(raw || "")))) {
+      const neg = m[1] === "-";
+      const key = m[2] && RS_KEYS[adminFold(m[2])];
+      const val = (m[3] != null ? m[3] : m[4] || "").trim();
+      if (!val) continue;
+      if (key) q.ops.push({ key, val, neg });
+      else if (m[2] && !key) q.terms.push(...rsSplit(m[2] + ":" + val).map((t) => ({ t })));
+      else if (neg) q.not.push(val);
+      else if (m[3] != null) q.phrases.push(adminFold(val));
+      else q.terms.push(...rsSplit(val).map((t) => ({ t })));
+    }
+    return q;
+  }
+  // "<700", ">=500", "500-800", "700" → a test on a number
+  function rsNumberTest(val, unit) {
+    const m = String(val).replace(",", ".").match(/^(<=|>=|<|>|=)?\s*(\d+(?:\.\d+)?)(?:\s*-\s*(\d+(?:\.\d+)?))?\s*(kg|gr|g|mm|tl)?$/i);
+    if (!m) return null;
+    const scale = (n, u) => (unit === "grams" ? (/^kg$/i.test(u || "") || (!u && n <= 20) ? n * 1000 : n) : n);
+    const a = scale(Number(m[2]), m[4]);
+    if (m[3] != null) { const b = scale(Number(m[3]), m[4]); return (x) => x >= Math.min(a, b) && x <= Math.max(a, b); }
+    if (m[1] === "<") return (x) => x < a;
+    if (m[1] === "<=") return (x) => x <= a;
+    if (m[1] === ">") return (x) => x > a;
+    if (m[1] === ">=") return (x) => x >= a;
+    return (x) => Math.abs(x - a) < 0.5 || Math.floor(x) === Math.floor(a);
+  }
+
+  // null = does not match; otherwise a relevance score (more is better).
+  function scoreReview(ix, q, relaxed) {
+    let score = 0;
+    for (const op of q.ops) {
+      let ok;
+      if (op.key === "price") { const t = rsNumberTest(op.val); ok = t ? ix.price > 0 && t(ix.price) : false; }
+      else if (op.key === "weight") { const t = rsNumberTest(op.val, "grams"); ok = t ? ix.grams > 0 && t(ix.grams) : rsWordScore(rsAlts(op.val), ix.words.weight, new Set(ix.words.weight), " " + ix.words.weight.join(" ") + " ") > 0; }
+      else if (op.key === "diameter") { const t = rsNumberTest(op.val); ok = t ? ix.mm > 0 && t(ix.mm) : false; }
+      else {
+        const words = ix.words[op.key] || [];
+        const phrase = adminFold(op.val);
+        ok = op.val.includes(" ") || /\s/.test(op.val)
+          ? (" " + words.join(" ") + " ").includes(" " + phrase + " ") || (" " + words.join(" ") + " ").includes(phrase)
+          : rsWordScore(rsAlts(op.val), words, new Set(words), " " + words.join(" ") + " ") > 0;
+      }
+      if (op.neg ? ok : !ok) return null;
+      if (!op.neg) score += 3;
+    }
+    for (const w of q.not) if (rsWordScore(rsAlts(w).map((x) => x), ix.all, ix.allSet, ix.allText) >= 1.5) return null;
+    for (const p of q.phrases) { if (!ix.allText.includes(p.replace(/\s+/g, " "))) return null; score += 4; }
+    let hit = 0;
+    for (const { t } of q.terms) {
+      const bare = t.match(/^(\d+(?:\.\d+)?)(kg|gr|g|gram|kilo)$/);
+      let s = 0;
+      if (bare) { const g = Math.round(Number(bare[1]) * (/^k/.test(bare[2]) ? 1000 : 1)); s = ix.grams && g === ix.grams ? 3 : 0; }
+      if (!s) s = rsWordScore(rsAlts(t), ix.all, ix.allSet, ix.allText);
+      if (!s && /^\d+$/.test(t)) s = ix.price && Math.floor(ix.price) === Number(t) ? 2 : 0;
+      if (s) { hit += 1; score += s + (rsAlts(t).some((a) => ix.keyWords.has(a)) ? 0.5 : 0); }
+    }
+    const need = relaxed ? Math.max(1, Math.ceil(q.terms.length / 2)) : q.terms.length;
+    if (hit < need) return null;
+    // Words that sit next to each other in the title, in the order typed, beat a scatter of matches.
+    if (q.terms.length > 1 && ix.fields.name) {
+      const name = " " + rsSplit(ix.fields.name).join(" ") + " ";
+      if (name.includes(" " + q.terms.map((x) => adminFold(x.t)).join(" "))) score += 2;
+    }
+    return score;
+  }
+
+  // The closest word the run actually contains, for "did you mean".
+  function rsVocabulary(indexes) {
+    const v = new Map();
+    for (const ix of indexes) for (const w of ix.allSet) if (w.length >= 3 && !/^\d/.test(w)) v.set(w, (v.get(w) || 0) + 1);
+    return v;
+  }
+  function rsDidYouMean(q, raw, indexes) {
+    const vocab = rsVocabulary(indexes);
+    let changed = false;
+    let fixed = String(raw);
+    for (const { t } of q.terms) {
+      if (t.length < 4 || vocab.has(t) || [...vocab.keys()].some((w) => w.startsWith(t))) continue;
+      let best = null;
+      for (const [w, n] of vocab) {
+        const dist = editDistance(w, t, 2);
+        if (dist <= 2 && (!best || dist < best.dist || (dist === best.dist && n > best.n))) best = { w, dist, n };
+      }
+      if (best) { fixed = fixed.replace(new RegExp(t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), best.w); changed = true; }
+    }
+    return changed && fixed !== raw ? fixed : "";
+  }
+
+  function tokenInQuery(raw, token) { return String(raw || "").split(/\s+(?=(?:[^"]*"[^"]*")*[^"]*$)/).includes(token); }
+
+  function applyReviewSearch() {
+    if (typeof document.getElementById !== "function" || !document.getElementById("review-board")) return;
+    const board = document.getElementById("review-board");
+    const info = document.getElementById("review-search-info");
+    const chips = document.getElementById("review-search-chips");
+    if (!board) return;
+    const cards = Array.from(board.querySelectorAll(".review-card"));
+    const raw = (state.reviewQuery || "").trim();
+    if (!raw) {
+      cards.forEach((el) => { el.hidden = false; el.style.order = ""; });
+      if (info) info.innerHTML = "";
+      if (chips) chips.innerHTML = "";
+      return;
+    }
+    const job = reviewJob(state.data || { jobs: [] });
+    const events = new Map(collectCards(job, state.data).map((ev) => [ev.card && ev.card.url, ev]));
+    const q = parseReviewQuery(raw);
+    const indexed = cards.map((el) => ({ el, ev: events.get(el.dataset.uncertainUrl) })).filter((x) => x.ev).map((x) => ({ ...x, ix: reviewIndexOf(x.ev) }));
+    let relaxed = false;
+    let scored = indexed.map((x) => ({ ...x, score: scoreReview(x.ix, q, false) }));
+    if (!scored.some((x) => x.score != null) && q.terms.length > 1) { relaxed = true; scored = indexed.map((x) => ({ ...x, score: scoreReview(x.ix, q, true) })); }
+    const shown = scored.filter((x) => x.score != null).sort((a, b) => b.score - a.score);
+    const rank = new Map(shown.map((x, i) => [x.el, i]));
+    cards.forEach((el) => { const r = rank.get(el); el.hidden = r == null; el.style.order = r == null ? "" : String(r); });
+    const dym = shown.length ? "" : rsDidYouMean(q, raw, indexed.map((x) => x.ix));
+    if (info) {
+      info.innerHTML = `<strong>${shown.length}</strong> of ${cards.length} cards${relaxed && shown.length ? " · no card has every word, showing the closest" : ""}${!shown.length ? ' · nothing matches' : ""}${dym ? ` · Did you mean <a href="#" data-review-search-set="${esc(dym)}">${esc(dym)}</a>?` : ""}`;
+    }
+    // Refinements drawn from the cards that are left: one click narrows the search further.
+    if (chips) {
+      const groups = [["brand", (ix) => ix.c.brand], ["polymer", (ix) => ix.c.polymer], ["color", (ix) => colourNameOf(ix.c)], ["shop", (ix) => hostOf(ix.c.url)], ["status", (ix) => (ix.fields.status.match(/\b(held|merge|create|unmatched|mismatch|flagged|selected)\b/) || [])[0]]];
+      const html = groups.map(([key, get]) => {
+        const count = new Map();
+        shown.forEach((x) => { const v = String(get(x.ix) || "").trim(); if (v) count.set(v, (count.get(v) || 0) + 1); });
+        const top = [...count.entries()].sort((a, b) => b[1] - a[1]).slice(0, 6);
+        if (top.length < 2) return "";
+        return `<span class="rs-chip-label">${key}</span>` + top.map(([v, n]) => { const token = `${key}:${/\s/.test(v) ? `"${v}"` : v}`; const on = tokenInQuery(raw, token); return `<button type="button" class="rs-chip${on ? " is-on" : ""}" data-review-search-token="${esc(token)}" title="${on ? "remove" : "add"} ${esc(token)}">${esc(v)} <em>${n}</em></button>`; }).join("");
+      }).join("");
+      chips.innerHTML = html;
+    }
+  }
+  let reviewSearchTimer = null;
 
   function updateReviewToolbar() {
     const pub = $("#publish-selected");
@@ -2006,7 +2261,7 @@
 
   function uncertainFields(card) {
     const out = {};
-    for (const k of ["name", "brand", "subBrand", "polymer", "variant", "color", "packaging", "spoolMaterial", "rfid", "weight"]) out[k] = tagFieldValue(card.querySelector(`[data-uncertain-field="${k}"]`));
+    for (const k of ["name", "brand", "subBrand", "polymer", "variant", "color", "packaging", "spoolMaterial", "rfid", "weight", "diameter"]) out[k] = tagFieldValue(card.querySelector(`[data-uncertain-field="${k}"]`));
     if (out.color != null) {
       const row = card.querySelector && card.querySelector(".colour-row");
       const st = row && row.dataset ? rowColour(row) : { set: coloursIn(out.color), hexes: [], fx: "" };
@@ -2275,7 +2530,12 @@
 
   // A re-run is a new run, so a card you already saved comes back unsaved. Carry that save forward:
   // your identity fields win, the new run keeps its price, image and stock.
-  const SAVED_KEYS = ["name", "brand", "subBrand", "polymer", "variant", "color", "colorName", "colorHex", "colorHexes", "colorSet", "colorEffect", "colorTone", "weight", "packaging", "spoolMaterial", "rfid", "place", "placeLinked"];
+  // 1.75 mm unless a listing / you say 2.85 mm (still sold in Turkey) or 3 mm.
+  function diameterValue(v) {
+    const s = String(v || "").replace(",", ".");
+    return /2\.?85/.test(s) ? "2.85 mm" : /\b3\.?0{1,2}\b/.test(s) && /mm/.test(s) ? "3.0 mm" : "1.75 mm";
+  }
+  const SAVED_KEYS = ["name", "brand", "subBrand", "polymer", "variant", "color", "colorName", "colorHex", "colorHexes", "colorSet", "colorEffect", "colorTone", "weight", "diameter", "packaging", "spoolMaterial", "rfid", "place", "placeLinked"];
   // What a card really is. A shop can file spools under another category (the run then marks them
   // category_mismatch), and "Ender" is also a printer name, so a stored kind of "printer" is not enough:
   // a name that says filament or a polymer is a filament.
@@ -2321,6 +2581,7 @@
     const found = weightOf(c);
     const weightAssumed = edit.weight == null && (c.weightAssumed || !found);
     const weight = edit.weight != null ? edit.weight : (found || "1000 g");
+    const diameter = diameterValue(edit.diameter != null ? edit.diameter : c.diameter);
     // Spool material follows its model group while the chain is linked.
     const group = spoolGroup(spoolGroupKey(brand, pick("subBrand"), polymer, variant));
     const spoolLinked = group.spoolLinked !== false;
@@ -2343,7 +2604,7 @@
         ? "Magellan: held" + (ev.decision.reason ? " — " + ev.decision.reason : "")
         : "Magellan: unmatched")
       : "Magellan: " + ((ev.decision && ev.decision.action) || "placed");
-    const place = uncertainPlace(ev, { kind: c.kind, name, brand, subBrand, polymer, variant });
+    const place = uncertainPlace(ev, { kind: c.kind, name, brand, subBrand, polymer, variant, diameter });
     const held = state.uncertainHeld.has(url);
     const saved = state.uncertainSaved.has(url);
     const published = state.uncertainPublished.has(url);
@@ -2372,6 +2633,7 @@
         ${tagField(`<label>Material variant<input list="dl-variant" data-uncertain-field="variant" data-uncertain-url="${esc(url)}" value="${esc(variant1)}" placeholder="Plus, Silk, High-Speed…"></label>`, variantMore, "dl-variant")}
         <label class="colour-field">Colour<span class="colour-row" ${colourRowAttrs(colourState)}>${colourDot(colourFill(colourState), colourState.fx)}<input data-uncertain-field="color" data-uncertain-url="${esc(url)}" value="${esc(color)}" placeholder="Detected colour"><button type="button" class="btn-sm ghost" data-colour-from-image title="Read the colour from the product image"${c.image ? "" : " disabled"}>Image</button><button type="button" class="btn-sm ghost colour-minus" data-colour-minus title="One colour fewer: the name only sounds like two or three colours" aria-label="Remove a colour"${colourState.set.length > 1 ? "" : " hidden"}>−</button><button type="button" class="btn-sm ghost colour-plus" data-colour-plus title="One colour more (dual, tri colour…)" aria-label="Add a colour"${colourState.set.length >= 6 ? " hidden" : ""}>+</button><span class="droppers">${dropperButtons(colourState)}</span></span>${toneNote(autoTone(colourState))}</label>
         <label>Weight<input data-uncertain-field="weight" data-uncertain-url="${esc(url)}" value="${esc(weightLabel(weight))}" placeholder="1 kg, 250 g…">${weightAssumed ? '<small class="muted weight-assumed">Assumed: the listing gives no weight</small>' : ""}</label>
+        <label>Diameter<select data-uncertain-field="diameter" data-uncertain-url="${esc(url)}">${["1.75 mm", "2.85 mm"].map((d) => `<option value="${d}" ${diameter === d ? "selected" : ""}>${d}</option>`).join("")}${diameter === "3.0 mm" ? '<option value="3.0 mm" selected>3.0 mm</option>' : ""}</select></label>
         <label>Packaging<select data-uncertain-field="packaging" data-uncertain-url="${esc(url)}"><option value="spool" ${packaging === "spool" ? "selected" : ""}>With spool</option><option value="refill" ${packaging === "refill" ? "selected" : ""}>Refill / Makarasız</option></select></label>
         ${spoolRow((k) => `data-uncertain-field="${k}" data-uncertain-url="${esc(url)}"`, spoolMaterial, rfid, spoolLinked)}
       </div>
@@ -2546,7 +2808,13 @@
   // The card for a published offer: the listing's card from its run when there is one, else built from
   // the offer; the price is the catalog's, and Goes to starts on the row it sits on.
   let offerIndexCache = null;
+  const offerEventsByUrl = new Map();
   function offerEvent(p, o) {
+    const built = offerEventInner(p, o);
+    offerEventsByUrl.set(o.url, built);
+    return built;
+  }
+  function offerEventInner(p, o) {
     const d = state.data || {};
     if (!offerIndexCache || offerIndexCache.data !== d || offerIndexCache.jobs !== d.jobs) {
       const byUrl = new Map();
@@ -2765,7 +3033,7 @@
         if (!confirm("Run these shops from top to bottom?\n\n" + order)) return;
         const btn = e.target.closest("#run-all");
         const original = btn.textContent;
-        const maxProducts = Number(($("#shop-max") || {}).value || 200);
+        const maxProducts = Math.max(0, Math.floor(Number(($("#shop-max") || {}).value) || 0)); // empty = no limit
         const llmValue = $("#run-llm") ? $("#run-llm").checked : undefined;
         const batchId = "batch-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 6);
         state.runAllActive = true;
@@ -3068,7 +3336,7 @@
         return;
       }
       if (e.target.closest("#select-all")) {
-        $$("[data-review-select]").forEach((el) => {
+        $$("[data-review-select]").filter((el) => !(el.closest(".review-card") || {}).hidden).forEach((el) => {
           el.checked = true;
           state.reviewSelected.add(decodeURIComponent(el.dataset.reviewSelect));
           el.closest(".review-card")?.classList.add("is-selected");
@@ -3077,7 +3345,7 @@
         return;
       }
       if (e.target.closest("#flag-all")) {
-        $$("[data-review-flag]").forEach((el) => {
+        $$("[data-review-flag]").filter((el) => !(el.closest(".review-card") || {}).hidden).forEach((el) => {
           el.checked = true;
           state.reviewFlags.add(decodeURIComponent(el.dataset.reviewFlag));
           el.closest(".review-card")?.classList.add("flagged");
@@ -3895,7 +4163,7 @@
         const rows = collectRunRows(isQuick);
         if (!rows.length) { toast("Pick a shop and its category URL."); return; }
         const quickKind = ($("#run-kind") || {}).value || "both";
-        const maxProducts = Number(($("#shop-max") || {}).value || 200);
+        const maxProducts = Math.max(0, Math.floor(Number(($("#shop-max") || {}).value) || 0)); // empty = no limit
         const llmValue = $("#run-llm") ? $("#run-llm").checked : undefined;
         const problems = [];
         let queued = 0;
@@ -4131,7 +4399,7 @@
         }
         cur[e.target.dataset.uncertainField] = tagFieldValue(e.target);
         state.uncertainEdit.set(e.target.dataset.uncertainUrl, cur);
-        if (["brand", "subBrand", "polymer", "variant", "name"].includes(e.target.dataset.uncertainField)) refreshAutoPlace(e.target.closest(".uncertain-card"));
+        if (["brand", "subBrand", "polymer", "variant", "name", "diameter"].includes(e.target.dataset.uncertainField)) refreshAutoPlace(e.target.closest(".uncertain-card"));
         // A linked group shares one spool type: change it once, every card of the group follows.
         if (e.target.dataset.uncertainField === "spoolMaterial") {
           const card = e.target.closest(".uncertain-card");
@@ -4239,12 +4507,52 @@
       dot.closest(".colour-field").insertAdjacentHTML("beforeend", `<span class="fx-menu" role="menu">${option("", "Plain")}${option("marble", "Marble")}${option("galaxy", "Galaxy")}</span>`);
     });
 
+    // Opening a card's Goes-to dropdown loads the complete, current list for that card's category.
+    const fillFullSelect = (e) => {
+      const sel = e.target.closest && e.target.closest("select[data-review-place]");
+      if (!sel || sel.dataset.full === "1") return;
+      const ev = cardEvent(decodeURIComponent(sel.dataset.reviewPlace));
+      const place = parsePlace(sel.value);
+      sel.innerHTML = placeOptionsHtml(ev, place, "", true);
+      sel.value = placeValue(place);
+      sel.dataset.full = "1";
+    };
+    document.addEventListener("pointerdown", fillFullSelect, true);
+    document.addEventListener("focusin", fillFullSelect, true);
     document.addEventListener("focusin", (e) => {
       const list = e.target.getAttribute && e.target.getAttribute("list");
       if (!list || !list.startsWith("dl-")) return;
       fillFilamentSuggestions(list, e.target.closest(".baseline-card"));
       // Browsers hide an empty datalist entirely, so say why there is no menu yet.
       if (!document.getElementById(list).options.length) e.target.placeholder = "None saved yet: type one, then Save";
+    });
+
+    // Shop Runs search: type to filter; "/" jumps to the box; Escape clears it.
+    document.addEventListener("input", (e) => {
+      if (e.target.id !== "review-search") return;
+      clearTimeout(reviewSearchTimer);
+      reviewSearchTimer = setTimeout(() => { state.reviewQuery = e.target.value; applyReviewSearch(); }, 120);
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.target.id === "review-search" && e.key === "Escape") { e.target.value = ""; state.reviewQuery = ""; applyReviewSearch(); return; }
+      if (e.key === "/" && state.tab === "runs" && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || "")) && document.getElementById("review-search")) { e.preventDefault(); document.getElementById("review-search").focus(); }
+    });
+    document.addEventListener("click", (e) => {
+      const set = e.target.closest && e.target.closest("[data-review-search-set]");
+      const tok = e.target.closest && e.target.closest("[data-review-search-token]");
+      if (!set && !tok) return;
+      e.preventDefault();
+      const box = document.getElementById("review-search");
+      let next = state.reviewQuery || "";
+      if (set) next = set.dataset.reviewSearchSet;
+      else {
+        const token = tok.dataset.reviewSearchToken;
+        const parts = next.split(/\s+(?=(?:[^"]*"[^"]*")*[^"]*$)/).filter(Boolean);
+        next = (parts.includes(token) ? parts.filter((p) => p !== token) : [...parts, token]).join(" ");
+      }
+      state.reviewQuery = next;
+      if (box) box.value = next;
+      applyReviewSearch();
     });
 
     document.addEventListener("keydown", (e) => {

@@ -60,7 +60,7 @@
       <span id="state" class="status wait">idle</span>
       <span class="hint" id="summary"></span>
     </div>
-    <div class="bar"><label class="hint">Max products per shop <input id="max" type="number" min="1" max="400" value="200" style="width:90px"></label></div>
+    <div class="bar"><label class="hint">Max products per shop (empty = all) <input id="max" type="number" min="1" placeholder="All" style="width:90px"></label></div>
     <div class="log" id="log">Ready. Make sure you are logged in to /admin/ in this browser first — this page uses the same session.</div>
   </div>
 </div>
@@ -258,7 +258,7 @@
     if (running) return;
     running = true; stopFlag = false;
     $('run').disabled = true; $('stop').disabled = false;
-    var maxProducts = Number($('max').value || 200);
+    var maxProducts = Math.max(0, Math.floor(Number($('max').value) || 0));
     var dry = $('dry').checked;
     var i = 0;
     var t0 = Date.now();

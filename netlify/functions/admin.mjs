@@ -8,6 +8,11 @@ import filamentColours from "../../lib/filament-colours.cjs";
 
 // A tone is one of the named filament colours (beige, bone-white…); anything else is dropped.
 // One or more plain colour names joined by "+" ("white+cyan+blue"); unknown names are dropped.
+// Filament diameter: 1.75 mm unless it clearly says 2.85 mm (still sold in Turkey) or 3 mm.
+const diameterOf = (v) => {
+  const s = String(v || "").replace(",", ".");
+  return /2\.?85/.test(s) ? "2.85 mm" : /\b3\.?0{1,2}\b/.test(s) && /mm/.test(s) ? "3.0 mm" : "1.75 mm";
+};
 const colourToneOf = (v) => String(v || "").split("+").filter((one) => Object.hasOwn(filamentColours, one)).join("+");
 
 const { readJSON, writeJSON, writeBytes, deleteKey } = store;
@@ -1156,8 +1161,9 @@ export default async (req) => {
           error: null,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          maxPages: Number(body.maxPages) || 40,
-          maxProducts: Number(body.maxProducts) || 400,
+          // 0 = no limit: every product the category lists (the scraper sizes the page budget itself).
+          maxPages: Number(body.maxPages) > 0 ? Number(body.maxPages) : 0,
+          maxProducts: Number(body.maxProducts) > 0 ? Math.floor(Number(body.maxProducts)) : 0,
           autoLlmMatch: body.autoLlmMatch === undefined ? desk.autoLlmMatch === true : body.autoLlmMatch === true,
           visualMatch: body.visualMatch === undefined ? true : body.visualMatch !== false,
           batchId: /^batch-[a-z0-9-]{4,48}$/i.test(String(body.batchId || "")) ? String(body.batchId) : ""
@@ -1465,6 +1471,7 @@ export default async (req) => {
         const rfid = body.rfid != null ? body.rfid === true || body.rfid === "yes" : !!prev.rfid;
         const weight = String(body.weight != null ? body.weight : prev.weight || "").trim();
         const packaging = String(body.packaging != null ? body.packaging : prev.packaging || (kind === "filament" ? "spool" : "")).trim();
+        const diameter = diameterOf(body.diameter != null ? body.diameter : prev.diameter);
         if (!name) throw new Error("Name required");
         const listing = { name, brand, polymer, variant, color, packaging, kind: kind === "filament" ? "filament" : "printer" };
         let price = coercePrice(body.price) || coercePrice(prev.price) || coercePrice(raw && raw.price) || priceFromJobs(jobs, url);
@@ -1479,15 +1486,15 @@ export default async (req) => {
         // different model and gets its own baseline row.
         const identity = (v) => foldName(String(v || "").split(",")[0] || "");
         const sameName = (it) => foldName(it.name) === foldName(name) && foldName(it.brand || "") === foldName(brand)
-          && (listing.kind !== "filament" || (identity(it.subBrand) === identity(subBrand) && identity(it.polymer) === identity(polymer) && foldName(it.variant || "") === foldName(variant)));
+          && (listing.kind !== "filament" || (identity(it.subBrand) === identity(subBrand) && identity(it.polymer) === identity(polymer) && foldName(it.variant || "") === foldName(variant) && diameterOf(it.diameter) === diameter));
         let created = (board.items || []).find((it) => sameName(it) && (it.category === "filaments") === (category === "filaments"));
-        if (!created) created = addItem(board, { name, brand, subBrand, category, image: prev.image || "", polymer, variant, packaging, spoolMaterial, rfid });
+        if (!created) created = addItem(board, { name, brand, subBrand, category, image: prev.image || "", polymer, variant, packaging, spoolMaterial, rfid, diameter: listing.kind === "filament" ? diameter : "" });
         stripOfferUrl(catalog, url, created.id);
         const next = applySelectedListings(catalog, candidate, [{
           url,
           action: "create",
           baselineModel: created,
-          card: { ...prev, url, name, brand, subBrand, polymer, variant, color, packaging, spoolMaterial, rfid, weight, kind: listing.kind, price, image: prev.image || "" }
+          card: { ...prev, url, name, brand, subBrand, polymer, variant, color, packaging, spoolMaterial, rfid, weight, diameter: listing.kind === "filament" ? diameter : "", kind: listing.kind, price, image: prev.image || "" }
         }], jobs);
         const applied = next._applied || 0;
         const appliedUrls = next._appliedUrls || [];
@@ -1509,6 +1516,7 @@ export default async (req) => {
           packaging,
           spoolMaterial,
           rfid,
+          diameter: listing.kind === "filament" ? diameter : prev.diameter,
           subBrand,
           decision: { action: "merge", candidateId: "baseline:" + created.id, baselineId: created.id, candidateName: created.name }
         };
@@ -1614,6 +1622,7 @@ export default async (req) => {
         if (body.patch && (body.patch.placeLinked === true || body.patch.placeLinked === false)) inner.placeLinked = body.patch.placeLinked;
         if (body.patch && body.patch.colorEffect != null) inner.colorEffect = ["marble", "galaxy"].includes(body.patch.colorEffect) ? body.patch.colorEffect : "";
         if (body.patch && body.patch.packaging != null) inner.packaging = String(body.patch.packaging);
+        if (body.patch && body.patch.diameter != null) inner.diameter = diameterOf(body.patch.diameter);
         if (body.patch && body.patch.spoolMaterial != null) inner.spoolMaterial = String(body.patch.spoolMaterial);
         if (body.patch && body.patch.rfid != null) inner.rfid = body.patch.rfid === true || body.patch.rfid === "yes";
         if (body.patch && /^#[0-9a-f]{6}$/i.test(String(body.patch.colorHex || ""))) inner.colorHex = String(body.patch.colorHex).toLowerCase();
