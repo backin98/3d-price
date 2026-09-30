@@ -104,7 +104,8 @@ const MIME = {
   ".ico": "image/x-icon",
   ".woff2": "font/woff2",
   ".txt": "text/plain; charset=utf-8",
-  ".xml": "application/xml"
+  ".xml": "application/xml",
+  ".webmanifest": "application/manifest+json"
 };
 
 function resolveStatic(pathname) {
@@ -183,8 +184,15 @@ const server = http.createServer(async (req, res) => {
 
     const file = resolveStatic(pathname);
     if (!file) {
-      res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
-      res.end("404 Not Found");
+      // The storefront's own not-found page (public/404.html), like Netlify and Cloudflare Pages serve it.
+      const notFound = path.join(PUBLIC, "404.html");
+      if (fs.existsSync(notFound)) {
+        res.writeHead(404, { "content-type": "text/html; charset=utf-8", "cache-control": "no-cache" });
+        fs.createReadStream(notFound).pipe(res);
+      } else {
+        res.writeHead(404, { "content-type": "text/plain; charset=utf-8" });
+        res.end("404 Not Found");
+      }
       return;
     }
     res.writeHead(200, {

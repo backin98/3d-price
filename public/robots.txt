@@ -1,0 +1,7 @@
+# 3D Price: the storefront is public; the admin and the API are not for crawlers.
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /api/
+Disallow: /.netlify/
+Disallow: /run-all.html
