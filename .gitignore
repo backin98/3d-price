@@ -37,3 +37,6 @@ graphify-out/
 debug.log
 22222.jpeg
 wrangler.toml.pages-backup
+
+work/e2e/
+work/shop-report/

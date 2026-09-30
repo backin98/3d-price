@@ -1,7 +1,7 @@
 {
   "name": "3d-price",
   "private": true,
-  "description": "Local worker + Netlify storefront. Playwright is for infinite-scroll category pages on this PC, not Netlify.",
+  "description": "3D printer and filament price comparison. The local host serves the storefront and admin; the local worker scrapes the shops with Playwright.",
   "dependencies": {
     "playwright": "^1.63.0"
   },
@@ -10,7 +10,11 @@
   },
   "scripts": {
     "local": "node scripts/local-server.mjs",
+    "worker": "node worker/online-worker.cjs",
     "owner-password": "node scripts/set-owner-password.mjs",
+    "test": "node scripts/run-tests.cjs",
+    "e2e": "node scripts/e2e-local-run.cjs",
+    "shop-report": "node scripts/shop-report.cjs",
     "pull-blobs": "node scripts/pull-netlify-blobs.mjs",
     "backup": "node scripts/backup-data.mjs",
     "dev": "wrangler dev",
