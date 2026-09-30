@@ -13,6 +13,11 @@ const { sanitizeBoard, asMatchProducts } = require("../lib/baseline-board.cjs");
 const TAXONOMY = require("../data/filament-taxonomy.json");
 
 const ROOT = path.join(__dirname, "..");
+const urlWords = (url) => {
+  let p = "";
+  try { p = decodeURIComponent(new URL(String(url || "")).pathname); } catch { return ""; }
+  return p.replace(/[-_/.]+/g, " ").trim();
+};
 const baseline = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "filament-baseline.json"), "utf8"));
 const families = baseline.items.filter((row) => row.entityType === "family");
 const skus = baseline.items.filter((row) => row.entityType === "sku");
@@ -65,7 +70,8 @@ for (const family of families) {
       assert.ok(again.familyKey === family.familyKey
         || (again.diameter === "" && family.diameter && again.familyKey === family.familyKey.replace("|" + family.diameter, "|")),
       family.id + "/" + colour.id + ": evidence " + JSON.stringify(seen.name) + " does not classify to this card (" + again.familyKey + ")");
-      assert.ok(coloursFromName(seen.name).includes(colour.id),
+      // The listing states the colour itself: in its title, or in its own URL slug.
+      assert.ok(coloursFromName(seen.name + " " + urlWords(seen.url)).includes(colour.id),
         family.id + "/" + colour.id + ": " + JSON.stringify(seen.name) + " never states that colour");
     }
   }

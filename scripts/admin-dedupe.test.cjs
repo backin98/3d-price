@@ -33,6 +33,7 @@ context.money = require('../lib/parse-money.cjs'); // the function imports this 
 context.matcher = require('../lib/product-match.cjs'); // and this one
 context.baselineLib = require('../lib/baseline-catalog.js');
 context.boardLib = require('../lib/baseline-board.cjs');
+context.filamentColours = require('../lib/filament-colours.cjs'); // admin.mjs imports it for colour tones
 context.merchLib = require('../lib/storefront-merch.cjs');
 vm.runInNewContext(source, context);
 
@@ -130,8 +131,8 @@ const products = () => store['catalog.json'].products;
     matcher: require('../lib/product-match.cjs'),
     baselineLib: require('../lib/baseline-catalog.js'),
     boardLib: require('../lib/baseline-board.cjs'),
-  filamentColours: require('../lib/filament-colours.cjs'),
-  merchLib: require('../lib/storefront-merch.cjs')
+    filamentColours: require('../lib/filament-colours.cjs'),
+    merchLib: require('../lib/storefront-merch.cjs')
   };
   api.runInNewContext(source, sandbox);
   const post = (body) => sandbox.handler({ method: 'POST', headers: { get: () => null, entries: () => [][Symbol.iterator]() }, json: async () => body });

@@ -10,9 +10,14 @@
 // draws with familyKey (colour-agnostic) and compareKey (the spool).
 //
 // Nothing here is invented. Every family, colour and SKU is grouped from real listing evidence
-// found on disk (work/match-catalog.json, the qwen url jobs, data/qwen-employee, snapshots and
-// docs/real-listings.jsonl); a colour with no listing behind it simply does not exist. Absent
-// axes stay absent, per the taxonomy's unknownRule.
+// that is committed to the repo: docs/real-listings.jsonl (scripts/mine-listings.cjs folds the
+// run outputs on a PC into it) and the tracked JSON under data/ and work/. A colour with no listing
+// behind it simply does not exist. Absent axes stay absent, per the taxonomy's unknownRule.
+//
+// Committed evidence only: untracked run outputs (data/qwen-url-jobs, data/qwen-employee) and the
+// live store (work/local-store, data/online-catalog.json) change on every shop run, so reading them
+// made the file "stale" after any run and --check disagree between two machines on the same commit.
+// To add evidence, run scripts/mine-listings.cjs and commit docs/real-listings.jsonl.
 //
 //   node scripts/build-filament-baseline.cjs          # write the file when the content changed
 //   node scripts/build-filament-baseline.cjs --check   # exit 1 when the file is stale
@@ -22,6 +27,7 @@
 
 const fs = require("node:fs");
 const path = require("node:path");
+const { execFileSync } = require("node:child_process");
 
 const { classifyFilament, coloursFromName, canonicalColour } = require("../api/filament-classify");
 const TAXONOMY = require("../data/filament-taxonomy.json");
@@ -45,6 +51,13 @@ const fold = (value) => String(value || "").toLocaleLowerCase("tr")
   .replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ö/g, "o")
   .replace(/\+/g, " plus ").replace(/_/g, " ")
   .replace(/[^a-z0-9]+/g, " ").replace(/\s+/g, " ").trim();
+
+// "https://shop/creality-ender-pla-filament-green" -> "creality ender pla filament green"
+const urlWords = (url) => {
+  let p = "";
+  try { p = decodeURIComponent(new URL(String(url || "")).pathname); } catch { return ""; }
+  return p.replace(/[-_/.]+/g, " ").trim();
+};
 
 const isRealName = (value) => {
   const s = String(value || "").trim();
@@ -92,8 +105,22 @@ function collect(node, file, out, depth = 0) {
   }
 }
 
+// Runtime state, rewritten by the local host and the worker on every run: never evidence.
+const VOLATILE = /^(?:work[\\/]local-store[\\/]|data[\\/](?:online-catalog\.json$|qwen-url-jobs[\\/]|qwen-employee[\\/]))/;
+
+function committed(files) {
+  let tracked;
+  try {
+    tracked = new Set(execFileSync("git", ["ls-files", "-z", "--", "data", "work"], { cwd: ROOT, stdio: ["ignore", "pipe", "ignore"] })
+      .toString().split("\0").filter(Boolean).map((f) => path.join(ROOT, f)));
+  } catch {
+    tracked = null; // not a git checkout (a zip download): the VOLATILE rule alone keeps it stable
+  }
+  return files.filter((f) => (!tracked || tracked.has(f)) && !VOLATILE.test(path.relative(ROOT, f)));
+}
+
 function readEvidence() {
-  const files = [...jsonFiles(path.join(ROOT, "data")), ...jsonFiles(path.join(ROOT, "work"))].sort();
+  const files = committed([...jsonFiles(path.join(ROOT, "data")), ...jsonFiles(path.join(ROOT, "work"))]).sort();
   const jsonl = path.join(ROOT, "docs", "real-listings.jsonl");
   if (fs.existsSync(jsonl)) files.push(jsonl);
 
@@ -238,8 +265,10 @@ function mine() {
     // bags and theme words ("Filament") are not filament models and never open a card.
     if (classified.productForm !== "filament" || !classified.polymer) continue;
     const colours = new Set(coloursFromName(node.name));
+    // A stored colour counts only when the listing itself says it (title or URL slug): a run may
+    // have guessed it from the photo's pixels, and a guess is a suggestion, not gathered evidence.
     const stored = canonicalColour(node.color);
-    if (stored) colours.add(stored);
+    if (stored && coloursFromName(node.name + " " + urlWords(node.url)).includes(stored)) colours.add(stored);
     listings.push({
       name: node.name,
       brand: resolved,
