@@ -9,7 +9,7 @@
     "diameterFold": "a listing that omits the diameter joins its brand+polymer+variant card when that card has exactly one known diameter",
     "unknown": "An absent axis stays empty; never infer diameter, weight, packaging, colour, or material variant."
   },
-  "generatedAt": "2026-09-30T20:18:57.160Z",
+  "generatedAt": "2026-09-30T20:38:01.786Z",
   "source": {
     "nameNodesSeen": 4004,
     "distinctListings": 3932,
@@ -12643,64 +12643,6 @@
       ]
     },
     {
-      "id": "filament/esun/high-speed-peek/unknown",
-      "entityType": "family",
-      "kind": "filament",
-      "category": "filaments",
-      "name": "eSUN High Speed PEEK",
-      "brand": "eSUN",
-      "polymer": "peek",
-      "variant": "high-speed",
-      "diameter": "",
-      "familyKey": "esun|peek|high-speed|",
-      "image": "",
-      "listingCount": 1,
-      "shops": [
-        "Rhino 3D Printer"
-      ],
-      "colours": [
-        {
-          "id": "green",
-          "name": "Green",
-          "hex": "#388E3C",
-          "parent": "",
-          "source": "gathered",
-          "seenCount": 1,
-          "seenIn": [
-            {
-              "shop": "Rhino 3D Printer",
-              "name": "Esun PLA-High Speed Filament - Peek Green",
-              "url": "https://www.rhino3dprinter.com/esun-pla-high-speed-filament-peek-green"
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "filament/esun/high-speed-peek/unknown/green",
-      "entityType": "sku",
-      "kind": "filament",
-      "category": "filaments",
-      "parentId": "filament/esun/high-speed-peek/unknown",
-      "name": "eSUN High Speed PEEK Green",
-      "brand": "eSUN",
-      "polymer": "peek",
-      "variant": "high-speed",
-      "diameter": "",
-      "color": "green",
-      "weight": "",
-      "packaging": "",
-      "productForm": "filament",
-      "seenCount": 1,
-      "seenIn": [
-        {
-          "shop": "Rhino 3D Printer",
-          "name": "Esun PLA-High Speed Filament - Peek Green",
-          "url": "https://www.rhino3dprinter.com/esun-pla-high-speed-filament-peek-green"
-        }
-      ]
-    },
-    {
       "id": "filament/esun/high-speed-pla/1.75",
       "entityType": "family",
       "kind": "filament",
@@ -12712,7 +12654,7 @@
       "diameter": "1.75 mm",
       "familyKey": "esun|pla|high-speed|1.75 mm",
       "image": "",
-      "listingCount": 55,
+      "listingCount": 56,
       "shops": [
         "Rhino 3D Printer",
         "Robolink Market"
@@ -12724,8 +12666,13 @@
           "hex": "#388E3C",
           "parent": "",
           "source": "gathered",
-          "seenCount": 8,
+          "seenCount": 9,
           "seenIn": [
+            {
+              "shop": "Rhino 3D Printer",
+              "name": "Esun PLA-High Speed Filament - Peek Green",
+              "url": "https://www.rhino3dprinter.com/esun-pla-high-speed-filament-peek-green"
+            },
             {
               "shop": "Robolink Market",
               "name": "Esun PLA-HS Yüksek Hızlı Filament Grass Green 1.75mm 1000gr",
@@ -12735,11 +12682,6 @@
               "shop": "Robolink Market",
               "name": "Esun PLA-HS Yüksek Hızlı Filament Green 1.75mm 1000gr",
               "url": "https://www.robolinkmarket.com/esun-pla-hs-yuksek-hizli-filament-green-175mm-1000gr"
-            },
-            {
-              "shop": "Robolink Market",
-              "name": "Esun PLA-HS Yüksek Hızlı Filament Holly Green 1.75mm 1000gr",
-              "url": "https://www.robolinkmarket.com/esun-pla-hs-holy-green"
             }
           ]
         },
@@ -13518,6 +13460,30 @@
           "shop": "Robolink Market",
           "name": "Esun PLA-HS Yüksek Hızlı Filament Gray 1.75mm 1000gr",
           "url": "https://www.robolinkmarket.com/esun-pla-hs-yuksek-hizli-filament-gray-175mm-1000gr"
+        }
+      ]
+    },
+    {
+      "id": "filament/esun/high-speed-pla/1.75/green",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/esun/high-speed-pla/1.75",
+      "name": "eSUN High Speed PLA 1.75 mm Green",
+      "brand": "eSUN",
+      "polymer": "pla",
+      "variant": "high-speed",
+      "diameter": "1.75 mm",
+      "color": "green",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Rhino 3D Printer",
+          "name": "Esun PLA-High Speed Filament - Peek Green",
+          "url": "https://www.rhino3dprinter.com/esun-pla-high-speed-filament-peek-green"
         }
       ]
     },

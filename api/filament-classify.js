@@ -18,6 +18,18 @@ const COLOR_ALIASES = entries("colours");
 
 const hasPhrase = (text, phrase) => (" " + text + " ").includes(" " + phrase + " ");
 const pick = (text, rows) => (rows.find((row) => hasPhrase(text, row.alias)) || {}).id || "";
+// The material is the one the title names first: "Esun PLA-High Speed Filament - Peek Green" is PLA
+// in a colour called "Peek Green", not PEEK. Longest alias wins at the same spot ("PLA Plus" > "PLA").
+const pickFirst = (text, rows) => {
+  const padded = " " + text + " ";
+  let best = null;
+  for (const row of rows) {
+    const at = padded.indexOf(" " + row.alias + " ");
+    if (at < 0) continue;
+    if (!best || at < best.at || (at === best.at && row.alias.length > best.alias.length)) best = { at, alias: row.alias, id: row.id };
+  }
+  return best ? best.id : "";
+};
 
 function canonicalColour(value) {
   return pick(fold(value), COLOR_ALIASES);
@@ -125,7 +137,7 @@ function productFormFromName(value) {
 function classifyFilament(product) {
   const name = String(product.name || "").trim();
   const text = fold(name);
-  const polymer = pick(fold(product.polymer), POLYMER_ALIASES) || pick(text, POLYMER_ALIASES);
+  const polymer = pick(fold(product.polymer), POLYMER_ALIASES) || pickFirst(text, POLYMER_ALIASES);
   const explicitVariant = pick(fold(product.variant), VARIANT_ALIASES);
   const foundVariants = new Set(VARIANT_ALIASES.filter((row) => hasPhrase(text, row.alias)).map((row) => row.id));
   const variant = explicitVariant || (foundVariants.has("plus") && foundVariants.has("high-speed")
