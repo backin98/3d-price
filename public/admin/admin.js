@@ -883,8 +883,11 @@
     // looked empty, which is exactly when you want to go back and regroup.
     const dropped = new Set([...(job.dropped || []), ...(state.reviewJobId ? [] : (job.published || []))]);
     const rank = (d) => d && (d.action === "merge" || d.action === "updated") ? 2 : d && d.action === "create" ? 1 : 0;
+    // The category page the run read is not a listing (older runs saved it as a card).
+    const pageKey = (u) => { try { const x = new URL(u); return (x.hostname.replace(/^www\./, "") + x.pathname.replace(/\/+$/, "") + x.search).toLowerCase(); } catch { return ""; } };
+    const runPages = new Set([job.url, job.page2Url].filter(Boolean).map(pageKey));
     const add = (url, patch) => {
-      if (!url || dropped.has(url)) return;
+      if (!url || dropped.has(url) || runPages.has(pageKey(url))) return;
       const prev = byUrl.get(url) || { card: { url, name: titleFromUrl(url) }, decision: {} };
       const decision = rank(patch.decision) >= rank(prev.decision) ? (patch.decision || prev.decision) : prev.decision;
       byUrl.set(url, {
@@ -916,6 +919,7 @@
         mismatch: it.mismatch || e.mismatch,
         error: it.mismatch ? "category_mismatch" : undefined
       }));
+      if (e.type === "done") return;
       if (e.card && e.card.url) add(e.card.url, { ...e, error: e.error || (e.type === "extract" ? e.text : undefined) });
       else if (e.url) add(e.url, { card: { name: e.name || titleFromUrl(e.url), url: e.url }, error: e.error || e.text, mismatch: e.mismatch });
       if (e.type === "mismatch" && (e.items || []).length) {
@@ -2468,6 +2472,12 @@
     </div>`;
   }
 
+  // A listing the run held out as another category (a colour module on a printer page). Bulk publishing
+  // skips it: it is not a product of this shelf. Discard it, add the category, or publish it on its own.
+  function isHeldOut(ev) {
+    return !!(ev && (ev.mismatch || (ev.card && ev.card.mismatch) || ev.error === "category_mismatch"));
+  }
+
   function uncertainRows(d) {
     const all = collectUncertain(d);
     const shop = state.uncertainShop || "";
@@ -2531,7 +2541,7 @@
         <label class="muted" style="font-size:12px">Shop
           <select id="uncertain-shop"><option value="">all shops</option>${shops.map((s) => `<option value="${esc(s)}" ${shop === s ? "selected" : ""}>${esc(s)}</option>`).join("")}</select>
         </label>
-        <button type="button" class="btn-sm ok" id="uncertain-publish-all" ${live.length ? "" : "disabled"}>Force publish all (${live.length})</button>
+        <button type="button" class="btn-sm ok" id="uncertain-publish-all" ${live.filter((ev) => !isHeldOut(ev)).length ? "" : "disabled"} title="Held-out listings (another category) are left for you to decide one by one">Force publish all (${live.filter((ev) => !isHeldOut(ev)).length})</button>
         ${live.filter((ev) => !(Number(ev.card && ev.card.price) > 0)).length ? `<button type="button" class="btn-sm" id="uncertain-fetch-prices">Fetch missing prices (${live.filter((ev) => !(Number(ev.card && ev.card.price) > 0)).length})</button>` : ""}
         <button type="button" class="btn-sm" id="uncertain-find-dupes">${state.uncertainDupes ? "Refresh duplicates" : "Find duplicates"}</button>
         ${state.uncertainDupes ? '<button type="button" class="btn-sm ghost" id="uncertain-clear-dupes">Close duplicates</button>' : ""}
@@ -3351,7 +3361,8 @@
         return;
       }
       if (e.target.closest("#select-all")) {
-        $$("[data-review-select]").filter((el) => !(el.closest(".review-card") || {}).hidden).forEach((el) => {
+        // Held-out listings (another category) are not selected in bulk: Discard them or add the category.
+        $$("[data-review-select]").filter((el) => { const card = el.closest(".review-card") || {}; return !card.hidden && !(card.classList && card.classList.contains("is-mismatch")); }).forEach((el) => {
           el.checked = true;
           state.reviewSelected.add(decodeURIComponent(el.dataset.reviewSelect));
           el.closest(".review-card")?.classList.add("is-selected");
@@ -3861,6 +3872,7 @@
         const btn = e.target.closest("[data-uncertain-publish], #uncertain-publish-all");
         const singleUrl = btn.dataset.uncertainPublish;
         const urls = singleUrl ? [singleUrl] : uncertainRows(state.data).live
+          .filter((x) => !isHeldOut(x))
           .map((x) => x.card && x.card.url).filter((u) => u && !state.uncertainHeld.has(u) && !state.uncertainPublished.has(u));
         if (!urls.length || btn.disabled) return;
         if (!singleUrl && !confirm("Force-publish " + urls.length + " listings to the live catalog?")) return;
@@ -3909,7 +3921,9 @@
         try {
           const result = await action({ action: "publishSelected", placements, deferred });
           state.reviewSelected.clear();
-          toast((result.published || 0) + " published to Catalog" + (result.deferred ? " · " + result.deferred + " sent to Uncertain." : "."));
+          // A baseline match without a price from the run (its page failed) is not published: say so.
+          const skipped = placements.length - (Array.isArray(result.appliedUrls) ? result.appliedUrls.length : (result.published || 0));
+          toast((result.published || 0) + " published to Catalog" + (result.deferred ? " · " + result.deferred + " sent to Uncertain" : "") + (skipped > 0 ? " · " + skipped + " skipped: no price from the shop run" : "") + ".");
         } catch (err) { toast(err.message); }
       }
       if (e.target.matches("[data-review-select]")) {

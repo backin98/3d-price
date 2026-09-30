@@ -135,11 +135,25 @@ function compactEvent(ev) {
   if (ev.url) out.url = ev.url;
   if (Array.isArray(ev.urls)) out.urls = ev.urls.filter((u) => typeof u === "string").slice(0, 80);
   if (Array.isArray(ev.items)) {
-    out.items = ev.items.slice(0, 80).map((it) => ({
-      url: String(it.url || "").slice(0, 500),
-      name: String(it.name || "").slice(0, 160),
-      image: String(it.image || "").slice(0, 500)
-    }));
+    out.items = ev.items.slice(0, 80).map((it) => {
+      const item = {
+        url: String(it.url || "").slice(0, 500),
+        name: String(it.name || "").slice(0, 160),
+        image: String(it.image || "").slice(0, 500)
+      };
+      // A listing the run held out as another category keeps what it was detected as, so the review
+      // board can show it as a mismatch (Discard / Create category) instead of a plain card. Only those:
+      // a gathered listing whose page later failed (out of stock, blocked) must not pick up a price here.
+      if (it.mismatch && typeof it.mismatch === "object") {
+        item.mismatch = {
+          detectedType: String(it.mismatch.detectedType || it.mismatch.detected || "").slice(0, 40),
+          declaredType: String(it.mismatch.declaredType || it.mismatch.declared || "").slice(0, 40)
+        };
+        if (it.kind) item.kind = String(it.kind).slice(0, 40);
+        if (Number.isFinite(Number(it.price)) && Number(it.price) > 0) item.price = Number(it.price);
+      }
+      return item;
+    });
     if (!out.urls) out.urls = out.items.map((it) => it.url).filter(Boolean);
   }
   if (ev.done != null) out.done = ev.done;
@@ -171,7 +185,9 @@ function compactEvent(ev) {
       colorSet: Array.isArray(l.colorSet) ? l.colorSet.slice(0, 6).map(String) : [],
       multicolor: l.multicolor === true,
       colorEffect: ["marble", "galaxy"].includes(l.colorEffect) ? l.colorEffect : "",
-      weightAssumed: l.weightAssumed === true
+      weightAssumed: l.weightAssumed === true,
+      // What the shop said about stock, as read by the run (in_stock / preorder / dropshipping ...).
+      stockStatus: String(l.stockStatus || "").slice(0, 40)
     };
     out.decision = {
       action: ev.action || "",
@@ -179,7 +195,9 @@ function compactEvent(ev) {
       candidateName: ev.candidateName || "",
       shelf: ev.shelf || l.kind || "",
       rule: ev.rule || "",
-      matchPath: ev.matchPath || ev.rule || ""
+      matchPath: ev.matchPath || ev.rule || "",
+      // Why it was held (or what to check): the review board prints it on the card.
+      reason: String(ev.reason || "").slice(0, 300)
     };
     if (Array.isArray(ev.compared)) {
       out.compared = ev.compared.slice(0, 8).map((c) => ({
@@ -189,7 +207,8 @@ function compactEvent(ev) {
         name: String(c.name || "").slice(0, 160)
       }));
     }
-  } else if (ev.url) {
+  } else if (ev.url && ev.type !== "done") {
+    // "done" carries the category page the run read, which is not a listing.
     out.card = { name: nameFromUrl(ev.url), url: ev.url, image: "", kind: "", brand: "" };
   }
   return out;
@@ -534,6 +553,12 @@ let backoffMs = Number(process.env.POLL_MS || 5000);
 let pollFails = 0;
 
 async function main() {
+  // Required by a test (for compactEvent): do not start the server or the polling.
+  if (typeof module !== "undefined" && require.main !== module) return;
+  process.on("SIGINT", () => {
+    console.log("Worker stopping.");
+    process.exit(0);
+  });
   await startHttp();
   if (hasToken && siteUrl) console.log("Polling site " + siteUrl);
   else console.log("Waiting for the admin to send the site address (AI connection).");
@@ -575,10 +600,7 @@ async function main() {
   }
 }
 
-process.on("SIGINT", () => {
-  console.log("Worker stopping.");
-  process.exit(0);
-});
+if (typeof module !== "undefined") module.exports = { compactEvent };
 
 main().catch((err) => {
   console.error(err);

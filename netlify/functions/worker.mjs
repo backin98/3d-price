@@ -74,6 +74,21 @@ function sameShop(url, job) {
   return !shop || hostOf(url) === shop;
 }
 
+// The page a run reads its listings from is not a listing. The worker's closing "done" event carries
+// the category URL, and it became a card called "3d yazicilar" on every board.
+function pageKey(url) {
+  try {
+    const u = new URL(url);
+    return (u.hostname.replace(/^www\./, "") + u.pathname.replace(/\/+$/, "") + u.search).toLowerCase();
+  } catch (_) {
+    return String(url || "").toLowerCase();
+  }
+}
+function isRunPage(url, job) {
+  const key = pageKey(url);
+  return [job && job.url, job && job.page2Url].some((u) => u && pageKey(u) === key);
+}
+
 function unionCatalog(live, candidate) {
   const products = [...((live && live.products) || [])];
   const filaments = [...((live && live.filaments) || [])];
@@ -107,8 +122,9 @@ function mergeCards(job, incoming) {
   job.cards = job.cards && typeof job.cards === "object" ? job.cards : {};
   const dropped = new Set(job.dropped || []);
   // Never a card for a URL that is not this run's shop, whatever sent it.
-  const foreign = (url) => !sameShop(url, job);
+  const foreign = (url) => !sameShop(url, job) || isRunPage(url, job);
   for (const ev of incoming || []) {
+    if (ev && ev.type === "done") continue;
     for (const url of ev.urls || []) {
       if (typeof url !== "string" || dropped.has(url) || foreign(url)) continue;
       if (!job.cards[url]) job.cards[url] = { name: nameFromUrl(url), url };
@@ -122,6 +138,13 @@ function mergeCards(job, incoming) {
         name: it.name || prev.name || nameFromUrl(it.url),
         image: it.image || prev.image || ""
       };
+      // Held out as another category (a colour module on a printer page): the board shows it as such.
+      if (it.mismatch && typeof it.mismatch === "object") {
+        const card = job.cards[it.url];
+        card.mismatch = { detectedType: String(it.mismatch.detectedType || "").slice(0, 40), declaredType: String(it.mismatch.declaredType || "").slice(0, 40) };
+        if (it.kind && !card.kind) card.kind = String(it.kind).slice(0, 40);
+        if (Number(it.price) > 0 && !(Number(card.price) > 0)) card.price = Number(it.price);
+      }
     }
     if (ev.card && ev.card.url) {
       if (dropped.has(ev.card.url) || foreign(ev.card.url)) continue;
@@ -276,6 +299,7 @@ export default async (req) => {
                 colorName: p.colorName || "", sourceTitle: o.sourceTitle || ""
               },
               liveUrl: liveUrls.has(o.url),
+              checkedAt: String(o.stockCheckedAt || o.priceCheckedAt || ""),
               decision: { action: liveIds.has(p.id) ? "merge" : "create", candidateId: p.id, candidateName: p.name, shelf: p.kind }
             });
           }
@@ -292,10 +316,30 @@ export default async (req) => {
           job.status = "complete";
           job.progress = "Complete — ready to review/publish";
           job.summary = body.summary || null;
+          // The candidate is every unpublished offer the worker matched against, not this run's harvest.
+          // A listing this run reported keeps what the run said about it: the candidate row is the
+          // catalog product (a filament family's name, no colour, no weight) and only fills blanks.
+          // A listing the run did not report is taken only when its offer was checked during this run:
+          // an unpublished listing from another run of the same shop (its printer run, on a filament
+          // board) is not this run's card.
           const known = new Set(Object.keys(job.cards || {}));
-          mergeCards(job, extras
-            .filter((row) => sameShop(row.card.url, job) && (known.has(row.card.url) || !row.liveUrl))
-            .map(({ liveUrl, ...row }) => row));
+          const started = String(job.startedAt || job.createdAt || "");
+          const fresh = [];
+          for (const { liveUrl, checkedAt, ...row } of extras) {
+            const url = row.card.url;
+            if (!sameShop(url, job) || isRunPage(url, job)) continue;
+            if (known.has(url)) {
+              const prev = job.cards[url];
+              if (!prev) continue;
+              for (const [key, value] of Object.entries(row.card)) {
+                if ((prev[key] === undefined || prev[key] === null || prev[key] === "") && value !== undefined && value !== null && value !== "") prev[key] = value;
+              }
+              if (!prev.decision || !prev.decision.action) prev.decision = row.decision;
+            } else if (!liveUrl && started && checkedAt >= started) {
+              fresh.push(row);
+            }
+          }
+          mergeCards(job, fresh);
         }
         job.events = job.events || [];
         job.events.push({ type: "log", at: new Date().toISOString(), text: body.error ? `Failed: ${body.error}` : "Job finished and candidate uploaded." });
