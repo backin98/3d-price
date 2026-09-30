@@ -21,19 +21,23 @@ const { refreshStock } = require("../lib/stock-refresh.cjs");
 const { loadRates } = require("../lib/compare-products.cjs");
 const laya = require("../lib/laya-match.cjs");
 
+// The same files the local host reads (scripts/local-server.mjs): .env, then .dev.vars.
 function loadDotEnv() {
-  try {
-    const raw = fs.readFileSync(path.join(__dirname, "..", ".env"), "utf8");
-    for (const line of raw.split(/\r?\n/)) {
-      const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
-      if (!m || process.env[m[1]]) continue;
-      process.env[m[1]] = m[2].trim().replace(/^["']|["']$/g, "");
-    }
-  } catch (_) { /* optional */ }
+  for (const name of [".env", ".dev.vars"]) {
+    try {
+      const raw = fs.readFileSync(path.join(__dirname, "..", name), "utf8");
+      for (const line of raw.split(/\r?\n/)) {
+        const m = line.match(/^([A-Z0-9_]+)=(.*)$/);
+        if (!m || process.env[m[1]]) continue;
+        process.env[m[1]] = m[2].trim().replace(/^["']|["']$/g, "");
+      }
+    } catch (_) { /* optional */ }
+  }
 }
 loadDotEnv();
 
-let siteUrl = String(process.env.ONLINE_URL || "https://3d-price.netlify.app").replace(/\/+$/, "");
+// The local host (`npm run local`) is where the site runs until a host is chosen; set ONLINE_URL for another.
+let siteUrl = String(process.env.ONLINE_URL || "http://127.0.0.1:8890").replace(/\/+$/, "");
 const TOKEN = process.env.INGEST_TOKEN || "";
 const WORKER_NAME = process.env.WORKER_NAME || "local-qwen-worker";
 const POLL_MS = Number(process.env.POLL_MS || 5000);

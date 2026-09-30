@@ -64,4 +64,14 @@ if (password.length < 8) {
 
 upsert(ENV_FILE, "OWNER_PASSWORD_HASH", hashPassword(password));
 console.log(`\nOWNER_PASSWORD_HASH updated in ${ENV_FILE}`);
+
+// The rest of what the local host and the worker need, made once when missing (never printed):
+// SESSION_SECRET signs the admin cookie (sign-in stays off without it), INGEST_TOKEN is the worker's key.
+const has = (key) => !!process.env[key] || [path.join(ROOT, ".env"), ENV_FILE].some((file) =>
+  fs.existsSync(file) && fs.readFileSync(file, "utf8").split(/\r?\n/).some((line) => line.startsWith(key + "=") && line.length > key.length + 1));
+for (const [key, bytes] of [["SESSION_SECRET", 32], ["INGEST_TOKEN", 24]]) {
+  if (has(key)) continue;
+  upsert(ENV_FILE, key, crypto.randomBytes(bytes).toString("hex"));
+  console.log(`${key} was missing: a random one is now in ${ENV_FILE}`);
+}
 console.log("Restart the server for it to take effect:  npm run local");

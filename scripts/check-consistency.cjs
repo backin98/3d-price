@@ -17,7 +17,7 @@
 const fs = require("node:fs");
 const path = require("node:path");
 
-const SITE = (process.env.ONLINE_URL || "https://3d-price.netlify.app").replace(/\/+$/, "");
+const SITE = (process.env.ONLINE_URL || "http://127.0.0.1:8890").replace(/\/+$/, "");
 
 function envToken() {
   if (process.env.INGEST_TOKEN) return process.env.INGEST_TOKEN;
