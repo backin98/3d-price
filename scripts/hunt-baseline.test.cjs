@@ -20,7 +20,8 @@ const sandbox = {
   search: require('../lib/search-match.cjs'),
   boardLib: require('../lib/baseline-board.cjs'),
   filamentColours: require('../lib/filament-colours.cjs'),
-  merchLib: require('../lib/storefront-merch.cjs')
+  merchLib: require('../lib/storefront-merch.cjs'),
+  productType: require('../lib/product-type.cjs')
 };
 vm.runInNewContext(source, sandbox);
 

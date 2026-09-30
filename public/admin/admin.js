@@ -2779,6 +2779,7 @@
       <div class="name">${esc(p.name || p.title || p.id)}</div>
       <div class="meta">
         ${p.axes ? `<span class="axis-badge${p.axes.combo ? " is-combo" : " is-bare"}">${esc(p.axes.label || (p.axes.combo ? "Combo" : "Bare"))}</span>` : ""}
+        ${p.offShelf ? `<span class="axis-badge is-offshelf" title="The storefront shows printers and filament only. Delete this row, or rename it if the name is wrong.">Not on the site: ${esc(p.offShelf)}</span>` : ""}
         <span class="muted">${esc([p.brand, p.shelf === "filament" ? p.polymer : p.aisle, p.unit].filter(Boolean).join(" · "))} · ${(p.offers || []).length} offers</span>
         <span class="muted" title="product id">${esc(p.id)}</span>
         ${dupeHint(p)}

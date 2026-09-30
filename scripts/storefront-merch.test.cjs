@@ -78,7 +78,8 @@ const sandbox = {
   catalogUnion: { ...catalogUnion, collapseByMagellan: (c) => { collapses += 1; return catalogUnion.collapseByMagellan(c); } },
   search: require('../lib/search-match.cjs'),
   boardLib: require('../lib/baseline-board.cjs'),
-  merchLib: merch
+  merchLib: merch,
+  productType: require('../lib/product-type.cjs')
 };
 vm.runInNewContext(huntSrc, sandbox);
 

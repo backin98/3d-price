@@ -3,6 +3,7 @@ import catalogUnion from "../../lib/catalog-union.cjs";
 import search from "../../lib/search-match.cjs";
 import boardLib from "../../lib/baseline-board.cjs";
 import merchLib from "../../lib/storefront-merch.cjs";
+import productType from "../../lib/product-type.cjs";
 
 const { readJSON } = store;
 const { collapseByMagellan, pricesToTry } = catalogUnion;
@@ -12,6 +13,15 @@ const { collapseByMagellan, pricesToTry } = catalogUnion;
 const { filterSearch } = search;
 const { applyBaselineImages } = boardLib;
 const { storefrontMerch } = merchLib;
+const { classifyProductType } = productType;
+
+// The shop is printers and filament. Rows published before parts were told apart from printers
+// (hotends, fans, upgrade kits and AMS units on the printer shelf) stay in the admin catalog, where
+// they are flagged, but never reach a shelf. "other" is an unknown brand, not a part: it stays.
+function onShelf(row, shelf) {
+  const type = classifyProductType(row && row.name, row && row.brand);
+  return type === shelf || type === "other";
+}
 
 function filterList(list, q) {
   if (!q) return list || [];
@@ -29,6 +39,8 @@ function servedCatalog(raw, baseline) {
   if (memo.key !== key || !memo.catalog) {
     const catalog = pricesToTry(collapseByMagellan(raw)); // stored prices are already KDV-inclusive
     applyBaselineImages(catalog, baseline);
+    catalog.products = (catalog.products || []).filter((p) => onShelf(p, "printer"));
+    catalog.filaments = (catalog.filaments || []).filter((p) => onShelf(p, "filament"));
     memo = { key, catalog };
   }
   return memo.catalog;

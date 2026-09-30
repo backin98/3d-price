@@ -258,9 +258,15 @@ function axesOf(p) {
   };
 }
 
+// offShelf flags a row the storefront will not show (hunt.mjs keeps parts, add-on modules and
+// laser engravers off the printer shelf, and non-filament off the filament shelf), so the catalog
+// says why a published row is missing from the site.
 function withAxes(catalog) {
-  const map = (list) => (list || []).map((p) => ({ ...p, axes: axesOf(p) }));
-  return { ...(catalog || {}), products: map(catalog && catalog.products), filaments: map(catalog && catalog.filaments) };
+  const map = (list, shelf) => (list || []).map((p) => {
+    const type = matcher.classifyProductType ? matcher.classifyProductType(p.name, p.brand) : shelf;
+    return { ...p, axes: axesOf(p), ...(type !== shelf && type !== "other" ? { offShelf: type } : {}) };
+  });
+  return { ...(catalog || {}), products: map(catalog && catalog.products, "printer"), filaments: map(catalog && catalog.filaments, "filament") };
 }
 
 // Clusters of rows that are the same product by title (exact after folding, or Magellan close
