@@ -12,7 +12,9 @@
 //
 // Storage: lib/netlify-store.cjs is put into "local file store" mode, so the same
 // readJSON/writeJSON/readBytes/writeBytes/deleteKey surface is backed by files
-// under work/local-store/ instead of Netlify Blobs or Cloudflare KV.
+// under work/local-store/ instead of Netlify Blobs or Cloudflare KV. Set
+// SITE_STORE_DIR to point it at another folder (a backup, or a scratch copy for
+// click-testing without touching the real store).
 //
 // Run:  node scripts/local-server.mjs
 // Site: http://127.0.0.1:8890/        Admin: http://127.0.0.1:8890/admin/
@@ -34,7 +36,9 @@ import worker from "../netlify/functions/worker.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const PUBLIC = path.join(ROOT, "public");
-const STORE_DIR = path.join(ROOT, "work", "local-store");
+const STORE_DIR = process.env.SITE_STORE_DIR
+  ? path.resolve(process.env.SITE_STORE_DIR)
+  : path.join(ROOT, "work", "local-store");
 
 // 8890 on purpose: WORKER_PORT (8788) belongs to worker/online-worker.cjs.
 const HOST = process.env.SITE_HOST || "127.0.0.1";
