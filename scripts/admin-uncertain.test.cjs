@@ -23,7 +23,8 @@ const sandbox = {
   auth: { ownerFromHeaders: () => ({ role: 'owner' }), authReady: () => true },
   matcher: require('../lib/product-match.cjs'),
   boardLib: require('../lib/baseline-board.cjs'),
-  filamentColours: require('../lib/filament-colours.cjs')
+  filamentColours: require('../lib/filament-colours.cjs'),
+  merchLib: require('../lib/storefront-merch.cjs')
 };
 vm.runInNewContext(source, sandbox);
 const req = (body) => ({ method: 'POST', url: 'https://3d-price.netlify.app/api/admin', headers: { get: () => 'https://3d-price.netlify.app', entries: () => [][Symbol.iterator]() }, json: async () => body });

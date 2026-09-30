@@ -40,6 +40,7 @@ const sandbox = {
   baselineLib: require('../lib/baseline-catalog.js'),
   boardLib: require('../lib/baseline-board.cjs'),
   filamentColours: require('../lib/filament-colours.cjs'),
+  merchLib: require('../lib/storefront-merch.cjs'),
   store: {
     // Real blobs are parsed fresh per request: a thrown action must not leave mutations behind.
     readJSON: async (k, f) => (k in storeState ? JSON.parse(JSON.stringify(storeState[k])) : f),

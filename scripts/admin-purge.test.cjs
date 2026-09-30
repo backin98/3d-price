@@ -56,6 +56,7 @@ context.money = require('../lib/parse-money.cjs'); // the function imports this 
 context.matcher = require('../lib/product-match.cjs'); // and this one
 context.baselineLib = require('../lib/baseline-catalog.js');
 context.boardLib = require('../lib/baseline-board.cjs');
+context.merchLib = require('../lib/storefront-merch.cjs');
 vm.runInNewContext(source, context);
 
 const post = (body) => new Request('https://example.com/api/admin', {

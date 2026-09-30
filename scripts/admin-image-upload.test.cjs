@@ -22,7 +22,8 @@ const sandbox = {
   auth: { ownerFromHeaders: () => ({ role: 'owner' }), authReady: () => true },
   money: require('../lib/parse-money.cjs'), matcher: require('../lib/product-match.cjs'),
   baselineLib: require('../lib/baseline-catalog.js'), boardLib: require('../lib/baseline-board.cjs'),
-  filamentColours: require('../lib/filament-colours.cjs')
+  filamentColours: require('../lib/filament-colours.cjs'),
+  merchLib: require('../lib/storefront-merch.cjs')
 };
 vm.runInNewContext(adminSource, sandbox);
 

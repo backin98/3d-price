@@ -19,7 +19,8 @@ const sandbox = {
   catalogUnion: require('../lib/catalog-union.cjs'),
   search: require('../lib/search-match.cjs'),
   boardLib: require('../lib/baseline-board.cjs'),
-  filamentColours: require('../lib/filament-colours.cjs')
+  filamentColours: require('../lib/filament-colours.cjs'),
+  merchLib: require('../lib/storefront-merch.cjs')
 };
 vm.runInNewContext(source, sandbox);
 

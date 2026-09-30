@@ -179,6 +179,7 @@ apiContext.matcher = require('../lib/product-match.cjs');
 apiContext.baselineLib = require('../lib/baseline-catalog.js');
 apiContext.boardLib = require('../lib/baseline-board.cjs');
 apiContext.filamentColours = require('../lib/filament-colours.cjs');
+apiContext.merchLib = require('../lib/storefront-merch.cjs');
 vm.runInNewContext(adminSrc, apiContext);
 const post = (body) => new Request('https://example.com/api/admin', { method: 'POST', headers: { origin: 'https://example.com', 'content-type': 'application/json' }, body: JSON.stringify(body) });
 

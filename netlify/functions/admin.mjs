@@ -5,6 +5,7 @@ import money from "../../lib/parse-money.cjs";
 import matcher from "../../lib/product-match.cjs";
 import boardLib from "../../lib/baseline-board.cjs";
 import filamentColours from "../../lib/filament-colours.cjs";
+import merchLib from "../../lib/storefront-merch.cjs";
 
 // A tone is one of the named filament colours (beige, bone-white…); anything else is dropped.
 // One or more plain colour names joined by "+" ("white+cyan+blue"); unknown names are dropped.
@@ -103,7 +104,10 @@ function toHeaders(req) {
 }
 
 async function loadAll() {
-  const desk = await readJSON("desk.json", DEFAULT_DESK);
+  const stored = await readJSON("desk.json", DEFAULT_DESK);
+  // Drop the storefront template's placeholder banners: the editor shows only the owner's own,
+  // and the next save of the desk writes them out for good.
+  const desk = { ...stored, banners: merchLib.ownBanners(stored) };
   const catalog = await readJSON("catalog.json", { source: { id: "empty", name: "Empty catalog" }, savedAt: null, products: [], filaments: [] });
   const candidate = await readJSON("candidate.json", null);
   const jobs = await readJSON("jobs.json", []);
