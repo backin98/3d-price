@@ -1,0 +1,15 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>Filamix PLA+ Filament</title>
+<style>body{font:16px sans-serif;width:1100px}#pic{width:380px;height:380px;display:block}</style></head>
+<body><main><img id="pic" src="/img/filamix.png" width="380" height="380" alt="">
+<h1>Filamix PLA+ Filament 1.75mm 1kg</h1><div class="price"><span class="sale-price" id="p">589,49 TL</span></div>
+<div class="options"><label for="opt">Renk</label><select id="opt" name="secenek"><option value="">Seçiniz</option></select></div>
+<label for="qty">Adet</label><select id="qty" name="adet"><option>1</option><option>2</option><option>3</option></select>
+<button id="b">Sepete Ekle</button></main>
+<script>
+const data = { '601': ['Mint Yeşili', '589,49 TL', true], '602': ['Lacivert', '589,49 TL', false], '603': ['Turuncu', '599,49 TL', true] };
+setTimeout(() => {
+  const s = document.getElementById('opt');
+  for (const [v, [n]] of Object.entries(data)) s.add(new Option(n, v));
+  s.onchange = () => { const d = data[s.value]; if (!d) return; document.getElementById('p').textContent = d[1]; const b = document.getElementById('b'); b.disabled = !d[2]; document.getElementById('pic').src = '/img/filamix-' + s.value + '.png'; };
+}, 400);
+</script></body></html>

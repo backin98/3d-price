@@ -1,0 +1,37 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>Elegoo PLA Filament 1.75mm 1kg</title>
+<meta property="og:title" content="Elegoo PLA Filament 1.75mm 1kg">
+<style>body{font:16px sans-serif;width:1100px}.gallery img{width:400px;height:400px;display:block}.variant-list a{display:inline-block;padding:6px;margin:3px;border:1px solid #999}.passive{opacity:.4}</style></head>
+<body><header class="header"><nav><a href="/filament">Filament</a><a href="/pla">PLA</a></nav></header>
+<main><div class="product-detail"><div class="gallery"><img id="main-img" src="/img/elegoo-pla.png" width="400" height="400" alt=""></div>
+<h1 class="product-title">Elegoo PLA Filament 1.75mm 1kg</h1>
+<div class="product-price-wrap"><span class="old-price"><del>649,00 TL</del></span> <span class="product-price" id="price">549,00 TL</span></div>
+<div class="product-variant"><div class="variant-title">Renk Seçiniz</div><div class="variant-list" id="vl"></div></div>
+<button id="cart" class="add-to-cart">Sepete Ekle</button>
+</div>
+<div class="related-products"><h3>Benzer ürünler</h3><div class="item-row"><a href="/esun-pla">eSUN PLA</a><a href="/sunlu-pla">SUNLU PLA</a><a href="/beta-pla">Beta PLA</a></div></div>
+</main>
+<footer class="footer"><a href="/iletisim">İletişim</a><a href="/kargo">Kargo</a></footer>
+<script>
+// Drawn after load, like a shop script would.
+const opts = [
+  { id: 11, name: 'Siyah', price: '549,00 TL', img: '/img/elegoo-pla-siyah.png', stock: true },
+  { id: 12, name: 'Kırmızı', price: '559,00 TL', img: '/img/elegoo-pla-kirmizi.png', stock: true },
+  { id: 13, name: 'Gri', price: '549,00 TL', img: '/img/elegoo-pla-gri.png', stock: false },
+  { id: 14, name: 'Koyu Mavi', price: '579,00 TL', img: '/img/elegoo-pla-koyu-mavi.png', stock: true }
+];
+setTimeout(() => {
+  const vl = document.getElementById('vl');
+  for (const o of opts) {
+    const a = document.createElement('a');
+    a.href = 'javascript:void(0)'; a.textContent = o.name; a.className = 'variant-item' + (o.stock ? '' : ' passive'); a.dataset.id = o.id;
+    a.onclick = () => setTimeout(() => {
+      document.getElementById('price').textContent = o.price;
+      document.getElementById('main-img').src = o.img;
+      const cart = document.getElementById('cart');
+      cart.disabled = !o.stock; cart.textContent = o.stock ? 'Sepete Ekle' : 'Tükendi';
+      history.replaceState(null, '', location.pathname + '?varyant=' + o.id);
+    }, 150);
+    vl.appendChild(a);
+  }
+}, 600);
+</script></body></html>

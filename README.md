@@ -161,6 +161,12 @@ cards (the newest one found none) — that fallback used to look like the same b
   leaves the board. A sold-out option no longer makes the whole page "out of stock", and colour pages
   added while a batch was being read are no longer skipped. `scripts/filament-variants.test.cjs`, on
   pages in each platform's markup (`scripts/fixtures/pages/variants`).
+- **Options drawn by script.** Filament Marketim runs on Qukasoft and its product pages showed nothing
+  the readers above could read. When the page HTML has no options, the run now opens the page in
+  Chromium and clicks each colour (`lib/variant-clicker.cjs`): buttons or swatches in an option block, a
+  colour dropdown, or swatches linking to each colour's page. After each click it reads the price
+  shown, the cart button, the main photo and the URL. When even that finds nothing, the run log says so
+  and saves the page to `work/variant-debug/`. `scripts/filament-variants-clicked-browser.test.cjs`.
 - **Packs** ("4'lü set", "10 adet", "4x1kg", "4 renk set", "10 al 9 öde", "bundle") are read from the
   title, or set on the card (**Pack** and **Spools in pack**, next to Weight). A pack never merges with a
   single spool or a pack of another size, never auto-matches a single-spool baseline model, is published
