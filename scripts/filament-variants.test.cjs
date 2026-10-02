@@ -68,6 +68,7 @@ const EXPECT = {
   const category = `<!doctype html><html><head><title>Filamentler</title></head><body><h1>Filamentler</h1><div class="product-list">
     ${families.map((m) => card(m, true)).join('\n')}
     ${card({ url: SHOP + '/r3d-pla-plus-filament', title: 'R3D PLA+ Filament 1.75mm 1kg', price: 399 }, true)}
+    ${card({ url: SHOP + '/elas-pla-pro-filament', title: 'Elas PLA Pro Filament', price: 449.9 }, true)}
     </div></body></html>`;
   const pages = { [SHOP + '/filament']: category };
   for (const [file, meta] of Object.entries(PAGES)) pages[meta.url] = page(file);
@@ -75,6 +76,12 @@ const EXPECT = {
   pages[SHOP + '/r3d-pla-plus-filament'] = page('colour-links-r3d-pla.html').replace(/R3D PLA\+ Filament Siyah/g, 'R3D PLA+ Filament');
   for (const [slug, colour] of [['beyaz', 'Beyaz'], ['pumpkin', 'Pumpkin'], ['siyah', 'Siyah']]) {
     pages[SHOP + '/r3d-pla-plus-filament-' + slug] = page('colour-links-r3d-pla.html').replace(/R3D PLA\+ Filament Siyah/g, 'R3D PLA+ Filament ' + colour);
+  }
+  // Elas (Filament Marketim's shape, on Qukasoft): the family page has no price and a disabled cart until a
+  // colour is picked ("Lütfen renk seçiniz"), and each colour is its own page named after the product's.
+  pages[SHOP + '/elas-pla-pro-filament'] = page('qukasoft-family-elas.html');
+  for (const [slug, colour, price] of [['siyah-5101', 'Siyah', '449.90'], ['beyaz-5102', 'Beyaz', '449.90'], ['lacivert-5103', 'Lacivert', '469.90']]) {
+    pages[SHOP + '/elas-pla-pro-filament-' + slug] = page('qukasoft-colour-page.html').replace(/__COLOUR__/g, colour).replace(/__SLUG__/g, slug).replace(/__PRICE__/g, price).replace(/__PRICE_TR__/g, price.replace('.', ','));
   }
   archive.writeArchive(archiveDir, pages);
 
@@ -87,7 +94,7 @@ const EXPECT = {
   const listings = events.filter((e) => e.type === 'extract' && e.listing).map((e) => e.listing);
   const byFamily = (title) => listings.filter((l) => l.sourceTitle.startsWith(title) || l.sourceTitle.startsWith(title.replace(' 1.75mm 1kg', '')));
 
-  const familyUrls = new Set(families.map((m) => m.url));
+  const familyUrls = new Set([...families.map((m) => m.url), SHOP + '/elas-pla-pro-filament']);
   assert.deepEqual(listings.filter((l) => familyUrls.has(l.url)).map((l) => l.sourceTitle), [], 'no colourless family listing is left');
   assert.equal(new Set(listings.map((l) => l.url)).size, listings.length, 'every listing has its own URL');
   assert.deepEqual(listings.filter((l) => !l.color).map((l) => l.sourceTitle), [], 'every listing has a colour');
@@ -98,7 +105,8 @@ const EXPECT = {
     'SUNLU PETG Filament 1.75mm 1kg': ['clear'],
     'Filamix PLA+ Filament 1.75mm 1kg': ['mint-green', 'orange'],
     'Beta PLA Filament 1.75mm 1kg': ['red', 'purple'],
-    'R3D PLA+ Filament': ['black', 'white', 'pumpkin-orange']
+    'R3D PLA+ Filament': ['black', 'white', 'pumpkin-orange'],
+    'Elas PLA Pro Filament': ['black', 'white', 'navy-blue']
   };
   for (const [title, colours] of Object.entries(want)) {
     const got = byFamily(title);
@@ -109,7 +117,9 @@ const EXPECT = {
   assert.equal(listings.find((l) => l.color === 'mint-green').price, 589.49);
   assert.equal(listings.find((l) => l.color === 'orange' && /Filamix/.test(l.sourceTitle)).price, 599.49);
   const variantEvents = events.filter((e) => e.type === 'variants');
-  assert.equal(variantEvents.length, 7, 'the run says which families it split (six with options, R3D with colour pages)');
+  assert.equal(variantEvents.length, 8, 'the run says which families it split (six with options, R3D and Elas with colour pages)');
+  assert.equal(listings.find((l) => l.color === 'navy-blue').price, 469.9, 'each colour page keeps its own price');
+  assert.ok(!listings.some((l) => /makarasiz/.test(l.url)), 'a single link to the refill version is not a colour');
 
   // 3. The board: a split family's own card goes, its colours stay.
   const source = fs.readFileSync(path.join(__dirname, '..', 'netlify', 'functions', 'worker.mjs'), 'utf8')

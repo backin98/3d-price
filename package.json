@@ -15,6 +15,7 @@
     "test": "node scripts/run-tests.cjs",
     "e2e": "node scripts/e2e-local-run.cjs",
     "shop-report": "node scripts/shop-report.cjs",
+    "probe-colours": "node scripts/probe-colours.cjs",
     "pull-blobs": "node scripts/pull-netlify-blobs.mjs",
     "backup": "node scripts/backup-data.mjs",
     "dev": "wrangler dev",

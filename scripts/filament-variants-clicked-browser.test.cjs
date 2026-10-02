@@ -19,7 +19,7 @@ const server = http.createServer((req, res) => {
   let html = null;
   if (m && LINKS[m[1]]) html = fill(m[1], LINKS[m[1]]);
   else if (u.pathname === '/links.html') html = fill('siyah', ['', '399,00', 'Sepete Ekle']);
-  else if (['/buttons.html', '/select.html'].includes(u.pathname)) html = fs.readFileSync(path.join(DIR, u.pathname.slice(1)), 'utf8');
+  else if (['/buttons.html', '/select.html', '/swatches.html'].includes(u.pathname)) html = fs.readFileSync(path.join(DIR, u.pathname.slice(1)), 'utf8');
   else if (u.pathname === '/plain.html') html = '<!doctype html><html><body><header><nav class="menu"><a href="/a">PLA</a><a href="/b">PETG</a></nav></header><main><h1>Bambu Lab PLA Basic Siyah 1kg</h1><span class="price">944,69 TL</span><button>Sepete Ekle</button><div class="related-products"><a href="/x">X</a><a href="/y">Y</a></div></main><footer><a href="/c">İletişim</a><a href="/d">Kargo</a></footer></body></html>';
   if (html == null) { res.writeHead(404); return res.end(); }
   res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
@@ -51,6 +51,12 @@ const server = http.createServer((req, res) => {
     const links = await clickThroughOptions(base + '/links.html');
     assert.deepEqual(links.variants.map((v) => [v.label, v.price, v.stock, v.url.replace(base, '')]), [['Siyah', 399, 'in_stock', '/links-siyah.html'], ['Beyaz', 399, 'in_stock', '/links-beyaz.html'], ['Pumpkin', 419, 'out_of_stock', '/links-pumpkin.html']],
       'swatches that open each colour\'s own page');
+
+    // Round colour swatches with no text: a hidden radio in each label, the cart disabled until a colour is
+    // picked, the chosen name shown as "Renk: Siyah" only after the click.
+    const swatches = await clickThroughOptions(base + '/swatches.html');
+    assert.deepEqual(swatches.variants.map((v) => [v.label, v.price, v.stock]), [['Siyah', 449.9, 'in_stock'], ['Beyaz', 449.9, 'in_stock'], ['Lacivert', 469.9, 'out_of_stock']],
+      'swatches without a name are named from what the page shows after the click');
 
     // What the run makes of the clicks: one listing per colour in stock, each its own URL.
     const family = normalizeFilamentListing({ name: 'Filamix PLA+ Filament 1.75mm 1kg', brand: 'Filamix', kind: 'filament', url: base + '/select.html', price: 589.49, stockStatus: 'in_stock', stockVerified: true });
