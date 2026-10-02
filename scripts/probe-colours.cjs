@@ -41,10 +41,22 @@ if (!/^https:\/\//.test(String(url || ""))) {
     for (const l of inPage.links) console.log("   " + (l.label || "(no name)") + " · " + l.url);
   }
 
-  const clicked = await clickThroughOptions(url, { keepHtml: true, timeoutMs: 180000 });
+  // Colour pages linked from this one (each colour its own page): the picture each of them gives.
+  for (const l of inPage.links.slice(0, 6)) {
+    try {
+      const sub = await fetchHtml(l.url, null, { scroll: false, blockResources: true, discoverStock: false });
+      const sx = extractProductPage(sub, l.url, "filament");
+      console.log("   colour page " + l.url + " → picture " + ((sx.product || sx.incomplete || {}).image || "(none)"));
+    } catch (e) { console.log("   colour page " + l.url + " not read: " + e.message); }
+  }
+
+  const clicked = await clickThroughOptions(url, { keepHtml: true, timeoutMs: 180000, trace: true });
   console.log("\n2. By clicking the options: " + clicked.variants.length + (clicked.note ? " (" + clicked.note + ")" : ""));
   if (clicked.groups.length) console.log("   option blocks seen: " + clicked.groups.map((g) => g.kind + " '" + g.name + "' ×" + g.size).join(", "));
-  for (const v of clicked.variants) console.log("   " + v.label + " · " + (v.price || v.priceText || "?") + " · " + (v.stock || "?") + (v.url ? " · " + v.url : ""));
+  for (const v of clicked.variants) console.log("   " + v.label + " · " + (v.price || v.priceText || "?") + " · " + (v.stock || "?") + (v.url ? " · " + v.url : "") + "\n      picture: " + (v.image || "(none)") + (v.thumb ? "  button picture: " + v.thumb : ""));
+  const pics = new Set(clicked.variants.map((v) => v.image));
+  if (clicked.variants.length > 1) console.log("   " + (pics.size === 1 ? "SAME PICTURE FOR EVERY COLOUR" : pics.size + " different pictures for " + clicked.variants.length + " colours"));
+  fs.writeFileSync(path.join(dir, stem + ".clicks.json"), JSON.stringify(clicked.variants, null, 1));
   if (clicked.html) {
     fs.writeFileSync(path.join(dir, stem + ".rendered.html"), clicked.html);
     const drawn = variantsFromPage(clicked.html, url, { pagePrice: Number(x.price) || 0 });
