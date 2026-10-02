@@ -2594,6 +2594,16 @@
   }
 
   // review: Shop Runs extras on the same card (select / flag, worker match line, compare line, mismatch actions).
+  // A listing the run gathered but could not read (no price, no brand): say why on the card itself.
+  function unreadReason(ev, c) {
+    if (!ev || ev.mismatch || (c && c.mismatch) || ev.error === "category_mismatch") return "";
+    const err = String(ev.error || "");
+    if (!err || Number(c && c.price) > 0) return "";
+    if (err === "out_of_stock") return "the shop page reads as out of stock";
+    if (/Not in the replay archive/.test(err)) return "the page was not saved (replayed run)";
+    return err.slice(0, 160);
+  }
+
   function uncertainCard(ev, keepLast, review) {
     const c = withEarlierSave(ev.card || {});
     const url = c.url || "";
@@ -2660,6 +2670,7 @@
         <button class="btn-sm ghost" type="button" data-card-undo title="Undo the last change on this card"${cardHistoryCan(url, -1) ? "" : " disabled"}>↶ Undo</button>
         <button class="btn-sm ghost" type="button" data-card-redo title="Redo"${cardHistoryCan(url, 1) ? "" : " disabled"}>↷ Redo</button>
       </div>
+      ${unreadReason(ev, c) ? `<p class="card-unread" role="note">Not read: ${esc(unreadReason(ev, c))}</p>` : ""}
       <div class="catalog-thumb">${c.image ? productImg(c.image) : '<div class="catalog-thumb-empty"></div>'}</div>
       <div class="meta"><span class="badge">${esc(ev.shopName || ev.shopHost || "shop")}</span></div>
       <label class="muted">Product line<textarea aria-label="Listing name" data-uncertain-field="name" data-uncertain-url="${esc(url)}" rows="3">${esc(name)}</textarea></label>

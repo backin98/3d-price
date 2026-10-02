@@ -1,0 +1,12 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>Elas PETG Filament</title>
+<style>body{font:16px sans-serif;width:1100px}#big{width:420px;height:420px;display:block}.t img{width:60px;height:60px}.b{display:inline-block;width:32px;height:32px;margin:2px;border:1px solid #333;cursor:pointer}</style></head>
+<body><main><div class="pd">
+<div class="t"><img id="big" src="/img/petg.png" width="420" height="420" alt="Elas PETG"><span class="t-row"><a href="javascript:void(0)" class="tt"><img src="/img/petg-1.png" alt=""></a><a href="javascript:void(0)" class="tt"><img src="/img/petg-2.png" alt=""></a></span></div>
+<h1>Elas PETG Filament</h1><div class="p1"><b id="pr">399,00 TL</b></div>
+<div class="k1">Etiketler: <a href="/petg">PETG</a> <a href="/elas">Elas</a> <a href="/makarali">Makaralı</a></div>
+<div class="zz"><div id="nm">Renk: -</div><div class="yy"><span class="b" style="background:#000"></span><span class="b" style="background:#fff"></span><span class="b" style="background:#f60"></span></div></div>
+<button id="c" disabled>Sepete Ekle</button></div></main>
+<script>
+const N = [['Siyah', '399,00 TL'], ['Beyaz', '399,00 TL'], ['Turuncu', '419,00 TL']];
+document.querySelectorAll('.yy .b').forEach((el, i) => el.addEventListener('click', () => { document.getElementById('nm').textContent = 'Renk: ' + N[i][0]; document.getElementById('pr').textContent = N[i][1]; document.getElementById('c').disabled = false; }));
+</script></body></html>

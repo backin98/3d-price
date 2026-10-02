@@ -69,6 +69,7 @@ const EXPECT = {
     ${families.map((m) => card(m, true)).join('\n')}
     ${card({ url: SHOP + '/r3d-pla-plus-filament', title: 'R3D PLA+ Filament 1.75mm 1kg', price: 399 }, true)}
     ${card({ url: SHOP + '/elas-pla-pro-filament', title: 'Elas PLA Pro Filament', price: 449.9 }, true)}
+    ${card({ url: SHOP + '/elas-abs-filament', title: 'Elas ABS Filament', price: 499.9 }, true)}
     </div></body></html>`;
   const pages = { [SHOP + '/filament']: category };
   for (const [file, meta] of Object.entries(PAGES)) pages[meta.url] = page(file);
@@ -83,6 +84,8 @@ const EXPECT = {
   for (const [slug, colour, price] of [['siyah-5101', 'Siyah', '449.90'], ['beyaz-5102', 'Beyaz', '449.90'], ['lacivert-5103', 'Lacivert', '469.90']]) {
     pages[SHOP + '/elas-pla-pro-filament-' + slug] = page('qukasoft-colour-page.html').replace(/__COLOUR__/g, colour).replace(/__SLUG__/g, slug).replace(/__PRICE__/g, price).replace(/__PRICE_TR__/g, price.replace('.', ','));
   }
+  // A family page that waits for a colour and offers none this run can read: kept, not "out of stock".
+  pages[SHOP + '/elas-abs-filament'] = '<!doctype html><html><head><title>Elas ABS Filament</title><meta property="og:title" content="Elas ABS Filament"></head><body><div class="product-detail"><img src="https://img.example/elas-abs.jpg" alt=""><h1>Elas ABS Filament</h1><div class="product-price">Renk seçiniz</div><div class="alert">Lütfen renk seçiniz</div><button class="btn add-to-cart disabled" disabled>Sepete Ekle</button></div></body></html>';
   archive.writeArchive(archiveDir, pages);
 
   const storeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'variants-store-'));
@@ -94,10 +97,15 @@ const EXPECT = {
   const listings = events.filter((e) => e.type === 'extract' && e.listing).map((e) => e.listing);
   const byFamily = (title) => listings.filter((l) => l.sourceTitle.startsWith(title) || l.sourceTitle.startsWith(title.replace(' 1.75mm 1kg', '')));
 
+  // The ABS page could not be split here (a replayed run cannot click), but it is not dropped as sold out:
+  // one listing, its real name and brand, the category card's price.
+  const abs = events.filter((e) => e.type === 'extract' && e.listing).map((e) => e.listing).find((l) => l.url === SHOP + '/elas-abs-filament');
+  assert.ok(abs, 'a page waiting for a colour choice is not dropped as out of stock');
+  assert.deepEqual([abs.sourceTitle, abs.polymer, abs.price], ['Elas ABS Filament', 'abs', 499.9]);
   const familyUrls = new Set([...families.map((m) => m.url), SHOP + '/elas-pla-pro-filament']);
   assert.deepEqual(listings.filter((l) => familyUrls.has(l.url)).map((l) => l.sourceTitle), [], 'no colourless family listing is left');
   assert.equal(new Set(listings.map((l) => l.url)).size, listings.length, 'every listing has its own URL');
-  assert.deepEqual(listings.filter((l) => !l.color).map((l) => l.sourceTitle), [], 'every listing has a colour');
+  assert.deepEqual(listings.filter((l) => !l.color && l.url !== SHOP + '/elas-abs-filament').map((l) => l.sourceTitle), [], 'every split listing has a colour');
   const want = {
     'eSUN PLA+ Filament 1.75mm 1kg': ['black', 'white'],
     'Elegoo PLA Filament 1.75mm 1kg': ['black', 'red', 'dark-blue'],
