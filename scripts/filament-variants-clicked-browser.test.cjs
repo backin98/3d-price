@@ -14,12 +14,14 @@ const LINKS = { siyah: ['Siyah', '399,00', 'Sepete Ekle'], beyaz: ['Beyaz', '399
 const fill = (c, [t, p, b]) => linksPage.replace('__COLOUR__', c).replace('__TITLE__', t).replace('__PRICE__', p).replace('__BUTTON__', b);
 const server = http.createServer((req, res) => {
   const u = new URL(req.url, 'http://x');
+  if (u.pathname === '/api/variant') { res.writeHead(200, { 'content-type': 'application/json' }); return res.end(JSON.stringify({ Stok: 5, Resimler: [{ BuyukResim: '\/Uploads\/UrunResimleri\/buyuk\/porima-petg-' + u.searchParams.get('id') + '7f.jpg' }] })); }
+  if (u.pathname.startsWith('/Uploads/')) { res.writeHead(200, { 'content-type': 'image/jpeg' }); return res.end(Buffer.alloc(0)); }
   if (u.pathname.startsWith('/img/')) { res.writeHead(200, { 'content-type': 'image/png' }); return res.end(Buffer.alloc(0)); }
   const m = u.pathname.match(/^\/links-(\w+)\.html$/);
   let html = null;
   if (m && LINKS[m[1]]) html = fill(m[1], LINKS[m[1]]);
   else if (u.pathname === '/links.html') html = fill('siyah', ['', '399,00', 'Sepete Ekle']);
-  else if (['/buttons.html', '/select.html', '/swatches.html', '/unnamed.html', '/thumbs.html', '/slider.html', '/gallery.html', '/gallery-named.html'].includes(u.pathname)) html = fs.readFileSync(path.join(DIR, u.pathname.slice(1)), 'utf8');
+  else if (['/buttons.html', '/select.html', '/swatches.html', '/unnamed.html', '/thumbs.html', '/slider.html', '/gallery.html', '/gallery-named.html', '/answer.html'].includes(u.pathname)) html = fs.readFileSync(path.join(DIR, u.pathname.slice(1)), 'utf8');
   else if (u.pathname === '/plain.html') html = '<!doctype html><html><body><header><nav class="menu"><a href="/a">PLA</a><a href="/b">PETG</a></nav></header><main><h1>Bambu Lab PLA Basic Siyah 1kg</h1><span class="price">944,69 TL</span><button>Sepete Ekle</button><div class="related-products"><a href="/x">X</a><a href="/y">Y</a></div></main><footer><a href="/c">İletişim</a><a href="/d">Kargo</a></footer></body></html>';
   if (html == null) { res.writeHead(404); return res.end(); }
   res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
@@ -81,6 +83,11 @@ const server = http.createServer((req, res) => {
     assert.deepEqual(gallery.variants.map((v) => [v.label, v.image.replace(base, '')]), [['Siyah', '/img/sunlu-meta-1.png'], ['Beyaz', '/img/sunlu-meta-2.png'], ['Gri', '/img/sunlu-meta-3.png']]);
     const galleryNamed = await clickThroughOptions(base + '/gallery-named.html');
     assert.deepEqual(galleryNamed.variants.map((v) => [v.label, v.image.replace(base, '')]), [['Siyah', '/img/elas-pla-pro-siyah.png'], ['Beyaz', '/img/elas-pla-pro-beyaz.png'], ['Lacivert', '/img/elas-1.png']]);
+
+    // The photo comes from the shop's own answer to the click and is drawn as a background, with a number
+    // for a name: each colour still gets the photo the shop sent for it.
+    const answer = await clickThroughOptions(base + '/answer.html');
+    assert.deepEqual(answer.variants.map((v) => [v.label, v.image.replace(base, '')]), [['Siyah', '/Uploads/UrunResimleri/buyuk/porima-petg-317f.jpg'], ['Beyaz', '/Uploads/UrunResimleri/buyuk/porima-petg-327f.jpg'], ['Turuncu', '/Uploads/UrunResimleri/buyuk/porima-petg-337f.jpg']]);
 
     // What the run makes of the clicks: one listing per colour in stock, each its own URL.
     const family = normalizeFilamentListing({ name: 'Filamix PLA+ Filament 1.75mm 1kg', brand: 'Filamix', kind: 'filament', url: base + '/select.html', price: 589.49, stockStatus: 'in_stock', stockVerified: true });

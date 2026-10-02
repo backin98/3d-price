@@ -1,0 +1,18 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>Porima PETG Filament 1Kg</title>
+<style>body{font:16px sans-serif;width:1100px}#big{width:420px;height:420px;background-size:cover}.variant-list span{display:inline-block;width:30px;height:30px;margin:3px;border-radius:50%;cursor:pointer}</style></head>
+<body><main><div class="product-detail"><div id="big" style="background-image:url('/Uploads/UrunResimleri/buyuk/porima-petg-ana.jpg')"></div>
+<h1>Porima PETG Filament 1Kg</h1><div class="product-price"><span id="pr">689,00 TL</span></div>
+<div class="product-variant"><div class="variant-title">Renk: <span id="sel">Seçiniz</span></div><div class="variant-list">
+<span data-id="31" title="Siyah" style="background:#111"></span><span data-id="32" title="Beyaz" style="background:#eee"></span><span data-id="33" title="Turuncu" style="background:#f80"></span>
+</div></div><button>Sepete Ekle</button></div></main>
+<script>
+// The shop asks its server for the chosen colour; the answer names the photo (numbered, no colour word),
+// drawn as a background image, not an <img>.
+document.querySelectorAll('.variant-list span').forEach((b) => b.addEventListener('click', async () => {
+  const r = await fetch('/api/variant?id=' + b.dataset.id);
+  const j = await r.json();
+  document.getElementById('sel').textContent = b.title;
+  document.getElementById('big').style.backgroundImage = 'url(' + j.Resimler[0].BuyukResim + ')';
+}));
+</script>
+</body></html>
