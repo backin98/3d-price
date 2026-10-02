@@ -355,3 +355,4 @@ button, .ghost { min-height: 38px; }
 .is-searching .option-group { display: contents; }
 .is-searching .option-group-head { display: none; }
 .is-searching .option-group > .opt-hidden { display: block; }
+.card-unread.is-soldout { background: #f1f5f9; color: #475569; }

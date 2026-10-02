@@ -1434,8 +1434,10 @@
     return [host, "model", model, adminFold(c.brand || ""), Number(c.packCount) || "", weightOf(c) || "", diameterValue(c.diameter)].join("|");
   }
 
-  function optionDot(c, i, on) {
-    const img = imageUrl({ image: c.optionThumb || "" }) || imageUrl({ image: c.image || "" });
+  // pictures: the options carry pictures of their own (not one product photo repeated); else the dot is
+  // the colour itself.
+  function optionDot(c, i, on, pictures) {
+    const img = pictures ? (imageUrl({ image: c.optionThumb || "" }) || imageUrl({ image: c.image || "" })) : "";
     const st = cardColour(c, state.uncertainEdit.get(c.url) || {}, colourNameOf(c));
     const fill = colourFill(st);
     const ring = Array.isArray(fill) ? fill[0] : fill === "rainbow" ? "#888" : fill || "#cbd5e1";
@@ -1460,6 +1462,9 @@
       if (members.length < 2) return render(members[0]);
       const at = Math.max(0, Math.min(members.length - 1, Number(state.optionAt && state.optionAt.get(slot.key)) || 0));
       const first = editedCard(members[at]);
+      // One photo for every option is the product's photo, not the colours': draw colours instead.
+      const pics = members.map((m) => { const c = editedCard(m); return c.optionThumb || c.image || ""; });
+      const pictures = pics.every(Boolean) && new Set(pics).size === pics.length;
       const prices = members.map((m) => Number(m.card && m.card.price)).filter((n) => n > 0);
       const min = prices.length ? Math.min(...prices) : 0;
       const max = prices.length ? Math.max(...prices) : 0;
@@ -1467,7 +1472,7 @@
       return `<div class="option-group" data-option-group="${esc(slot.key)}">
         <div class="option-group-head">
           <div class="option-group-title"><strong>${esc(listingName(first))}</strong> <span class="muted">${members.length} options${min ? " · " + (min === max ? min + " TL" : min + "–" + max + " TL") : ""}</span></div>
-          <div class="option-dots" role="group" aria-label="Options">${members.map((m, i) => optionDot(editedCard(m), i, i === at)).join("")}</div>
+          <div class="option-dots" role="group" aria-label="Options">${members.map((m, i) => optionDot(editedCard(m), i, i === at, pictures)).join("")}</div>
         </div>
         ${cards.join("")}
       </div>`;
@@ -2669,7 +2674,7 @@
     if (!ev || ev.mismatch || (c && c.mismatch) || ev.error === "category_mismatch") return "";
     const err = String(ev.error || "");
     if (!err || Number(c && c.price) > 0) return "";
-    if (err === "out_of_stock") return "the shop page reads as out of stock";
+    if (err === "out_of_stock") return "sold out at the shop (its product page says out of stock), so it is left out";
     if (/Not in the replay archive/.test(err)) return "the page was not saved (replayed run)";
     return err.slice(0, 160);
   }
@@ -2740,7 +2745,7 @@
         <button class="btn-sm ghost" type="button" data-card-undo title="Undo the last change on this card"${cardHistoryCan(url, -1) ? "" : " disabled"}>↶ Undo</button>
         <button class="btn-sm ghost" type="button" data-card-redo title="Redo"${cardHistoryCan(url, 1) ? "" : " disabled"}>↷ Redo</button>
       </div>
-      ${unreadReason(ev, c) ? `<p class="card-unread" role="note">Not read: ${esc(unreadReason(ev, c))}</p>` : ""}
+      ${unreadReason(ev, c) ? `<p class="card-unread${ev.error === "out_of_stock" ? " is-soldout" : ""}" role="note">${ev.error === "out_of_stock" ? "" : "Not read: "}${esc(unreadReason(ev, c).replace(/^./, (x) => ev.error === "out_of_stock" ? x.toUpperCase() : x))}</p>` : ""}
       <div class="catalog-thumb">${c.image ? productImg(c.image) : '<div class="catalog-thumb-empty"></div>'}</div>
       <div class="meta"><span class="badge">${esc(ev.shopName || ev.shopHost || "shop")}</span></div>
       <label class="muted">Product line<textarea aria-label="Listing name" data-uncertain-field="name" data-uncertain-url="${esc(url)}" rows="3">${esc(name)}</textarea></label>

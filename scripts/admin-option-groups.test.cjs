@@ -56,4 +56,16 @@ assert.deepEqual([...rh.matchAll(/data-opt-dot="\d"[^>]*>\s*<img src="([^"]+)"/g
 // The order on the board stays the shop's: a group sits where its first option was.
 assert.ok(html.indexOf('opt-siyah') < html.indexOf('bambu-lab-a1') && html.indexOf('bambu-lab-a1') < html.indexOf('basic-black'));
 
+// One product photo on every option (Filament Marketim's buttons): the dots show the colours, not that
+// photo repeated.
+const shared = ['Siyah', 'Beyaz', 'Kırmızı'].map((colour) => ev({
+  url: FM + '/porima-pla-filament?variant=' + colour, name: 'Porima PLA Filament - 1Kg', sourceTitle: 'Porima PLA Filament - 1Kg - ' + colour, colorName: colour,
+  color: { Siyah: 'black', Beyaz: 'white', 'Kırmızı': 'red' }[colour], brand: 'Porima', price: 771.37, image: FM + '/img/porima-main.jpg', variantOf: FM + '/porima-pla-filament'
+}));
+const sharedHtml = optionGroupsHtml(shared, (e) => uncertainCard(e, false, { isSel: false, isFlag: false, where: '', mismatchActions: '' }));
+const dots = [...sharedHtml.matchAll(/<button type="button" class="opt-dot[^"]*"[^>]*>([\s\S]*?)<\/button>/g)].map((m) => m[1]);
+assert.equal(dots.length, 3);
+assert.ok(dots.every((d) => !/<img/.test(d) && /opt-dot-fill/.test(d)), 'shared photo: colour dots, not three copies of one photo');
+assert.deepEqual(dots.map((d) => (d.match(/background:([^"]+)"/) || [])[1]), ['#111111', '#F5F5F5', '#E53935'].map((h) => require('../lib/filament-colours.cjs')[{ '#111111': 'black', '#F5F5F5': 'white', '#E53935': 'red' }[h]].hex), 'each dot its own colour');
+
 console.log('PASS: colours of one product are one card with a dot per option (each with its own picture), for one-page shops and one-listing-per-colour shops alike; printers, modules, packs and other models stay their own cards.');
