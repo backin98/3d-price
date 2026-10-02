@@ -1107,6 +1107,7 @@ p {
 .fil-group-title > span { color: var(--ticket); }
 .fil-group-meta { color: #aebdcc; font-size: 0.85rem; overflow-wrap: anywhere; }
 .fil-group-card strong { margin-top: auto; color: var(--ticket); font-family: var(--font-mono); font-size: 0.95rem; }
+.fil-per-spool { display: block; margin-top: 0.15rem; color: var(--mist); font-family: var(--font-mono); font-size: 0.8rem; }
 .fil-filter.is-on em {
   opacity: 0.9;
 }

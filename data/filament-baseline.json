@@ -9,7 +9,7 @@
     "diameterFold": "a listing that omits the diameter joins its brand+polymer+variant card when that card has exactly one known diameter",
     "unknown": "An absent axis stays empty; never infer diameter, weight, packaging, colour, or material variant."
   },
-  "generatedAt": "2026-09-30T21:00:39.228Z",
+  "generatedAt": "2026-10-02T11:06:27.549Z",
   "source": {
     "nameNodesSeen": 4013,
     "distinctListings": 3941,
@@ -16149,6 +16149,21 @@
           ]
         },
         {
+          "id": "pumpkin-orange",
+          "name": "Pumpkin Orange",
+          "hex": "#FF7518",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "Robolink Market",
+              "name": "Fibromast PLA Balkabağı Sarısı Filament",
+              "url": "https://www.robolinkmarket.com/fibromast-pla-balkabagi-sarisi-filament"
+            }
+          ]
+        },
+        {
           "id": "purple",
           "name": "Purple",
           "hex": "#7B1FA2",
@@ -16559,6 +16574,30 @@
       ]
     },
     {
+      "id": "filament/fibromast/pla/unknown/pumpkin-orange",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/fibromast/pla/unknown",
+      "name": "Fibromast PLA Pumpkin Orange",
+      "brand": "Fibromast",
+      "polymer": "pla",
+      "variant": "",
+      "diameter": "",
+      "color": "pumpkin-orange",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "Robolink Market",
+          "name": "Fibromast PLA Balkabağı Sarısı Filament",
+          "url": "https://www.robolinkmarket.com/fibromast-pla-balkabagi-sarisi-filament"
+        }
+      ]
+    },
+    {
       "id": "filament/fibromast/pla/unknown/purple",
       "entityType": "sku",
       "kind": "filament",
@@ -16669,13 +16708,8 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 2,
+      "seenCount": 1,
       "seenIn": [
-        {
-          "shop": "Robolink Market",
-          "name": "Fibromast PLA Balkabağı Sarısı Filament",
-          "url": "https://www.robolinkmarket.com/fibromast-pla-balkabagi-sarisi-filament"
-        },
         {
           "shop": "Robolink Market",
           "name": "Fibromast PLA Mandarin Filament",
@@ -35844,6 +35878,21 @@
           ]
         },
         {
+          "id": "pumpkin-orange",
+          "name": "Pumpkin Orange",
+          "hex": "#FF7518",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "3D Teknomarket",
+              "name": "R3D PLA+ Filament Pumpkin",
+              "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-pumpkin?variant=47704408031419"
+            }
+          ]
+        },
+        {
           "id": "rose-red",
           "name": "Rose Red",
           "hex": "#C21E56",
@@ -36209,6 +36258,30 @@
       ]
     },
     {
+      "id": "filament/r3d/plus-pla/unknown/pumpkin-orange",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/r3d/plus-pla/unknown",
+      "name": "R3D Plus PLA Pumpkin Orange",
+      "brand": "R3D",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "",
+      "color": "pumpkin-orange",
+      "weight": "",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "3D Teknomarket",
+          "name": "R3D PLA+ Filament Pumpkin",
+          "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-pumpkin?variant=47704408031419"
+        }
+      ]
+    },
+    {
       "id": "filament/r3d/plus-pla/unknown/red",
       "entityType": "sku",
       "kind": "filament",
@@ -36281,7 +36354,7 @@
       "weight": "",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 4,
+      "seenCount": 3,
       "seenIn": [
         {
           "shop": "3D Teknomarket",
@@ -36295,8 +36368,8 @@
         },
         {
           "shop": "3D Teknomarket",
-          "name": "R3D PLA+ Filament Pumpkin",
-          "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-pumpkin?variant=47704408031419"
+          "name": "R3D PLA+ Filament Tiffany",
+          "url": "https://www.3dteknomarket.com/products/r3d-pla-filament-tiffany?variant=47704408293563"
         }
       ]
     },

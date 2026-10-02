@@ -944,6 +944,30 @@
     const parts = String((o && o.sourceTitle) || "").split(/\s+[-–—|]\s+/);
     return parts.length > 1 ? parts[parts.length - 1].replace(SIZE_WORDS, " ").replace(/\s+/g, " ").trim() : "";
   }
+  // A pack of spools sold as one listing ("4'lü set", "10 adet"): its own card, never a single spool's price.
+  function packInfo(p) {
+    const offers = (p && p.offers) || [];
+    const own = p && (Number(p.packCount) >= 2 || p.bundle === true) ? p : offers.find((o) => o && (Number(o.packCount) >= 2 || o.bundle === true));
+    if (!own) return { count: 0, bundle: false };
+    return { count: Number(own.packCount) >= 2 ? Math.round(Number(own.packCount)) : 0, bundle: true };
+  }
+  // Turkish takes the suffix of the number word: 4'lü, 6'lı, 9'lu, 10'lu, 2'li.
+  const TR_PACK = { 0: "lu", 1: "li", 2: "li", 3: "lü", 4: "lü", 5: "li", 6: "lı", 7: "li", 8: "li", 9: "lu" };
+  const TR_TENS = { 1: "lu", 2: "li", 3: "lu", 4: "lı", 5: "li" };
+  function packLabel(p) {
+    const k = packInfo(p);
+    if (!k.bundle) return "";
+    if (state.lang !== "tr") return k.count ? k.count + "-pack" : "Bundle";
+    if (!k.count) return "Paket";
+    const suffix = k.count % 10 ? TR_PACK[k.count % 10] : TR_TENS[Math.floor(k.count / 10)] || "lu";
+    return k.count + "'" + suffix + " paket";
+  }
+  function perSpoolHtml(price, p, cur) {
+    const k = packInfo(p);
+    if (!k.count || !(price > 0)) return "";
+    return `<small class="fil-per-spool">≈ ${escapeHtml(money(price / k.count, cur))} ${state.lang === "tr" ? "/ makara" : "per spool"}</small>`;
+  }
+
   function colourRows(rows) {
     return (rows || []).flatMap((p) => {
       const offers = p.offers || [];
@@ -951,7 +975,8 @@
       const groups = new Map();
       offers.forEach((o) => {
         const name = offerColourName(o);
-        const key = foldText(name).replace(/[^\p{L}\p{N}]+/gu, "-") || "offer-" + groups.size;
+        const k = packInfo({ offers: [o] });
+        const key = (foldText(name).replace(/[^\p{L}\p{N}]+/gu, "-") || "offer-" + groups.size) + (k.bundle ? "-pack" + (k.count || "") : "");
         if (!groups.has(key)) groups.set(key, { name, offers: [] });
         groups.get(key).offers.push(o);
       });
@@ -967,6 +992,7 @@
           colorTone: o.colorTone,
           colorEffect: o.colorEffect,
           image: o.image || p.image,
+          ...(packInfo({ offers: [o] }).bundle ? { bundle: true, packCount: packInfo({ offers: [o] }).count || undefined } : {}),
           offers: g.offers
         };
       });
@@ -1362,6 +1388,7 @@
       filLabel("variants", p.variant),
       prettyName(p.brand),
       weightLabel(p.weight),
+      packLabel(p),
       p.packaging === "refill" ? (state.lang === "tr" ? "Makarasız" : "Refill")
         : p.packaging === "spool" ? (state.lang === "tr" ? "Makaralı" : "With spool") : "",
       stores.map(storeLabel).join(" · ")
@@ -1567,14 +1594,15 @@
   }
 
   function filamentFamilyKey(p) {
-    return JSON.stringify([p.brand || "", p.polymer || "", p.variant || "", p.packaging || "unspecified", p.weight || "", p.diameter || ""]);
+    const k = packInfo(p);
+    return JSON.stringify([p.brand || "", p.polymer || "", p.variant || "", p.packaging || "unspecified", p.weight || "", p.diameter || "", k.bundle ? "pack" + k.count : ""]);
   }
 
   function filamentFamilyLabel(p) {
     const packaging = p.packaging === "refill" ? (state.lang === "tr" ? "Makarasız" : "Refill")
       : p.packaging === "spool" ? (state.lang === "tr" ? "Makaralı" : "With spool")
       : "";
-    return [prettyName(p.brand), filLabel("polymers", p.polymer), filLabel("variants", p.variant), packaging, weightLabel(p.weight), p.diameter].filter(Boolean).join(" · ");
+    return [prettyName(p.brand), filLabel("polymers", p.polymer), filLabel("variants", p.variant), packaging, weightLabel(p.weight), p.diameter, packLabel(p)].filter(Boolean).join(" · ");
   }
 
   function filGroupPreview(items) {
@@ -1645,7 +1673,7 @@
           ${filGroupPreview(items)}
           <span class="fil-group-title">${escapeHtml(label)} <span aria-hidden="true">→</span></span>
           <span class="fil-group-meta">${items.length} ${state.lang === "tr" ? "seçenek" : items.length === 1 ? "option" : "options"} · ${escapeHtml(stores.map(storeLabel).join(" · "))}</span>
-          <strong>${escapeHtml(fill(F.fromPrice, { price: money(stats.min, cur) }))}</strong>
+          <strong>${escapeHtml(fill(F.fromPrice, { price: money(stats.min, cur) }))}</strong>${perSpoolHtml(stats.min, items[0], cur)}
         </button>`;
       }).join("")}</div>
     </section>`;
@@ -2019,7 +2047,7 @@
     focusBeforeDrawer = null;
   }
 
-  window.__3dp = { state, bestOffer, liveOffers, isPreorderOffer, isSellable, productImages, imgFail, matchingProducts, matchingFilaments, searchRelevance, searchHaystack, foldText, setQuery, catalogIsStale, huntRhino, prettyName, storeLabel, webUrl, applyMerch, activePins, pinnedFirst, bannerImage, bannerHref };
+  window.__3dp = { state, bestOffer, liveOffers, isPreorderOffer, isSellable, productImages, imgFail, matchingProducts, matchingFilaments, searchRelevance, searchHaystack, foldText, setQuery, catalogIsStale, huntRhino, prettyName, storeLabel, webUrl, packInfo, packLabel, colourRows, filamentFamilyKey, applyMerch, activePins, pinnedFirst, bannerImage, bannerHref };
 
   function escapeHtml(str) {
     return String(str == null ? "" : str)

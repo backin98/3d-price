@@ -126,6 +126,30 @@ function specsFromName(value) {
   };
 }
 
+// A pack sold as one listing: "4'lü Set", "10 Adet", "4x1kg", "4-Pack", "Pack of 4", "4 Renk Set",
+// "10 Al 9 Öde". Or a bundle with no count in the title ("Filament Seti", "Bundle", "Karma Paket").
+// → { count, bundle }: count is the number of spools (0 when the title does not say), bundle is true for
+// any pack. A count needs a pack word next to it: "2 renk" alone is a dual-colour spool, "1.75" a diameter.
+function packOf(value) {
+  const t = " " + String(value || "").toLocaleLowerCase("tr").replace(/[’`´]/g, "'").replace(/\s+/g, " ") + " ";
+  const counts = [
+    /(\d{1,2})\s*'?\s*(?:li|lı|lu|lü)\s+(?:set|seti|paket|paketi|kutu|bundle|filament|makara|rulo)\b/,
+    /(?:^|[^\d.,])(\d{1,2})\s*(?:adet|pcs|pieces|piece|rolls?|rulo|makara|spools?)(?![\p{L}])/u,
+    /(?:^|[^\d.,])(\d{1,2})\s*[x×]\s*\d+(?:[.,]\d+)?\s*(?:kg|gr|g)\b/,
+    /(?:^|[^\d.,])(\d{1,2})\s*-?\s*(?:pack|paket)\b/,
+    /\bpack of (\d{1,2})\b/,
+    /(?:^|[^\d.,])(\d{1,2})\s*renk(?:li)?\s+(?:set|seti|paket|paketi|bundle)\b/,
+    /(?:^|[^\d.,])(\d{1,2})\s*al(?:ana)?\s+\d{1,2}\s*öde\b/
+  ];
+  for (const re of counts) {
+    const m = t.match(re);
+    const n = m ? Number(m[1]) : 0;
+    if (n >= 2 && n <= 50) return { count: n, bundle: true };
+  }
+  if (/\b(?:bundle|multi-?pack|karma paket|filament seti|filament set|başlangıç seti|baslangic seti|deneme seti|numune seti|sample pack)\b/.test(t)) return { count: 0, bundle: true };
+  return { count: 0, bundle: false };
+}
+
 function productFormFromName(value) {
   const text = fold(value);
   for (const [form, aliases] of Object.entries(TAXONOMY.productForms || {})) {
@@ -152,8 +176,14 @@ function classifyFilament(product) {
   const familyKey = [brandKey, polymer, variant, diameter].join("|");
   const compareKey = [familyKey, color, weight, packaging].join("|");
   const productForm = productFormFromName(name);
+  // Your own setting on a card wins (packCount / bundle); else what the title says.
+  const pack = packOf(name);
+  const packCount = Number(product.packCount) >= 2 ? Math.round(Number(product.packCount)) : product.bundle === false ? 0 : pack.count;
+  const bundle = product.bundle === true || product.bundle === false ? product.bundle || packCount >= 2 : pack.bundle;
   return {
     ...product,
+    packCount,
+    bundle,
     kind: "filament",
     aisle: "filament",
     productForm,
@@ -173,4 +203,4 @@ const POLYMERS = Object.keys(TAXONOMY.polymers).map((id) => ({ id }));
 const VARIANTS = Object.keys(TAXONOMY.variants).map((id) => ({ id }));
 const POLYMER_ORDER = [...Object.keys(TAXONOMY.polymers), "other"];
 
-module.exports = { MULTI_COLOUR, multiColourName, classifyFilament, canonicalColour, colourAgnosticTitle, colourNameFromTitle, coloursFromName, specsFromName, gramsFromText, productFormFromName, POLYMERS, VARIANTS, POLYMER_ORDER };
+module.exports = { MULTI_COLOUR, multiColourName, classifyFilament, packOf, canonicalColour, colourAgnosticTitle, colourNameFromTitle, coloursFromName, specsFromName, gramsFromText, productFormFromName, POLYMERS, VARIANTS, POLYMER_ORDER };

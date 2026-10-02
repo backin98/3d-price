@@ -886,6 +886,8 @@
     // The category page the run read is not a listing (older runs saved it as a card).
     const pageKey = (u) => { try { const x = new URL(u); return (x.hostname.replace(/^www\./, "") + x.pathname.replace(/\/+$/, "") + x.search).toLowerCase(); } catch { return ""; } };
     const runPages = new Set([job.url, job.page2Url].filter(Boolean).map(pageKey));
+    // Family cards whose colours were read from their product page: the colours are the cards.
+    for (const u of [...(job.variantParents || []), ...(job.events || []).filter((e) => e.type === "variants").map((e) => e.url)]) if (u) dropped.add(u);
     const add = (url, patch) => {
       if (!url || dropped.has(url) || runPages.has(pageKey(url))) return;
       const prev = byUrl.get(url) || { card: { url, name: titleFromUrl(url) }, decision: {} };
@@ -1139,7 +1141,7 @@
         kind: cardKind(ev.card),
         packaging: edit.packaging != null ? edit.packaging : ((ev.card && ev.card.packaging) || (cardKind(ev.card) === "filament" ? "spool" : ""))
       };
-      for (const k of ["colorName", "colorTone", "colorHex", "colorHexes", "colorSet", "colorEffect", "weight", "spoolMaterial", "rfid"]) if (edit[k] != null) card[k] = edit[k];
+      for (const k of ["colorName", "colorTone", "colorHex", "colorHexes", "colorSet", "colorEffect", "weight", "spoolMaterial", "rfid", "packCount", "bundle"]) if (edit[k] != null) card[k] = edit[k];
       // What the card on screen says goes (auto match, your pick or Laya); off screen, the same rule.
       const domSel = typeof document.querySelectorAll === "function" ? $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url)?.querySelector("[data-review-place]") : null;
       const place = domSel ? parsePlace(domSel.value) : uncertainPlace(ev);
@@ -1160,6 +1162,8 @@
     const items = (state.data && state.data.baseline && state.data.baseline.items) || [];
     const vset = (v) => splitTags(v).map(adminFold).sort().join("+");
     let best = null, score = 0;
+    // Baseline models are single spools: a pack is its own product, picked by hand if at all.
+    if (f.kind === "filament" && (f.bundle === true || Number(f.packCount) >= 2)) return null;
     if (f.kind === "filament") {
       for (const it of items) {
         if (it.category !== "filaments" || it.entityType === "sku" || it.parentId) continue;
@@ -1189,7 +1193,7 @@
       const own = edit.place != null ? edit.place : c.place;
       return { ...(own ? parsePlace(own) : defaultPlace(ev)), linked: false };
     }
-    const f = fields || { kind: c.kind, name: edit.name != null ? edit.name : c.name, brand: edit.brand != null ? edit.brand : c.brand, subBrand: edit.subBrand != null ? edit.subBrand : c.subBrand, polymer: edit.polymer != null ? edit.polymer : c.polymer, variant: edit.variant != null ? edit.variant : c.variant, diameter: edit.diameter != null ? edit.diameter : c.diameter };
+    const f = fields || { kind: c.kind, name: edit.name != null ? edit.name : c.name, brand: edit.brand != null ? edit.brand : c.brand, subBrand: edit.subBrand != null ? edit.subBrand : c.subBrand, polymer: edit.polymer != null ? edit.polymer : c.polymer, variant: edit.variant != null ? edit.variant : c.variant, diameter: edit.diameter != null ? edit.diameter : c.diameter, bundle: edit.bundle != null ? edit.bundle : c.bundle, packCount: edit.packCount != null ? edit.packCount : c.packCount };
     return { ...(autoBaselinePlace(f) || defaultPlace(ev)), linked: true };
   }
   // While linked, Goes to follows the card live: typing a new brand, sub-brand, polymer or variant
@@ -1201,7 +1205,7 @@
     const url = card.dataset.uncertainUrl;
     const ev = cardEvent(url);
     const f = uncertainFields(card);
-    const place = uncertainPlace(ev, { kind: card.dataset.kind || cardKind(ev.card), name: f.name, brand: f.brand, subBrand: f.subBrand, polymer: f.polymer, variant: f.variant, diameter: f.diameter });
+    const place = uncertainPlace(ev, { kind: card.dataset.kind || cardKind(ev.card), name: f.name, brand: f.brand, subBrand: f.subBrand, polymer: f.polymer, variant: f.variant, diameter: f.diameter, bundle: f.bundle, packCount: f.packCount });
     sel.innerHTML = placeOptionsHtml(ev, place, "");
     sel.value = placeValue(place);
     const wrap = sel.closest(".review-place-label");
@@ -2280,6 +2284,12 @@
   function uncertainFields(card) {
     const out = {};
     for (const k of ["name", "brand", "subBrand", "polymer", "variant", "color", "packaging", "spoolMaterial", "rfid", "weight", "diameter"]) out[k] = tagFieldValue(card.querySelector(`[data-uncertain-field="${k}"]`));
+    const packSel = card.querySelector && card.querySelector('[data-uncertain-field="bundle"]');
+    if (packSel) {
+      const count = Math.round(Number((card.querySelector('[data-uncertain-field="packCount"]') || {}).value) || 0);
+      out.packCount = count >= 2 && count <= 50 ? count : 0;
+      out.bundle = packSel.value === "yes" || out.packCount >= 2;
+    }
     if (out.color != null) {
       const row = card.querySelector && card.querySelector(".colour-row");
       const st = row && row.dataset ? rowColour(row) : { set: coloursIn(out.color), hexes: [], fx: "" };
@@ -2559,7 +2569,7 @@
     const s = String(v || "").replace(",", ".");
     return /2\.?85/.test(s) ? "2.85 mm" : /\b3\.?0{1,2}\b/.test(s) && /mm/.test(s) ? "3.0 mm" : "1.75 mm";
   }
-  const SAVED_KEYS = ["name", "brand", "subBrand", "polymer", "variant", "color", "colorName", "colorHex", "colorHexes", "colorSet", "colorEffect", "colorTone", "weight", "diameter", "packaging", "spoolMaterial", "rfid", "place", "placeLinked"];
+  const SAVED_KEYS = ["name", "brand", "subBrand", "polymer", "variant", "color", "colorName", "colorHex", "colorHexes", "colorSet", "colorEffect", "colorTone", "weight", "diameter", "packaging", "spoolMaterial", "rfid", "packCount", "bundle", "place", "placeLinked"];
   // What a card really is. A shop can file spools under another category (the run then marks them
   // category_mismatch), and "Ender" is also a printer name, so a stored kind of "printer" is not enough:
   // a name that says filament or a polymer is a filament.
@@ -2606,6 +2616,9 @@
     const weightAssumed = edit.weight == null && (c.weightAssumed || !found);
     const weight = edit.weight != null ? edit.weight : (found || "1000 g");
     const diameter = diameterValue(edit.diameter != null ? edit.diameter : c.diameter);
+    // A pack: your setting, else what the run read from the title.
+    const packCountRaw = edit.packCount != null ? edit.packCount : c.packCount;
+    const packState = { count: Number(packCountRaw) >= 2 ? Math.round(Number(packCountRaw)) : 0, bundle: edit.bundle != null ? edit.bundle === true : c.bundle === true || Number(c.packCount) >= 2 };
     // Spool material follows its model group while the chain is linked.
     const group = spoolGroup(spoolGroupKey(brand, pick("subBrand"), polymer, variant));
     const spoolLinked = group.spoolLinked !== false;
@@ -2628,7 +2641,7 @@
         ? "Magellan: held" + (ev.decision.reason ? " — " + ev.decision.reason : "")
         : "Magellan: unmatched")
       : "Magellan: " + ((ev.decision && ev.decision.action) || "placed");
-    const place = uncertainPlace(ev, { kind: c.kind, name, brand, subBrand, polymer, variant, diameter });
+    const place = uncertainPlace(ev, { kind: c.kind, name, brand, subBrand, polymer, variant, diameter, bundle: packState.bundle, packCount: packState.count });
     const held = state.uncertainHeld.has(url);
     const saved = state.uncertainSaved.has(url);
     const published = state.uncertainPublished.has(url);
@@ -2658,6 +2671,8 @@
         <label class="colour-field">Colour<span class="colour-row" ${colourRowAttrs(colourState)}>${colourDot(colourFill(colourState), colourState.fx)}<input data-uncertain-field="color" data-uncertain-url="${esc(url)}" value="${esc(color)}" placeholder="Detected colour"><button type="button" class="btn-sm ghost" data-colour-from-image title="Read the colour from the product image"${c.image ? "" : " disabled"}>Image</button><button type="button" class="btn-sm ghost colour-minus" data-colour-minus title="One colour fewer: the name only sounds like two or three colours" aria-label="Remove a colour"${colourState.set.length > 1 ? "" : " hidden"}>−</button><button type="button" class="btn-sm ghost colour-plus" data-colour-plus title="One colour more (dual, tri colour…)" aria-label="Add a colour"${colourState.set.length >= 6 ? " hidden" : ""}>+</button><span class="droppers">${dropperButtons(colourState)}</span></span>${toneNote(autoTone(colourState))}</label>
         <label>Weight<input data-uncertain-field="weight" data-uncertain-url="${esc(url)}" value="${esc(weightLabel(weight))}" placeholder="1 kg, 250 g…">${weightAssumed ? '<small class="muted weight-assumed">Assumed: the listing gives no weight</small>' : ""}</label>
         <label>Diameter<select data-uncertain-field="diameter" data-uncertain-url="${esc(url)}">${["1.75 mm", "2.85 mm"].map((d) => `<option value="${d}" ${diameter === d ? "selected" : ""}>${d}</option>`).join("")}${diameter === "3.0 mm" ? '<option value="3.0 mm" selected>3.0 mm</option>' : ""}</select></label>
+        <label>Pack<select data-uncertain-field="bundle" data-uncertain-url="${esc(url)}" title="A bundle or multi-pack (4'lü set, 10 adet, 4 colours in one box) is its own product, never merged with a single spool"><option value="" ${packState.bundle ? "" : "selected"}>Single spool</option><option value="yes" ${packState.bundle ? "selected" : ""}>Bundle / multi-pack</option></select></label>
+        <label>Spools in pack<input type="number" min="2" max="50" step="1" inputmode="numeric" data-uncertain-field="packCount" data-uncertain-url="${esc(url)}" value="${packState.count >= 2 ? packState.count : ""}" placeholder="${packState.bundle ? "how many?" : "—"}"></label>
         <label>Packaging<select data-uncertain-field="packaging" data-uncertain-url="${esc(url)}"><option value="spool" ${packaging === "spool" ? "selected" : ""}>With spool</option><option value="refill" ${packaging === "refill" ? "selected" : ""}>Refill / Makarasız</option></select></label>
         ${spoolRow((k) => `data-uncertain-field="${k}" data-uncertain-url="${esc(url)}"`, spoolMaterial, rfid, spoolLinked)}
       </div>
@@ -4427,8 +4442,19 @@
           return;
         }
         cur[e.target.dataset.uncertainField] = tagFieldValue(e.target);
+        // Pack: a number of spools and a yes/no, whichever of the two you touched.
+        if (["bundle", "packCount"].includes(e.target.dataset.uncertainField)) {
+          const packCard = e.target.closest(".uncertain-card");
+          const f = packCard ? uncertainFields(packCard) : {};
+          cur.packCount = f.packCount || 0;
+          cur.bundle = f.bundle === true;
+          if (e.target.dataset.uncertainField === "packCount" && cur.packCount >= 2 && packCard) {
+            const sel = packCard.querySelector('[data-uncertain-field="bundle"]');
+            if (sel) sel.value = "yes";
+          }
+        }
         state.uncertainEdit.set(e.target.dataset.uncertainUrl, cur);
-        if (["brand", "subBrand", "polymer", "variant", "name", "diameter"].includes(e.target.dataset.uncertainField)) refreshAutoPlace(e.target.closest(".uncertain-card"));
+        if (["brand", "subBrand", "polymer", "variant", "name", "diameter", "bundle", "packCount"].includes(e.target.dataset.uncertainField)) refreshAutoPlace(e.target.closest(".uncertain-card"));
         // A linked group shares one spool type: change it once, every card of the group follows.
         if (e.target.dataset.uncertainField === "spoolMaterial") {
           const card = e.target.closest(".uncertain-card");

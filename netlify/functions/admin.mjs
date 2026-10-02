@@ -447,6 +447,13 @@ function applySelectedListings(live, candidate, items, jobs) {
     if (/^\d+ g$/.test(String(card.weight || ""))) offer.weight = card.weight;
     if (Array.isArray(card.colorHexes) && card.colorHexes.some(Boolean)) offer.colorHexes = card.colorHexes.slice(0, 6).map((h) => (/^#[0-9a-f]{6}$/i.test(String(h)) ? String(h).toLowerCase() : ""));
     if (card.subBrand != null) offer.subBrand = String(card.subBrand).trim().slice(0, 80);
+    const pack = packOf(card);
+    if (pack.packCount) offer.packCount = pack.packCount;
+    if (pack.bundle) offer.bundle = true;
+    // A pack never joins a single-spool row (or a different pack) by name: it is its own product.
+    const packKey = (x) => { const k = packOf(x); return k.bundle ? "pack:" + (k.packCount || "?") : ""; };
+    const rowPack = (p) => packKey(p) || packKey((p.offers || []).find((o) => packOf(o).bundle) || {});
+    const samePack = (p) => rowPack(p) === packKey(card);
     const shelf = found?.shelf || (card.kind === "filament" ? "filaments" : "products");
     const dest = next[shelf];
     const mergeId = item.action === "merge" ? String(item.candidateId || "") : "";
@@ -526,7 +533,7 @@ function applySelectedListings(live, candidate, items, jobs) {
     // this app (Magellan merges on identical titles), so join the row that already
     // carries that title instead of minting a second one.
     const incomingName = card.name || (found?.product && found.product.name) || "";
-    const twin = incomingName ? dest.find((p) => foldName(p.name) === foldName(incomingName)) : null;
+    const twin = incomingName ? dest.find((p) => foldName(p.name) === foldName(incomingName) && samePack(p)) : null;
     if (twin) {
       if (!twin.offers) twin.offers = [];
       if (!twin.offers.some((o) => o.url === url)) twin.offers.push(offer);
@@ -554,6 +561,7 @@ function applySelectedListings(live, candidate, items, jobs) {
         weight: card.weight || src.weight,
         diameter: card.diameter || src.diameter,
         packaging: card.packaging || src.packaging,
+        ...(pack.bundle ? { bundle: true, packCount: pack.packCount || undefined } : {}),
         aisle: card.aisle || src.aisle || (shelf === "filaments" ? "filament" : "fdm"),
         offers: []
       };
@@ -721,6 +729,13 @@ function purgeShop(catalog, candidate, desk, jobs, shop, opts = {}) {
       categories: (desk.categories || []).filter((c) => !mine.has(foldName(c.name || c)) || usedElsewhere.has(foldName(c.name || c)))
     }
   };
+}
+
+// A pack of spools: 2-50 when the count is known, else 0. bundle is true for any pack.
+function packOf(src) {
+  const n = Math.round(Number(src && src.packCount) || 0);
+  const packCount = n >= 2 && n <= 50 ? n : 0;
+  return { packCount, bundle: !!(src && (src.bundle === true || src.bundle === "yes")) || packCount >= 2 };
 }
 
 function listingUrlsFromJob(job) {
@@ -1610,6 +1625,11 @@ export default async (req) => {
           if (/^\d+ g$/.test(String(p.weight || ""))) offer.weight = p.weight;
           if (p.spoolMaterial != null) offer.spoolMaterial = ["cardboard", "plastic"].includes(p.spoolMaterial) ? p.spoolMaterial : "";
           if (p.rfid != null) offer.rfid = p.rfid === true || p.rfid === "yes";
+          if (p.bundle != null || p.packCount != null) {
+            const pack = packOf(p);
+            if (pack.packCount) offer.packCount = pack.packCount; else delete offer.packCount;
+            if (pack.bundle) offer.bundle = true; else delete offer.bundle;
+          }
           catalog.savedAt = new Date().toISOString();
           await writeJSON("catalog.json", catalog);
         }
@@ -1635,6 +1655,7 @@ export default async (req) => {
         if (body.patch && body.patch.diameter != null) inner.diameter = diameterOf(body.patch.diameter);
         if (body.patch && body.patch.spoolMaterial != null) inner.spoolMaterial = String(body.patch.spoolMaterial);
         if (body.patch && body.patch.rfid != null) inner.rfid = body.patch.rfid === true || body.patch.rfid === "yes";
+        if (body.patch && (body.patch.bundle != null || body.patch.packCount != null)) Object.assign(inner, packOf(body.patch));
         if (body.patch && /^#[0-9a-f]{6}$/i.test(String(body.patch.colorHex || ""))) inner.colorHex = String(body.patch.colorHex).toLowerCase();
         if (body.patch && body.patch.colorTone != null) inner.colorTone = colourToneOf(body.patch.colorTone);
         inner.handEdited = true;

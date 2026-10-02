@@ -151,6 +151,22 @@ cards (the newest one found none) — that fallback used to look like the same b
   spools from their family rows. Bundles are printer-only now and "+" must stand alone. Also "AMS2 Pro"
   is now read as the AMS 2 Pro. `scripts/match-rules.test.cjs`.
 
+### Colours sold as options, and filament packs
+
+- **A shop with one card per filament model gave colourless listings** (Filament Marketim lists the
+  model; the colours are options on the product page). A filament listing whose title names no colour
+  now has its product page read (`lib/product-variants.cjs`: Shopify, WooCommerce, ikas, Ticimax-style
+  page data, schema.org groups, a plain colour dropdown, or colour links to their own pages), and each
+  in-stock colour becomes its own listing with its own URL, price, stock and picture; the family card
+  leaves the board. A sold-out option no longer makes the whole page "out of stock", and colour pages
+  added while a batch was being read are no longer skipped. `scripts/filament-variants.test.cjs`, on
+  pages in each platform's markup (`scripts/fixtures/pages/variants`).
+- **Packs** ("4'lü set", "10 adet", "4x1kg", "4 renk set", "10 al 9 öde", "bundle") are read from the
+  title, or set on the card (**Pack** and **Spools in pack**, next to Weight). A pack never merges with a
+  single spool or a pack of another size, never auto-matches a single-spool baseline model, is published
+  as its own product, and shows on the storefront as "4'lü paket" with a price per spool.
+  `scripts/filament-bundles.test.cjs`.
+
 ## Gotchas that have already cost time here
 
 - **Regexes must be byte-checked.** Three separate regexes in this repo contained literal `0x08`

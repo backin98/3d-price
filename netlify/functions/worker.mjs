@@ -125,8 +125,16 @@ function mergeCards(job, incoming) {
   const foreign = (url) => !sameShop(url, job) || isRunPage(url, job);
   for (const ev of incoming || []) {
     if (ev && ev.type === "done") continue;
+    // A family card whose product page sells its colours as options: the colours are the listings now,
+    // each arriving with its own extract event, so the family's own card goes.
+    if (ev && ev.type === "variants" && typeof ev.url === "string") {
+      delete job.cards[ev.url];
+      job.variantParents = [...new Set([...(job.variantParents || []), ev.url])].slice(-2000);
+      continue;
+    }
+    if (ev && ev.url && (job.variantParents || []).includes(ev.url) && !ev.card) continue;
     for (const url of ev.urls || []) {
-      if (typeof url !== "string" || dropped.has(url) || foreign(url)) continue;
+      if (typeof url !== "string" || dropped.has(url) || foreign(url) || (job.variantParents || []).includes(url)) continue;
       if (!job.cards[url]) job.cards[url] = { name: nameFromUrl(url), url };
     }
     for (const it of ev.items || []) {
@@ -296,7 +304,8 @@ export default async (req) => {
                 name: p.name, brand: p.brand, kind: p.kind, price: o.price, url: o.url,
                 image: o.image || p.image, polymer: p.polymer, variant: p.variant, color: p.color,
                 weight: p.weight, diameter: p.diameter, packaging: p.packaging,
-                colorName: p.colorName || "", sourceTitle: o.sourceTitle || ""
+                colorName: p.colorName || "", sourceTitle: o.sourceTitle || "",
+                packCount: Number(o.packCount || p.packCount) >= 2 ? Number(o.packCount || p.packCount) : 0, bundle: o.bundle === true || p.bundle === true
               },
               liveUrl: liveUrls.has(o.url),
               checkedAt: String(o.stockCheckedAt || o.priceCheckedAt || ""),

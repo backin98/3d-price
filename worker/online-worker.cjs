@@ -190,6 +190,8 @@ function compactEvent(ev) {
       multicolor: l.multicolor === true,
       colorEffect: ["marble", "galaxy"].includes(l.colorEffect) ? l.colorEffect : "",
       weightAssumed: l.weightAssumed === true,
+      packCount: Number(l.packCount) >= 2 ? Math.round(Number(l.packCount)) : 0,
+      bundle: l.bundle === true,
       // What the shop said about stock, as read by the run (in_stock / preorder / dropshipping ...).
       stockStatus: String(l.stockStatus || "").slice(0, 40)
     };
@@ -211,7 +213,7 @@ function compactEvent(ev) {
         name: String(c.name || "").slice(0, 160)
       }));
     }
-  } else if (ev.url && ev.type !== "done") {
+  } else if (ev.url && ev.type !== "done" && ev.type !== "variants") {
     // "done" carries the category page the run read, which is not a listing.
     out.card = { name: nameFromUrl(ev.url), url: ev.url, image: "", kind: "", brand: "" };
   }
