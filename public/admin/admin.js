@@ -1470,7 +1470,10 @@
       const max = prices.length ? Math.max(...prices) : 0;
       // Each option's own card shows that option's picture (a colour button's own thumbnail when the shop
       // gives one), so the photo follows the dots; one photo for all of them is said so on the card.
-      const cards = members.map((m, i) => render({ ...m, optionGroup: { pic: pictures ? pics[i] : "", sharedPhoto: !pictures, size: members.length, linked: groupLinked(m) } }).replace(/^(\s*<div class="[^"]*)"/, `$1 opt-member${i === at ? "" : " opt-hidden"}" data-opt-index="${i}"`));
+      // The card shows the colour's big photo when each colour has one; the dot its swatch picture.
+      const bigs = members.map((m) => editedCard(m).image || "");
+      const bigOwn = bigs.every(Boolean) && new Set(bigs).size === bigs.length;
+      const cards = members.map((m, i) => render({ ...m, optionGroup: { pic: bigOwn ? bigs[i] : pictures ? pics[i] : "", sharedPhoto: !pictures && !bigOwn, size: members.length, linked: groupLinked(m) } }).replace(/^(\s*<div class="[^"]*)"/, `$1 opt-member${i === at ? "" : " opt-hidden"}" data-opt-index="${i}"`));
       return `<div class="option-group" data-option-group="${esc(slot.key)}">
         <div class="option-group-head">
           <div class="option-group-title"><strong>${esc(listingName(first))}</strong> <span class="muted">${members.length} options${min ? " · " + (min === max ? min + " TL" : min + "–" + max + " TL") : ""}</span></div>
