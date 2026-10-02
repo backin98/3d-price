@@ -190,6 +190,10 @@ function compactEvent(ev) {
       multicolor: l.multicolor === true,
       colorEffect: ["marble", "galaxy"].includes(l.colorEffect) ? l.colorEffect : "",
       weightAssumed: l.weightAssumed === true,
+      // One option of a product sold in several (its colours): the product page it came from, and the
+      // option's own little picture. The review board draws them as one card with a dot per option.
+      variantOf: /^https?:\/\//.test(String(l.variantOf || "")) ? String(l.variantOf).slice(0, 500) : "",
+      optionThumb: /^https?:\/\//.test(String(l.optionThumb || "")) ? String(l.optionThumb).slice(0, 500) : "",
       packCount: Number(l.packCount) >= 2 ? Math.round(Number(l.packCount)) : 0,
       bundle: l.bundle === true,
       // What the shop said about stock, as read by the run (in_stock / preorder / dropshipping ...).

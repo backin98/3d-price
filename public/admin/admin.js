@@ -1378,7 +1378,7 @@
         <button class="btn-sm" type="button" id="laya-selected" ${selected ? "" : "disabled"}>Ask Laya: selected (${selected})</button>
       </div>
       <div class="review-board" id="review-board">
-        ${cards.map((e) => {
+        ${optionGroupsHtml(cards, (e) => {
           const c = editedCard(e);
           const shopHost = hostOf(job.url) || job.site || "";
           const shop = shopForUrl(state.data, job.url);
@@ -1410,9 +1410,77 @@
             </div>` : "";
           // Same card as Uncertain: autofill, colours, weight, spool chain, RFID, undo / redo, Goes to chain.
           return uncertainCard({ ...e, jobId: job.id, shopHost, shopName: (shop && (shop.name || shop.id)) || shopHost }, false, { isSel, isFlag, mismatch, where: where + pathNote, mismatchActions });
-        }).join("")}
+        })}
       </div>
     `;
+  }
+
+  // ============================================================================================
+  // Products sold in several options (the colours of one filament). Each option stays its own
+  // listing (own URL, price, stock, Goes to), but the board draws them as one card: a dot per
+  // option showing that option's own picture; a click on a dot shows that option's fields.
+  //   Filament Marketim: options read from one product page carry variantOf (that page).
+  //   Rhino: every colour is its own listing in the category; same shop, model, brand, pack and
+  //   weight make them one product.
+  // ============================================================================================
+  function optionGroupKey(e) {
+    const c = (e && e.card) || {};
+    if (e.mismatch || c.mismatch || e.error === "category_mismatch" || cardKind(c) !== "filament") return "";
+    const host = hostOf(c.url);
+    if (c.variantOf) return host + "|of|" + c.variantOf;
+    if (!(Number(c.price) > 0)) return "";
+    const model = adminFold(listingName(c)).replace(/[^\p{L}\p{N}+]+/gu, " ").trim();
+    if (!model) return "";
+    return [host, "model", model, adminFold(c.brand || ""), Number(c.packCount) || "", weightOf(c) || "", diameterValue(c.diameter)].join("|");
+  }
+
+  function optionDot(c, i, on) {
+    const img = imageUrl({ image: c.optionThumb || "" }) || imageUrl({ image: c.image || "" });
+    const st = cardColour(c, state.uncertainEdit.get(c.url) || {}, colourNameOf(c));
+    const fill = colourFill(st);
+    const ring = Array.isArray(fill) ? fill[0] : fill === "rainbow" ? "#888" : fill || "#cbd5e1";
+    const name = colourNameOf(c) || listingName(c);
+    return `<button type="button" class="opt-dot${on ? " is-on" : ""}" data-opt-dot="${i}" style="--ring:${esc(ring || "#cbd5e1")}" title="${esc(name + (Number(c.price) > 0 ? " · " + c.price + " TL" : ""))}" aria-label="${esc(name)}" aria-pressed="${on ? "true" : "false"}">${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="opt-dot-fill" style="background:${esc(Array.isArray(fill) ? "conic-gradient(" + fill.join(",") + ")" : fill === "rainbow" ? RAINBOW : fill || "#e5e7eb")}"></span>`}</button>`;
+  }
+
+  // list: card events in board order; render(event) → that option's card HTML. Groups take the place of
+  // their first option; a product with one option is drawn as before.
+  function optionGroupsHtml(list, render) {
+    const groups = new Map();
+    const order = [];
+    for (const e of list) {
+      const key = optionGroupKey(e);
+      if (key && groups.has(key)) { groups.get(key).push(e); continue; }
+      if (key) groups.set(key, [e]);
+      order.push(key ? { key } : { single: e });
+    }
+    return order.map((slot) => {
+      if (slot.single) return render(slot.single);
+      const members = groups.get(slot.key);
+      if (members.length < 2) return render(members[0]);
+      const at = Math.max(0, Math.min(members.length - 1, Number(state.optionAt && state.optionAt.get(slot.key)) || 0));
+      const first = editedCard(members[at]);
+      const prices = members.map((m) => Number(m.card && m.card.price)).filter((n) => n > 0);
+      const min = prices.length ? Math.min(...prices) : 0;
+      const max = prices.length ? Math.max(...prices) : 0;
+      const cards = members.map((m, i) => render(m).replace(/^(\s*<div class="[^"]*)"/, `$1 opt-member${i === at ? "" : " opt-hidden"}" data-opt-index="${i}"`));
+      return `<div class="option-group" data-option-group="${esc(slot.key)}">
+        <div class="option-group-head">
+          <div class="option-group-title"><strong>${esc(listingName(first))}</strong> <span class="muted">${members.length} options${min ? " · " + (min === max ? min + " TL" : min + "–" + max + " TL") : ""}</span></div>
+          <div class="option-dots" role="group" aria-label="Options">${members.map((m, i) => optionDot(editedCard(m), i, i === at)).join("")}</div>
+        </div>
+        ${cards.join("")}
+      </div>`;
+    }).join("");
+  }
+
+  function showOption(group, i) {
+    if (!group) return;
+    const key = group.dataset.optionGroup;
+    if (!state.optionAt) state.optionAt = new Map();
+    state.optionAt.set(key, i);
+    group.querySelectorAll(":scope > .opt-member").forEach((el) => el.classList.toggle("opt-hidden", Number(el.dataset.optIndex) !== i));
+    group.querySelectorAll("[data-opt-dot]").forEach((d) => { const on = Number(d.dataset.optDot) === i; d.classList.toggle("is-on", on); d.setAttribute("aria-pressed", on ? "true" : "false"); });
   }
 
   // ============================================================================================
@@ -1610,6 +1678,8 @@
     if (!board) return;
     const cards = Array.from(board.querySelectorAll(".review-card"));
     const raw = (state.reviewQuery || "").trim();
+    // While searching, every option of a product is its own card again, found and ranked on its own.
+    board.classList.toggle("is-searching", !!raw);
     if (!raw) {
       cards.forEach((el) => { el.hidden = false; el.style.order = ""; });
       if (info) info.innerHTML = "";
@@ -2558,7 +2628,7 @@
       </div>
       ${uncertainDupesHtml(all)}
       <p class="muted">${rows.length} shown · ${all.length} uncertain</p>
-      <div class="catalog-results">${rows.map((ev) => uncertainCard(ev)).join("") || '<div class="empty">No unmatched cards. Run a shop, then Ask Laya on the review board.</div>'}</div>
+      <div class="catalog-results">${optionGroupsHtml(rows, (ev) => uncertainCard(ev)) || '<div class="empty">No unmatched cards. Run a shop, then Ask Laya on the review board.</div>'}</div>
     </div>`;
   }
 
@@ -3356,6 +3426,11 @@
       if (e.target.closest("#catalog-more")) {
         state.catalogLimit += 40;
         paint("#tab-catalog", catalogHtml(state.data));
+      }
+      if (e.target.closest("[data-opt-dot]")) {
+        const dot = e.target.closest("[data-opt-dot]");
+        showOption(dot.closest(".option-group"), Number(dot.dataset.optDot) || 0);
+        return;
       }
       if (e.target.closest("[data-mismatch-discard]")) {
         const url = decodeURIComponent(e.target.closest("[data-mismatch-discard]").dataset.mismatchDiscard);

@@ -340,3 +340,18 @@ button, .ghost { min-height: 38px; }
 .axis-badge.is-offshelf { background: #fde8e8; color: #9b1c1c; border-color: #f5c2c2; }
 
 .card-unread { margin: 0 0 8px; padding: 6px 8px; border-radius: 8px; background: #fde8e8; color: #9b1c1c; font-size: 12px; line-height: 1.35; }
+
+/* A product sold in several options (filament colours): one card, a dot per option. */
+.option-group { display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 10px; border: 1px solid #c7d2fe; border-radius: 14px; background: #f8faff; }
+.option-group > .opt-member { margin: 0; }
+.option-group > .opt-hidden { display: none; }
+.option-group-head { display: flex; flex-direction: column; gap: 6px; }
+.option-group-title { font-size: 13px; line-height: 1.3; overflow-wrap: anywhere; }
+.option-dots { display: flex; flex-wrap: wrap; gap: 6px; }
+.opt-dot { width: 34px; height: 34px; padding: 0; border-radius: 50%; border: 3px solid var(--ring, #cbd5e1); background: #fff; overflow: hidden; cursor: pointer; display: inline-grid; place-items: center; }
+.opt-dot img, .opt-dot .opt-dot-fill { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; display: block; }
+.opt-dot.is-on { outline: 2px solid #1d4ed8; outline-offset: 2px; }
+.opt-dot:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 2px; }
+.is-searching .option-group { display: contents; }
+.is-searching .option-group-head { display: none; }
+.is-searching .option-group > .opt-hidden { display: block; }

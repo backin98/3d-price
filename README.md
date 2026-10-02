@@ -167,6 +167,12 @@ cards (the newest one found none) — that fallback used to look like the same b
   colour dropdown, or swatches linking to each colour's page. After each click it reads the price
   shown, the cart button, the main photo and the URL. When even that finds nothing, the run log says so
   and saves the page to `work/variant-debug/`. `scripts/filament-variants-clicked-browser.test.cjs`.
+- **One card per product, a dot per colour** (Shop runs and Uncertain). The colours of one filament
+  (read from one product page, or Rhino's one-listing-per-colour) are one card: each dot shows that
+  colour's own picture, and a click shows that colour's fields. Each colour is still its own listing
+  (own URL, price, Select, Goes to), so publishing is unchanged; searching the board shows them one by
+  one. When a shop never swaps its big photo on a click, each colour takes the picture on its own
+  option button. `scripts/admin-option-groups.test.cjs`, `scripts/filament-variants-clicked-browser.test.cjs`.
 - **Packs** ("4'lü set", "10 adet", "4x1kg", "4 renk set", "10 al 9 öde", "bundle") are read from the
   title, or set on the card (**Pack** and **Spools in pack**, next to Weight). A pack never merges with a
   single spool or a pack of another size, never auto-matches a single-spool baseline model, is published
