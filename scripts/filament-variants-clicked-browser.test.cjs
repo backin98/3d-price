@@ -19,7 +19,7 @@ const server = http.createServer((req, res) => {
   let html = null;
   if (m && LINKS[m[1]]) html = fill(m[1], LINKS[m[1]]);
   else if (u.pathname === '/links.html') html = fill('siyah', ['', '399,00', 'Sepete Ekle']);
-  else if (['/buttons.html', '/select.html', '/swatches.html', '/unnamed.html', '/thumbs.html', '/slider.html'].includes(u.pathname)) html = fs.readFileSync(path.join(DIR, u.pathname.slice(1)), 'utf8');
+  else if (['/buttons.html', '/select.html', '/swatches.html', '/unnamed.html', '/thumbs.html', '/slider.html', '/gallery.html', '/gallery-named.html'].includes(u.pathname)) html = fs.readFileSync(path.join(DIR, u.pathname.slice(1)), 'utf8');
   else if (u.pathname === '/plain.html') html = '<!doctype html><html><body><header><nav class="menu"><a href="/a">PLA</a><a href="/b">PETG</a></nav></header><main><h1>Bambu Lab PLA Basic Siyah 1kg</h1><span class="price">944,69 TL</span><button>Sepete Ekle</button><div class="related-products"><a href="/x">X</a><a href="/y">Y</a></div></main><footer><a href="/c">İletişim</a><a href="/d">Kargo</a></footer></body></html>';
   if (html == null) { res.writeHead(404); return res.end(); }
   res.writeHead(200, { 'content-type': 'text/html; charset=utf-8' });
@@ -74,6 +74,13 @@ const server = http.createServer((req, res) => {
     // shared button photo is not passed off as a colour's thumbnail.
     const slider = await clickThroughOptions(base + '/slider.html');
     assert.deepEqual(slider.variants.map((v) => [v.label, v.image.replace(base, ''), v.thumb]), [['Siyah', '/img/porima-pla-siyah.png', ''], ['Beyaz', '/img/porima-pla-beyaz.png', ''], ['Kırmızı', '/img/porima-pla-kirmizi.png', '']]);
+
+    // Every colour's photo already in the gallery: a click moves the shown slide, or the photos carry the
+    // colours' names. Each colour still gets its own photo, not the big product photo three times.
+    const gallery = await clickThroughOptions(base + '/gallery.html');
+    assert.deepEqual(gallery.variants.map((v) => [v.label, v.image.replace(base, '')]), [['Siyah', '/img/sunlu-meta-1.png'], ['Beyaz', '/img/sunlu-meta-2.png'], ['Gri', '/img/sunlu-meta-3.png']]);
+    const galleryNamed = await clickThroughOptions(base + '/gallery-named.html');
+    assert.deepEqual(galleryNamed.variants.map((v) => [v.label, v.image.replace(base, '')]), [['Siyah', '/img/elas-pla-pro-siyah.png'], ['Beyaz', '/img/elas-pla-pro-beyaz.png'], ['Lacivert', '/img/elas-1.png']]);
 
     // What the run makes of the clicks: one listing per colour in stock, each its own URL.
     const family = normalizeFilamentListing({ name: 'Filamix PLA+ Filament 1.75mm 1kg', brand: 'Filamix', kind: 'filament', url: base + '/select.html', price: 589.49, stockStatus: 'in_stock', stockVerified: true });

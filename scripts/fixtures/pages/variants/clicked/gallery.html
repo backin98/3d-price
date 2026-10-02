@@ -1,0 +1,16 @@
+<!doctype html><html lang="tr"><head><meta charset="utf-8"><title>Sunlu PLA Meta Filament 1kg</title>
+<style>body{font:16px sans-serif;width:1100px}#big{width:420px;height:420px;display:block}.slides div{display:inline-block}.slides img{width:90px;height:90px}.variant-list button{margin:3px}</style></head>
+<body><main><div class="product-detail"><img id="big" src="/img/sunlu-meta-main.png" width="420" height="420" alt="">
+<div class="slides" id="slides"><div class="slide active"><img src="/img/sunlu-meta-1.png" alt=""></div><div class="slide"><img src="/img/sunlu-meta-2.png" alt=""></div><div class="slide"><img src="/img/sunlu-meta-3.png" alt=""></div></div>
+<h1>Sunlu PLA Meta Filament 1kg</h1><div class="product-price"><span id="pr">689,00 TL</span></div>
+<div class="product-variant"><div class="variant-title">Renk: <span id="sel">Seçiniz</span></div><div class="variant-list">
+<button type="button" data-i="0">Siyah</button><button type="button" data-i="1">Beyaz</button><button type="button" data-i="2">Gri</button>
+</div></div><button>Sepete Ekle</button></div></main>
+<script>
+// The colours' photos are all in the gallery from the start; a click moves the shown slide.
+document.querySelectorAll('.variant-list button').forEach((b) => b.addEventListener('click', () => setTimeout(() => {
+  document.getElementById('sel').textContent = b.textContent;
+  document.querySelectorAll('#slides .slide').forEach((s, i) => s.classList.toggle('active', i === Number(b.dataset.i)));
+}, 120)));
+</script>
+</body></html>

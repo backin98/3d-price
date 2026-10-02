@@ -1650,6 +1650,7 @@ export default async (req) => {
         if (body.patch && body.patch.place != null) inner.place = String(body.patch.place).slice(0, 200);
         if (body.patch && (body.patch.kind === "filament" || body.patch.kind === "printer")) inner.kind = body.patch.kind;
         if (body.patch && (body.patch.placeLinked === true || body.patch.placeLinked === false)) inner.placeLinked = body.patch.placeLinked;
+        if (body.patch && (body.patch.groupLinked === true || body.patch.groupLinked === false)) inner.groupLinked = body.patch.groupLinked;
         if (body.patch && body.patch.colorEffect != null) inner.colorEffect = ["marble", "galaxy"].includes(body.patch.colorEffect) ? body.patch.colorEffect : "";
         if (body.patch && body.patch.packaging != null) inner.packaging = String(body.patch.packaging);
         if (body.patch && body.patch.diameter != null) inner.diameter = diameterOf(body.patch.diameter);

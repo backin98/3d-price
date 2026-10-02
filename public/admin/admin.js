@@ -1468,7 +1468,9 @@
       const prices = members.map((m) => Number(m.card && m.card.price)).filter((n) => n > 0);
       const min = prices.length ? Math.min(...prices) : 0;
       const max = prices.length ? Math.max(...prices) : 0;
-      const cards = members.map((m, i) => render(m).replace(/^(\s*<div class="[^"]*)"/, `$1 opt-member${i === at ? "" : " opt-hidden"}" data-opt-index="${i}"`));
+      // Each option's own card shows that option's picture (a colour button's own thumbnail when the shop
+      // gives one), so the photo follows the dots; one photo for all of them is said so on the card.
+      const cards = members.map((m, i) => render({ ...m, optionGroup: { pic: pictures ? pics[i] : "", sharedPhoto: !pictures, size: members.length, linked: groupLinked(m) } }).replace(/^(\s*<div class="[^"]*)"/, `$1 opt-member${i === at ? "" : " opt-hidden"}" data-opt-index="${i}"`));
       return `<div class="option-group" data-option-group="${esc(slot.key)}">
         <div class="option-group-head">
           <div class="option-group-title"><strong>${esc(listingName(first))}</strong> <span class="muted">${members.length} options${min ? " · " + (min === max ? min + " TL" : min + "–" + max + " TL") : ""}</span></div>
@@ -1486,6 +1488,62 @@
     state.optionAt.set(key, i);
     group.querySelectorAll(":scope > .opt-member").forEach((el) => el.classList.toggle("opt-hidden", Number(el.dataset.optIndex) !== i));
     group.querySelectorAll("[data-opt-dot]").forEach((d) => { const on = Number(d.dataset.optDot) === i; d.classList.toggle("is-on", on); d.setAttribute("aria-pressed", on ? "true" : "false"); });
+  }
+
+  // The colours of one card are one product: linked (the default), what you set on one colour is set on
+  // all of them (brand, polymer, variant, weight, diameter, pack, packaging, spool, RFID, Goes to), and
+  // Save / Save & publish take them all. Colour, price, picture and URL stay each colour's own. Break the
+  // link on a colour that differs (a cardboard spool among plastic ones, a colour of another family).
+  const GROUP_FIELDS = ["brand", "subBrand", "polymer", "variant", "weight", "diameter", "bundle", "packCount", "packaging", "spoolMaterial", "rfid"];
+  function groupLinked(ev) {
+    const c = withEarlierSave((ev && ev.card) || {}) || {};
+    const edit = state.uncertainEdit.get(c.url) || {};
+    return edit.groupLinked != null ? edit.groupLinked !== false : c.groupLinked !== false;
+  }
+  function groupLinkButton(linked, size) {
+    const others = size - 1;
+    return `<div class="group-link"><button type="button" class="btn-sm ghost spool-chain group-chain" data-group-link aria-pressed="${linked ? "true" : "false"}" title="${linked ? "Linked: what you set here is set on the other " + others + " colours, and Save / Save & publish take them all. Break it only for a colour that differs (spool material, another family)." : "Unlinked: this colour keeps its own settings. Click to link it to the other colours again."}" aria-label="${linked ? "Break the link to the other colours" : "Link to the other colours"}">${linked ? CHAIN : CHAIN_BROKEN}</button><small class="muted">${linked ? "Linked with the other " + others + " colour" + (others === 1 ? "" : "s") : "Own settings: not linked to the other colours"}</small></div>`;
+  }
+  // The cards a Save, Save & publish or edit on this card applies to: itself and its linked colours.
+  function linkedMembers(card) {
+    const group = card && card.closest && card.closest(".option-group");
+    if (!group || card.dataset.groupLinked !== "true") return [card];
+    return [...group.querySelectorAll(":scope > .opt-member")].filter((el) => el === card || (el.dataset.groupLinked === "true" && !el.classList.contains("is-held")));
+  }
+  function copyGroupField(from, to, k) {
+    const a = from.querySelector(`[data-uncertain-field="${k}"]`);
+    const b = to.querySelector(`[data-uncertain-field="${k}"]`);
+    if (!a || !b) return;
+    b.value = a.value;
+    if (a.hasAttribute("aria-pressed")) b.setAttribute("aria-pressed", a.getAttribute("aria-pressed"));
+    const rowA = a.closest(".tag-field") && a.closest(".tag-field").querySelector(".tag-row");
+    const rowB = b.closest(".tag-field") && b.closest(".tag-field").querySelector(".tag-row");
+    if (rowA && rowB) {
+      rowB.querySelectorAll("[data-tag]").forEach((t) => t.remove());
+      const add = rowB.querySelector(".tag-new");
+      rowA.querySelectorAll("[data-tag]").forEach((t) => add.insertAdjacentHTML("beforebegin", tagChip(t.dataset.tag)));
+    }
+  }
+  // Copies the fields keys from card to its linked colours; returns how many cards followed.
+  function syncGroupFields(card, keys) {
+    const others = linkedMembers(card).filter((o) => o !== card);
+    for (const other of others) {
+      for (const k of keys) copyGroupField(card, other, k);
+      const f = uncertainFields(other);
+      const cur = { ...(state.uncertainEdit.get(other.dataset.uncertainUrl) || {}) };
+      for (const k of keys) if (f[k] !== undefined) cur[k] = f[k];
+      state.uncertainEdit.set(other.dataset.uncertainUrl, cur);
+      refreshAutoPlace(other);
+      scheduleAutosave(other);
+    }
+    return others.length;
+  }
+  // Goes to, picked by hand on one colour: the same pick on its linked colours.
+  function syncGroupPlace(card, place) {
+    for (const other of linkedMembers(card).filter((o) => o !== card)) {
+      applyPlace(other, other.dataset.uncertainUrl, place);
+      unlinkPlace(other, place);
+    }
   }
 
   // ============================================================================================
@@ -2293,6 +2351,12 @@
       autosave(card).catch(() => { /* kept in unsavedEdits and retried */ });
     }, 900) });
   }
+  // A pending autosave of a card that is about to be saved by hand: the hand save sends the same fields.
+  function cancelAutosave(key) {
+    const t = autosaveTimers.get(key);
+    if (t && typeof clearTimeout === "function") clearTimeout(t.timer);
+    autosaveTimers.delete(key);
+  }
   // The request a card's autosave sends; also used to flush on page close.
   function saveBodyFor(card) {
     if (card.dataset.uncertainUrl) return { action: "updateUncertainCard", jobId: card.dataset.uncertainJob, url: card.dataset.uncertainUrl, patch: uncertainFields(card) };
@@ -2385,6 +2449,7 @@
       out.placeLinked = chain.getAttribute("aria-pressed") === "true";
       out.place = placeSel.value || "create";
     }
+    if (card.dataset && card.dataset.groupLinked) out.groupLinked = card.dataset.groupLinked === "true";
     const edit = card.dataset && state.uncertainEdit.get(card.dataset.uncertainUrl);
     if (edit && edit.colorHex) out.colorHex = edit.colorHex;
     const toneRow = card.querySelector && card.querySelector(".colour-row");
@@ -2644,7 +2709,7 @@
     const s = String(v || "").replace(",", ".");
     return /2\.?85/.test(s) ? "2.85 mm" : /\b3\.?0{1,2}\b/.test(s) && /mm/.test(s) ? "3.0 mm" : "1.75 mm";
   }
-  const SAVED_KEYS = ["name", "brand", "subBrand", "polymer", "variant", "color", "colorName", "colorHex", "colorHexes", "colorSet", "colorEffect", "colorTone", "weight", "diameter", "packaging", "spoolMaterial", "rfid", "packCount", "bundle", "place", "placeLinked"];
+  const SAVED_KEYS = ["name", "brand", "subBrand", "polymer", "variant", "color", "colorName", "colorHex", "colorHexes", "colorSet", "colorEffect", "colorTone", "weight", "diameter", "packaging", "spoolMaterial", "rfid", "packCount", "bundle", "place", "placeLinked", "groupLinked"];
   // What a card really is. A shop can file spools under another category (the run then marks them
   // category_mismatch), and "Ender" is also a printer name, so a stored kind of "printer" is not enough:
   // a name that says filament or a polymer is a filament.
@@ -2730,8 +2795,10 @@
     const held = state.uncertainHeld.has(url);
     const saved = state.uncertainSaved.has(url);
     const published = state.uncertainPublished.has(url);
+    const og = ev.optionGroup || null;
+    const thumbSrc = (og && og.pic) || c.image;
     const reviewClass = review ? " review-card" + (review.isSel ? " is-selected" : "") + (review.isFlag ? " flagged" : "") + (review.mismatch ? " is-mismatch" : "") : "";
-    return `<div class="product-card baseline-card uncertain-card${reviewClass}${held ? " is-held" : ""}${saved ? " is-saved" : ""}${published ? " is-published" : ""}" data-uncertain-url="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}" data-kind="${esc(c.kind || "")}"${ev.catalogProductId ? ` data-catalog-product="${esc(ev.catalogProductId)}"` : ""}>
+    return `<div class="product-card baseline-card uncertain-card${reviewClass}${held ? " is-held" : ""}${saved ? " is-saved" : ""}${published ? " is-published" : ""}" data-uncertain-url="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}" data-kind="${esc(c.kind || "")}"${og ? ` data-group-linked="${og.linked ? "true" : "false"}"` : ""}${ev.catalogProductId ? ` data-catalog-product="${esc(ev.catalogProductId)}"` : ""}>
       ${review ? `<div class="review-top">
         <label><input type="checkbox" data-review-select="${esc(id)}" ${review.isSel ? "checked" : ""}> Select</label>
         <label><input type="checkbox" data-review-flag="${esc(id)}" ${review.isFlag ? "checked" : ""}> Flag</label>
@@ -2746,8 +2813,9 @@
         <button class="btn-sm ghost" type="button" data-card-redo title="Redo"${cardHistoryCan(url, 1) ? "" : " disabled"}>↷ Redo</button>
       </div>
       ${unreadReason(ev, c) ? `<p class="card-unread${ev.error === "out_of_stock" ? " is-soldout" : ""}" role="note">${ev.error === "out_of_stock" ? "" : "Not read: "}${esc(unreadReason(ev, c).replace(/^./, (x) => ev.error === "out_of_stock" ? x.toUpperCase() : x))}</p>` : ""}
-      <div class="catalog-thumb">${c.image ? productImg(c.image) : '<div class="catalog-thumb-empty"></div>'}</div>
+      <div class="catalog-thumb${og ? " opt-thumb" : ""}">${thumbSrc ? productImg(thumbSrc) : '<div class="catalog-thumb-empty"></div>'}${og ? `<span class="thumb-colour" title="${og.sharedPhoto ? "The shop shows one photo for every colour" : "This colour's own picture"}">${colourDot(colourFill(colourState), colourState.fx)}${esc(color || "colour")}${og.sharedPhoto ? ' <small>· same photo for all colours</small>' : ""}</span>` : ""}</div>
       <div class="meta"><span class="badge">${esc(ev.shopName || ev.shopHost || "shop")}</span></div>
+      ${og ? groupLinkButton(og.linked, og.size) : ""}
       <label class="muted">Product line<textarea aria-label="Listing name" data-uncertain-field="name" data-uncertain-url="${esc(url)}" rows="3">${esc(name)}</textarea></label>
       ${tagField(subBrandLabel, subMore, "dl-subBrand")}
       ${isFilament ? `<div class="filament-identity-fields">
@@ -2781,7 +2849,7 @@
       <div class="actions">
         <button class="btn-sm" type="button" data-uncertain-save="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">Save</button>
         <button class="btn-sm primary" type="button" data-uncertain-baseline="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}">Add to baseline</button>
-        <button class="btn-sm ok" type="button" data-uncertain-publish="${esc(url)}">Save &amp; publish</button>
+        <button class="btn-sm ok" type="button" data-uncertain-publish="${esc(url)}"${og && og.linked ? ` title="Saves and publishes all ${og.size} linked colours"` : ""}>Save &amp; publish${og && og.linked ? " all" : ""}</button>
       </div>
     </div>`;
   }
@@ -3432,6 +3500,45 @@
         state.catalogLimit += 40;
         paint("#tab-catalog", catalogHtml(state.data));
       }
+      if (e.target.closest("[data-group-link]")) {
+        const btn = e.target.closest("[data-group-link]");
+        const card = btn.closest(".uncertain-card");
+        const group = card && card.closest(".option-group");
+        if (!card || !group) return;
+        const url = card.dataset.uncertainUrl;
+        const link = card.dataset.groupLinked !== "true";
+        card.dataset.groupLinked = link ? "true" : "false";
+        state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), groupLinked: link });
+        const size = group.querySelectorAll(":scope > .opt-member").length;
+        btn.closest(".group-link").outerHTML = groupLinkButton(link, size);
+        if (link) {
+          // Linked again: it takes the settings of the colours it joins.
+          const from = linkedMembers(card).find((o) => o !== card);
+          if (from) {
+            for (const k of GROUP_FIELDS) copyGroupField(from, card, k);
+            const f = uncertainFields(card);
+            const cur = { ...state.uncertainEdit.get(url) };
+            for (const k of GROUP_FIELDS) if (f[k] !== undefined) cur[k] = f[k];
+            const fromChain = from.querySelector("[data-place-chain]");
+            const fromSel = from.querySelector("[data-review-place]");
+            if (fromChain && fromChain.getAttribute("aria-pressed") === "false" && fromSel) {
+              const place = parsePlace(fromSel.value);
+              state.uncertainEdit.set(url, cur);
+              applyPlace(card, url, place);
+              unlinkPlace(card, place);
+            } else {
+              cur.placeLinked = true;
+              state.uncertainEdit.set(url, cur);
+              const chain = card.querySelector("[data-place-chain]");
+              if (chain) chain.outerHTML = placeChain(true);
+              refreshAutoPlace(card);
+            }
+          }
+        }
+        scheduleAutosave(card);
+        toast(link ? "Linked: this colour follows the others again." : "Unlinked: this colour keeps its own settings.");
+        return;
+      }
       if (e.target.closest("[data-opt-dot]")) {
         const dot = e.target.closest("[data-opt-dot]");
         showOption(dot.closest(".option-group"), Number(dot.dataset.optDot) || 0);
@@ -3514,6 +3621,7 @@
         const pickedCard = btn.closest(".uncertain-card");
         applyPlace(placeCard(btn), url, place);
         unlinkPlace(pickedCard, place);
+        syncGroupPlace(pickedCard, place);
         return;
       }
       if (e.target.closest("[data-place-rename]")) {
@@ -3556,12 +3664,17 @@
         const card = btn.closest(".uncertain-card");
         const url = card.dataset.uncertainUrl;
         const linked = btn.getAttribute("aria-pressed") === "true";
-        state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), placeLinked: !linked });
-        if (!linked) state.reviewPlace.delete(url);
+        const urls = linkedMembers(card).map((el) => el.dataset.uncertainUrl);
+        for (const u of urls) {
+          state.uncertainEdit.set(u, { ...state.uncertainEdit.get(u), placeLinked: !linked });
+          if (!linked) state.reviewPlace.delete(u);
+        }
         painted.delete("#tab-uncertain");
         render();
-        const fresh = $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url);
-        if (fresh) scheduleAutosave(fresh);
+        for (const u of urls) {
+          const fresh = $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === u);
+          if (fresh) scheduleAutosave(fresh);
+        }
         toast(linked ? "Goes to unlinked: choose the baseline by hand." : "Goes to linked: it follows the automatic match again.");
         return;
       }
@@ -3898,6 +4011,15 @@
           // (an older hand pick like "New product" would otherwise win and publish it a second time).
           const place = "merge:baseline:" + item.id;
           state.uncertainEdit.set(url, { ...(state.uncertainEdit.get(url) || {}), place, placeLinked: true });
+          // Its linked colours are the same model: they go there too.
+          for (const other of linkedMembers(card).filter((o) => o !== card)) {
+            const ou = other.dataset.uncertainUrl;
+            applyPlace(other, ou, { action: "merge", candidateId: "baseline:" + item.id });
+            const chain = other.querySelector("[data-place-chain]");
+            if (chain) chain.outerHTML = placeChain(true);
+            state.uncertainEdit.set(ou, { ...(state.uncertainEdit.get(ou) || {}), place, placeLinked: true });
+            scheduleAutosave(other);
+          }
           knownCache = null;
           return api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateUncertainCard", jobId, url, patch: { place, placeLinked: true } }) });
         }).catch((err) => {
@@ -3924,14 +4046,20 @@
         const jobId = btn.dataset.uncertainJob;
         const card = btn.closest(".uncertain-card");
         if (!url || !card || btn.disabled) return;
-        const patch = uncertainFields(card);
-        state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), ...patch });
+        const members = linkedMembers(card);
         btn.disabled = true;
         try {
-          await action({ action: "updateUncertainCard", jobId, url, patch }); // reloads data → other cards suggest these values
-          state.uncertainSaved.add(url);
-          card.classList.add("is-saved");
-          toast("Saved. Not published.");
+          for (const m of members) {
+            const u = m === card ? url : m.dataset.uncertainUrl;
+            const patch = uncertainFields(m);
+            state.uncertainEdit.set(u, { ...state.uncertainEdit.get(u), ...patch });
+            cancelAutosave(u);
+            await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateUncertainCard", jobId: m === card ? jobId : m.dataset.uncertainJob || jobId, url: u, patch }) });
+            state.uncertainSaved.add(u);
+            m.classList.add("is-saved");
+          }
+          await loadData(); // other cards suggest these values
+          toast((members.length > 1 ? "Saved all " + members.length + " colours." : "Saved.") + " Not published.");
         } catch (err) { toast(err.message); }
         finally { btn.disabled = false; }
         return;
@@ -3977,14 +4105,15 @@
       if (e.target.closest("[data-uncertain-publish], #uncertain-publish-all")) {
         const btn = e.target.closest("[data-uncertain-publish], #uncertain-publish-all");
         const singleUrl = btn.dataset.uncertainPublish;
-        const urls = singleUrl ? [singleUrl] : uncertainRows(state.data).live
+        const members = singleUrl ? linkedMembers(btn.closest(".uncertain-card")) : [];
+        const urls = singleUrl ? members.map((el) => el.dataset.uncertainUrl) : uncertainRows(state.data).live
           .filter((x) => !isHeldOut(x))
           .map((x) => x.card && x.card.url).filter((u) => u && !state.uncertainHeld.has(u) && !state.uncertainPublished.has(u));
         if (!urls.length || btn.disabled) return;
         if (!singleUrl && !confirm("Force-publish " + urls.length + " listings to the live catalog?")) return;
         const pending = new Map();
         for (const url of urls) {
-          const card = singleUrl ? btn.closest(".uncertain-card") : $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url);
+          const card = singleUrl ? members.find((el) => el.dataset.uncertainUrl === url) : $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url);
           if (!card || state.uncertainHeld.has(url)) continue;
           state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), ...uncertainFields(card) });
           const ev = collectUncertain(state.data).find((x) => x.card?.url === url) || state.uncertainPublished.get(url)?.ev;
@@ -3993,8 +4122,11 @@
         if (!pending.size) return;
         btn.disabled = true;
         try {
-          const one = singleUrl && btn.closest(".uncertain-card");
-          if (one) await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateUncertainCard", jobId: one.dataset.uncertainJob, url: singleUrl, patch: uncertainFields(one) }) });
+          for (const one of members) {
+            if (!pending.has(one.dataset.uncertainUrl)) continue;
+            cancelAutosave(one.dataset.uncertainUrl);
+            await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateUncertainCard", jobId: one.dataset.uncertainJob, url: one.dataset.uncertainUrl, patch: uncertainFields(one) }) });
+          }
           const result = await forcePublishUrls([...pending.keys()]);
           if (!result.published || !Array.isArray(result.appliedUrls)) throw new Error("No listings were confirmed published. Refresh and try again.");
           for (const url of result.appliedUrls) {
@@ -4036,6 +4168,13 @@
         const key = decodeURIComponent(e.target.dataset.reviewSelect);
         if (e.target.checked) state.reviewSelected.add(key); else state.reviewSelected.delete(key);
         e.target.closest(".review-card")?.classList.toggle("is-selected", e.target.checked);
+        // Linked colours are one product: selected (and published) together.
+        for (const other of linkedMembers(e.target.closest(".review-card")).filter((o) => o.dataset.uncertainUrl !== key)) {
+          const box = other.querySelector("[data-review-select]");
+          if (box) box.checked = e.target.checked;
+          other.classList.toggle("is-selected", e.target.checked);
+          if (e.target.checked) state.reviewSelected.add(other.dataset.uncertainUrl); else state.reviewSelected.delete(other.dataset.uncertainUrl);
+        }
         updateReviewToolbar();
         return;
       }
@@ -4496,6 +4635,7 @@
       const line = e.target.closest(".review-card")?.querySelector(".review-compare");
       if (line) line.textContent = compareText(ev, place);
       unlinkPlace(e.target.closest(".uncertain-card"), place);
+      syncGroupPlace(e.target.closest(".uncertain-card"), place);
     });
 
     document.addEventListener("input", (e) => {
@@ -4561,6 +4701,8 @@
           }
         }
         scheduleAutosave(e.target);
+        const field = e.target.dataset.uncertainField;
+        if (GROUP_FIELDS.includes(field)) syncGroupFields(e.target.closest(".uncertain-card"), ["bundle", "packCount"].includes(field) ? ["bundle", "packCount"] : [field]);
         return;
       }
       if (e.target.id === "review-job-select") {
