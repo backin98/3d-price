@@ -9,10 +9,10 @@
     "diameterFold": "a listing that omits the diameter joins its brand+polymer+variant card when that card has exactly one known diameter",
     "unknown": "An absent axis stays empty; never infer diameter, weight, packaging, colour, or material variant."
   },
-  "generatedAt": "2026-10-02T11:06:27.549Z",
+  "generatedAt": "2026-10-02T23:43:18.143Z",
   "source": {
-    "nameNodesSeen": 4013,
-    "distinctListings": 3941,
+    "nameNodesSeen": 4014,
+    "distinctListings": 3942,
     "listingsWithPolymer": 1381,
     "filesScanned": 11,
     "shops": [
@@ -18324,6 +18324,21 @@
           ]
         },
         {
+          "id": "burgundy",
+          "name": "Burgundy",
+          "hex": "#6D1F33",
+          "parent": "",
+          "source": "gathered",
+          "seenCount": 1,
+          "seenIn": [
+            {
+              "shop": "robotizmo.net",
+              "name": "FilaMark PLA Plus Filament Vişne Çürüğü 1.75mm 1Kg",
+              "url": "https://www.robotizmo.net/filamark-pla-plus-filament-visne-curugu-1.75mm-1kg"
+            }
+          ]
+        },
+        {
           "id": "cold-white",
           "name": "Cold White",
           "hex": "#F5F9FF",
@@ -18648,6 +18663,30 @@
           "shop": "robotizmo.net",
           "name": "FilaMark PLA Plus Filament Kahverengi 1.75mm 1Kg",
           "url": "https://www.robotizmo.net/filamark-pla-plus-filament-kahverengi-1.75mm-1kg"
+        }
+      ]
+    },
+    {
+      "id": "filament/filamark/plus-pla/1.75/burgundy/1000",
+      "entityType": "sku",
+      "kind": "filament",
+      "category": "filaments",
+      "parentId": "filament/filamark/plus-pla/1.75",
+      "name": "FilaMark Plus PLA 1.75 mm Burgundy 1000 g",
+      "brand": "FilaMark",
+      "polymer": "pla",
+      "variant": "plus",
+      "diameter": "1.75 mm",
+      "color": "burgundy",
+      "weight": "1000 g",
+      "packaging": "",
+      "productForm": "filament",
+      "seenCount": 1,
+      "seenIn": [
+        {
+          "shop": "robotizmo.net",
+          "name": "FilaMark PLA Plus Filament Vişne Çürüğü 1.75mm 1Kg",
+          "url": "https://www.robotizmo.net/filamark-pla-plus-filament-visne-curugu-1.75mm-1kg"
         }
       ]
     },
@@ -19031,17 +19070,12 @@
       "weight": "1000 g",
       "packaging": "",
       "productForm": "filament",
-      "seenCount": 2,
+      "seenCount": 1,
       "seenIn": [
         {
           "shop": "robotizmo.net",
           "name": "FilaMark PLA Plus Filament Mermer 1.75mm 1Kg",
           "url": "https://www.robotizmo.net/filamark-pla-plus-filament-mermer-1.75mm-1kg"
-        },
-        {
-          "shop": "robotizmo.net",
-          "name": "FilaMark PLA Plus Filament Vişne Çürüğü 1.75mm 1Kg",
-          "url": "https://www.robotizmo.net/filamark-pla-plus-filament-visne-curugu-1.75mm-1kg"
         }
       ]
     },
