@@ -14,6 +14,13 @@ a real saved page was in hand. So:
 - Every bug fixed becomes a saved-page regression test (scripts/fixtures/pages/variants/live/ + a
   scripts/*-live.test.cjs). Redact third-party widget tokens from saved pages before committing them.
 
+## Hand-off with the PC (the owner's preference)
+When something needs the real shop site, give the owner a ready-to-paste prompt for Claude Code on their PC,
+not a list of steps. That prompt must: change no code; push only to `variant-debug`; never commit `.env` /
+`.dev.vars`; and end by writing a short findings note (what it ran, what the page showed, the URLs used, the
+files pushed) as `notes/<topic>.md` on `variant-debug`, so the next session reads the note instead of
+re-asking. At the start of work, read the newest notes on `variant-debug` first.
+
 ## Rules of the repo
 - Work and push on `deploy-ready` only. No pull requests unless asked. Never commit `.env` or `.dev.vars`.
 - Kill local processes by PID only, never `pkill` by name.
