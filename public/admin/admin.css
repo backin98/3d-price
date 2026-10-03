@@ -372,3 +372,8 @@ button, .ghost { min-height: 38px; }
 .trust-pill.is-ready { color: #14532d; background: #dcfce7; border: 1px solid #86efac; }
 .trust-pill.is-check { color: #7c4a03; background: #fef3c7; border: 1px solid #fcd34d; max-width: 60%; overflow: hidden; text-overflow: ellipsis; }
 .learned-notes { margin: 4px 0 0; font-size: 11px; }
+.uncertain-card, .opt-member { position: relative; }
+.card-grip { position: absolute; top: 6px; right: 8px; display: flex; gap: 6px; align-items: center; z-index: 2; }
+.drag-grip { cursor: grab; padding: 2px 8px; border-radius: 8px; background: #eef2ff; color: #4338ca; user-select: none; font-size: 16px; line-height: 1.2; }
+.is-dragging { opacity: .5; }
+.drop-target { outline: 3px dashed #6366f1; outline-offset: 2px; }

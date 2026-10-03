@@ -419,7 +419,7 @@ function priceFromJobs(jobs, url) {
   return null;
 }
 
-function applySelectedListings(live, candidate, items, jobs) {
+function applySelectedListings(live, candidate, items, jobs, variantAliases) {
   const next = cloneCatalog(live || { products: [], filaments: [] });
   let applied = 0;
   const appliedUrls = [];
@@ -556,7 +556,7 @@ function applySelectedListings(live, candidate, items, jobs) {
         kind: card.kind || src.kind || (shelf === "filaments" ? "filament" : "printer"),
         image: card.image || src.image || "",
         polymer: card.polymer || src.polymer,
-        variant: card.variant || src.variant,
+        variant: aliasVariant(card.variant || src.variant, variantAliases),
         color: card.color || src.color,
         colorName: card.colorName || src.colorName || "",
         weight: card.weight || src.weight,
@@ -581,6 +581,21 @@ function applySelectedListings(live, candidate, items, jobs) {
   return next;
 }
 
+// Your names for material variants (desk.variantAliases: { plus: ["premium", "pro", "ultra"] }): a variant written any of
+// those ways is saved as the name on the left.
+function aliasVariant(variant, aliases) {
+  const rules = Object.entries(aliases || {});
+  const text = String(variant || "");
+  if (!rules.length || !text) return text;
+  const same = (a, b) => String(a).trim().toLocaleLowerCase("tr") === String(b).trim().toLocaleLowerCase("tr");
+  const out = [];
+  for (const tag of text.split(/[,;]/).map((t) => t.trim()).filter(Boolean)) {
+    const hit = rules.find(([, words]) => (words || []).some((w) => same(w, tag)));
+    const name = hit ? hit[0] : tag;
+    if (!out.some((o) => same(o, name))) out.push(name);
+  }
+  return out.join(", ");
+}
 const foldName = (s) => String(s || "").toLocaleLowerCase("tr")
   .replace(/ı/g, "i").replace(/ş/g, "s").replace(/ç/g, "c")
   .replace(/ğ/g, "g").replace(/ü/g, "u").replace(/ö/g, "o")
@@ -910,7 +925,7 @@ export default async (req) => {
           }
           return it;
         });
-        const next = applySelectedListings(catalog, candidate, items, jobs);
+        const next = applySelectedListings(catalog, candidate, items, jobs, desk.variantAliases);
         const applied = next._applied || 0;
         const appliedUrls = next._appliedUrls || [];
         delete next._applied;
@@ -1490,7 +1505,7 @@ export default async (req) => {
         const brand = String(body.brand != null ? body.brand : prev.brand || "").trim();
         const subBrand = String(body.subBrand != null ? body.subBrand : prev.subBrand || "").trim().slice(0, 80);
         const polymer = String(body.polymer != null ? body.polymer : prev.polymer || "").trim();
-        const variant = String(body.variant != null ? body.variant : prev.variant || "").trim();
+        const variant = aliasVariant(String(body.variant != null ? body.variant : prev.variant || "").trim(), desk.variantAliases);
         const color = String(body.color != null ? body.color : prev.color || "").trim();
         const kind = body.kind === "filament" || body.kind === "printer" ? body.kind : prev.kind || job.kind || "printer";
         const spoolMaterial = String(body.spoolMaterial != null ? body.spoolMaterial : prev.spoolMaterial || "").trim();
@@ -1568,6 +1583,18 @@ export default async (req) => {
 
       // Spool material per model group (brand · sub-brand · polymer · variant). Linked: one value for the
       // whole group. Broken: each card keeps its own (a shop can sell one series on plastic, one on cardboard).
+      case "setVariantAliases": {
+        const aliases = {};
+        for (const [name, words] of Object.entries(body.aliases || {}).slice(0, 40)) {
+          const key = String(name).trim().toLowerCase().slice(0, 40);
+          const list = (Array.isArray(words) ? words : []).map((w) => String(w).trim().slice(0, 40)).filter(Boolean).slice(0, 30);
+          if (key && list.length) aliases[key] = list;
+        }
+        const next = { ...desk, variantAliases: aliases };
+        await writeJSON("desk.json", next);
+        return json(200, { ok: true, desk: next });
+      }
+
       case "setFilamentGroup": {
         const key = String(body.key || "").slice(0, 200);
         if (!key) throw new Error("Pick a filament group");
@@ -1642,7 +1669,7 @@ export default async (req) => {
         if (body.patch && body.patch.brand != null) inner.brand = String(body.patch.brand);
         if (body.patch && body.patch.subBrand != null) inner.subBrand = String(body.patch.subBrand).trim().slice(0, 80);
         if (body.patch && body.patch.polymer != null) inner.polymer = String(body.patch.polymer);
-        if (body.patch && body.patch.variant != null) inner.variant = String(body.patch.variant);
+        if (body.patch && body.patch.variant != null) inner.variant = aliasVariant(String(body.patch.variant), desk.variantAliases);
         if (body.patch && body.patch.color != null) inner.color = String(body.patch.color);
         if (body.patch && body.patch.colorName != null) inner.colorName = String(body.patch.colorName).trim().slice(0, 80);
         if (body.patch && body.patch.weight != null) { inner.weight = String(body.patch.weight).trim().slice(0, 20); inner.weightAssumed = false; }
@@ -1664,6 +1691,7 @@ export default async (req) => {
         if (body.patch && ["photo", ""].includes(body.patch.spoolSource)) inner.spoolSource = body.patch.spoolSource;
         // Who chose the swatch: you with the eyedropper, or the photo reader. Only your picks teach the run (npm run learn).
         if (body.patch && ["photo", "eyedropper"].includes(body.patch.colorHexSource)) inner.colorHexSource = body.patch.colorHexSource;
+        if (body.patch && body.patch.manualGroup != null) inner.manualGroup = String(body.patch.manualGroup).replace(/[^\w-]/g, "").slice(0, 40);
         inner.handEdited = true;
         inner.savedAt = new Date().toISOString();
         cards[url] = inner;

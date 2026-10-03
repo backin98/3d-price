@@ -1453,6 +1453,7 @@
         </details>
         <div class="rs-chips" id="review-search-chips"></div>
       </div>
+      ${aliasEditorHtml()}
       <div class="review-toolbar">
         <button class="btn-sm" type="button" id="select-all">Select all</button>
         <button class="btn-sm" type="button" id="read-photos" title="Read the true colour and the spool material from the product photos of the cards on this page. Never over a shade you eyedropped or a spool you set.">Read photos (this page)</button>
@@ -1485,10 +1486,48 @@
   //   Rhino: every colour is its own listing in the category; same shop, model, brand, pack and
   //   weight make them one product.
   // ============================================================================================
+  // Your names for material variants: "plus = premium, pro, ultra" shows every one of those as "plus".
+  // Words in the title count too, so a spool listed as "PLA Pro" is a Plus spool once you said so.
+  function variantAliases() {
+    const raw = (state.data && state.data.desk && state.data.desk.variantAliases) || {};
+    return Object.entries(raw).map(([canonical, words]) => ({ canonical: adminFold(canonical), words: (Array.isArray(words) ? words : []).map(adminFold).filter(Boolean) })).filter((r) => r.canonical && r.words.length);
+  }
+  function aliasedVariant(variant, name) {
+    const rules = variantAliases();
+    if (!rules.length) return variant;
+    const tags = splitTags(variant);
+    const out = [];
+    const add = (t) => { if (t && !out.some((o) => adminFold(o) === adminFold(t))) out.push(t); };
+    for (const tag of tags) {
+      const hit = rules.find((r) => r.words.includes(adminFold(tag)));
+      add(hit ? hit.canonical : tag);
+    }
+    const title = " " + adminFold(name).replace(/[^\p{L}\p{N}+]+/gu, " ") + " ";
+    for (const r of rules) if (r.words.some((w) => title.includes(" " + w + " "))) add(r.canonical);
+    return out.join(", ");
+  }
+  function aliasEditorHtml() {
+    const raw = (state.data && state.data.desk && state.data.desk.variantAliases) || {};
+    const text = Object.entries(raw).map(([k, w]) => k + " = " + (w || []).join(", ")).join("\n");
+    return `<details class="variant-aliases"><summary>Variant aliases</summary>
+      <p class="muted">One line per variant you use: <code>plus = premium, pro, ultra</code>. Every listing that says one of the words on the right (in its variant or its title) is called the word on the left.</p>
+      <textarea id="alias-text" rows="4" spellcheck="false" aria-label="Variant aliases">${esc(text)}</textarea>
+      <button type="button" class="btn-sm ok" id="alias-save">Save aliases</button>
+    </details>`;
+  }
+  // A group you made by hand (drag a card onto another, or Separate): wins over the page's own grouping.
+  function manualGroupOf(c) {
+    const edit = (c && c.url && state.uncertainEdit.get(c.url)) || {};
+    if (edit.manualGroup != null) return String(edit.manualGroup);
+    const saved = withEarlierSave(c) || c || {};
+    return String(saved.manualGroup || "");
+  }
   function optionGroupKey(e) {
     const c = (e && e.card) || {};
     if (e.mismatch || c.mismatch || e.error === "category_mismatch" || cardKind(c) !== "filament") return "";
     const host = hostOf(c.url);
+    const manual = manualGroupOf(c);
+    if (manual) return host + "|manual|" + manual;
     if (c.variantOf) return host + "|of|" + c.variantOf;
     if (!(Number(c.price) > 0)) return "";
     const model = adminFold(listingName(c)).replace(/[^\p{L}\p{N}+]+/gu, " ").trim();
@@ -1523,10 +1562,15 @@
     return order.map((slot) => (slot.single ? slot : { key: slot.key, members: groups.get(slot.key) }));
   }
 
+  // Every card gets a grip to drag it onto another card; a card inside a group also gets Separate.
+  function withGrip(html, grouped) {
+    const bits = `<span class="card-grip"><span class="drag-grip" draggable="true" title="Drag onto another card to make this one of its colour options">⠿</span>${grouped ? '<button type="button" class="btn-sm ghost" data-split-card title="Take this colour out of the group into its own card">Separate</button>' : ""}</span>`;
+    return String(html).replace(/^(\s*<div[^>]*>)/, "$1" + bits);
+  }
   function renderOptionUnit(slot, render) {
-    if (slot.single) return render(slot.single);
+    if (slot.single) return withGrip(render(slot.single), false);
     const members = slot.members;
-    if (members.length < 2) return render(members[0]);
+    if (members.length < 2) return withGrip(render(members[0]), false);
     const at = Math.max(0, Math.min(members.length - 1, Number(state.optionAt && state.optionAt.get(slot.key)) || 0));
     const first = editedCard(members[at]);
     // One photo for every option is the product's photo, not the colours': draw colours instead.
@@ -1540,7 +1584,7 @@
     // The card shows the colour's big photo when each colour has one; the dot its swatch picture.
     const bigs = members.map((m) => editedCard(m).image || "");
     const bigOwn = bigs.every(Boolean) && new Set(bigs).size === bigs.length;
-    const cards = members.map((m, i) => render({ ...m, optionGroup: { pic: bigOwn ? bigs[i] : pictures ? pics[i] : "", sharedPhoto: !pictures && !bigOwn, size: members.length, linked: groupLinked(m) } }).replace(/^(\s*<div class="[^"]*)"/, `$1 opt-member${i === at ? "" : " opt-hidden"}" data-opt-index="${i}"`));
+    const cards = members.map((m, i) => withGrip(render({ ...m, optionGroup: { pic: bigOwn ? bigs[i] : pictures ? pics[i] : "", sharedPhoto: !pictures && !bigOwn, size: members.length, linked: groupLinked(m) } }).replace(/^(\s*<div class="[^"]*)"/, `$1 opt-member${i === at ? "" : " opt-hidden"}" data-opt-index="${i}"`), true));
     return `<div class="option-group" data-option-group="${esc(slot.key)}">
       <div class="option-group-head">
         <div class="option-group-title"><strong>${esc(listingName(first))}</strong> <span class="muted">${members.length} options${min ? " · " + (min === max ? min + " TL" : min + "–" + max + " TL") : ""}</span></div>
@@ -2965,7 +3009,7 @@
     const s = String(v || "").replace(",", ".");
     return /2\.?85/.test(s) ? "2.85 mm" : /\b3\.?0{1,2}\b/.test(s) && /mm/.test(s) ? "3.0 mm" : "1.75 mm";
   }
-  const SAVED_KEYS = ["name", "brand", "subBrand", "polymer", "variant", "color", "colorName", "colorHex", "colorHexes", "colorHexSource", "spoolSource", "colorSet", "colorEffect", "colorTone", "weight", "diameter", "packaging", "spoolMaterial", "rfid", "packCount", "bundle", "place", "placeLinked", "groupLinked"];
+  const SAVED_KEYS = ["name", "brand", "subBrand", "polymer", "variant", "color", "colorName", "colorHex", "colorHexes", "colorHexSource", "spoolSource", "colorSet", "colorEffect", "colorTone", "weight", "diameter", "packaging", "spoolMaterial", "rfid", "packCount", "bundle", "place", "placeLinked", "groupLinked", "manualGroup"];
   // What a card really is. A shop can file spools under another category (the run then marks them
   // category_mismatch), and "Ender" is also a printer name, so a stored kind of "printer" is not enough:
   // a name that says filament or a polymer is a filament.
@@ -3068,7 +3112,7 @@
     const name = edit.name != null ? edit.name : listingName(c);
     const brand = pick("brand");
     const polymer = pick("polymer");
-    const variant = pick("variant");
+    const variant = aliasedVariant(pick("variant"), c.name);
     const color = edit.colorName != null ? edit.colorName : colourNameOf(c);
     const colourState = cardColour(c, edit, color);
     const packaging = edit.packaging != null ? edit.packaging : (c.packaging || "spool");
@@ -3489,7 +3533,84 @@
   }
 
   function bindAppEvents() {
+    // Drag a card by its grip onto another card: it becomes one of that card's colour options.
+    let dragUrl = "";
+    const manualRepaint = () => { painted.delete("#tab-uncertain"); painted.delete("#tab-runs"); if (state.data) { repaintRuns(); if ($("#tab-uncertain")) paint("#tab-uncertain", uncertainHtml(state.data)); } };
+    async function setManualGroup(cards, id) {
+      for (const el of cards) {
+        const url = el.dataset.uncertainUrl;
+        state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), manualGroup: id });
+      }
+      manualRepaint();
+      try {
+        await Promise.all(cards.map((el) => api("/api/admin", { method: "POST", body: JSON.stringify({ action: "updateUncertainCard", jobId: el.dataset.uncertainJob, url: el.dataset.uncertainUrl, patch: { manualGroup: id } }) })));
+      } catch (err) { toast(err.message); }
+    }
+    document.addEventListener("dragstart", (e) => {
+      const grip = e.target.closest && e.target.closest(".drag-grip");
+      const card = grip && grip.closest(".uncertain-card");
+      if (!card) return;
+      dragUrl = card.dataset.uncertainUrl || "";
+      try { e.dataTransfer.setData("text/plain", dragUrl); e.dataTransfer.effectAllowed = "move"; e.dataTransfer.setDragImage(card, 12, 12); } catch (_) { /* drag image is optional */ }
+      card.classList.add("is-dragging");
+    });
+    document.addEventListener("dragend", () => {
+      dragUrl = "";
+      document.querySelectorAll(".is-dragging, .drop-target").forEach((el) => el.classList.remove("is-dragging", "drop-target"));
+    });
+    document.addEventListener("dragover", (e) => {
+      if (!dragUrl) return;
+      const target = e.target.closest && e.target.closest(".uncertain-card");
+      if (!target || target.dataset.uncertainUrl === dragUrl) return;
+      e.preventDefault();
+      document.querySelectorAll(".drop-target").forEach((el) => el.classList.remove("drop-target"));
+      (target.closest(".option-group") || target).classList.add("drop-target");
+    });
+    document.addEventListener("drop", async (e) => {
+      if (!dragUrl) return;
+      const target = e.target.closest && e.target.closest(".uncertain-card");
+      const from = [...document.querySelectorAll(".uncertain-card")].find((el) => el.dataset.uncertainUrl === dragUrl);
+      const url = dragUrl;
+      dragUrl = "";
+      if (!target || !from || target.dataset.uncertainUrl === url) return;
+      e.preventDefault();
+      document.querySelectorAll(".is-dragging, .drop-target").forEach((el) => el.classList.remove("is-dragging", "drop-target"));
+      if (hostOf(target.dataset.uncertainUrl) !== hostOf(url)) { toast("Only colours from the same shop can share a card."); return; }
+      const group = target.closest(".option-group");
+      const members = group ? [...group.querySelectorAll(":scope > .opt-member")] : [target];
+      if (members.includes(from)) return;
+      const id = "g" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      await setManualGroup([...members, from], id);
+      toast("Moved: it is now a colour option of that card.");
+    });
+    async function aliasClick(e) {
+      if (!(e.target.closest && e.target.closest("#alias-save"))) return false;
+      const aliases = {};
+      for (const line of String($("#alias-text").value).split("\n")) {
+        const [left, right] = line.split("=");
+        const key = String(left || "").trim().toLowerCase();
+        const words = String(right || "").split(",").map((w) => w.trim()).filter(Boolean);
+        if (key && words.length) aliases[key] = words;
+      }
+      try {
+        const res = await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "setVariantAliases", aliases }) });
+        if (res.desk && state.data) state.data.desk = res.desk;
+        else if (state.data) state.data.desk = { ...state.data.desk, variantAliases: aliases };
+        manualRepaint();
+        toast("Aliases saved.");
+      } catch (err) { toast(err.message); }
+    }
+    async function splitClick(e) {
+      const split = e.target.closest && e.target.closest("[data-split-card]");
+      if (!split) return;
+      const card = split.closest(".uncertain-card");
+      if (!card) return;
+      await setManualGroup([card], "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
+      toast("Separated into its own card.");
+    }
     document.addEventListener("click", async (e) => {
+      if (e.target.closest("#alias-save")) { await aliasClick(e); return; }
+      if (e.target.closest("[data-split-card]")) { await splitClick(e); return; }
       const pageBtn = e.target.closest("[data-pager-page]");
       if (pageBtn) {
         const key = pageBtn.closest("[data-pager]").dataset.pager;
