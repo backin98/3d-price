@@ -32,8 +32,8 @@ Every card the owner fixes by hand is a label. Use them, and measure before clai
 - `npm run eval-colours` (on the PC; it downloads photos) compares the photo reader with the owner's eyedropper picks.
 - `npm run laya-data` rebuilds Laya's training inputs from the baseline and the owner's decisions; retraining itself
   (`scripts/laya-match.py --train`) needs the Python environment on the PC.
-- Finishes (silk, satin, matte, translucent, metallic, glow, marble, galaxy) live in `colorEffect`; the list is
-  `EFFECTS` in `lib/house-rules.cjs` and the look is `public/css/swatch-finishes.css`.
+- Swatch effects: only marble and galaxy (`colorEffect`). Sheen finishes (silk, satin, matte, translucent, ...) were tried
+  and removed at the owner's request; do not add them back unless asked.
 
 ## Rules of the repo
 - Work and push on `deploy-ready` only. No pull requests unless asked. Never commit `.env` or `.dev.vars`.

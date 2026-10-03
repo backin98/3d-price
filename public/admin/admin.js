@@ -1503,7 +1503,7 @@
     const fill = colourFill(st);
     const ring = Array.isArray(fill) ? fill[0] : fill === "rainbow" ? "#888" : fill || "#cbd5e1";
     const name = colourNameOf(c) || listingName(c);
-    return `<button type="button" class="opt-dot${on ? " is-on" : ""}" data-opt-dot="${i}" style="--ring:${esc(ring || "#cbd5e1")}" title="${esc(name + (Number(c.price) > 0 ? " · " + c.price + " TL" : ""))}" aria-label="${esc(name)}" aria-pressed="${on ? "true" : "false"}">${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="opt-dot-fill${COLOUR_EFFECTS.includes(st.fx) ? " fx-" + st.fx : ""}" style="--dot:${esc(Array.isArray(fill) ? "conic-gradient(" + fill.join(",") + ")" : fill === "rainbow" ? RAINBOW : fill || "#e5e7eb")}"></span>`}</button>`;
+    return `<button type="button" class="opt-dot${on ? " is-on" : ""}" data-opt-dot="${i}" style="--ring:${esc(ring || "#cbd5e1")}" title="${esc(name + (Number(c.price) > 0 ? " · " + c.price + " TL" : ""))}" aria-label="${esc(name)}" aria-pressed="${on ? "true" : "false"}">${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="opt-dot-fill" style="background:${esc(Array.isArray(fill) ? "conic-gradient(" + fill.join(",") + ")" : fill === "rainbow" ? RAINBOW : fill || "#e5e7eb")}"></span>`}</button>`;
   }
 
   // list: card events in board order; render(event) → that option's card HTML. Groups take the place of
@@ -2186,7 +2186,7 @@
     const list = Array.isArray(hex) ? hex.filter(Boolean) : [];
     const fill = list.length > 1 ? "conic-gradient(" + list.map((h, i) => `${h} ${Math.round(i * 100 / list.length)}% ${Math.round((i + 1) * 100 / list.length)}%`).join(", ") + ")"
       : list.length === 1 ? list[0] : hex === "rainbow" ? RAINBOW : Array.isArray(hex) ? "" : hex;
-    return `<span class="colour-dot${fill ? "" : " is-empty"}${COLOUR_EFFECTS.includes(fx) ? " fx-" + fx : ""}" style="--dot:${esc(fill || "transparent")}" title="${esc((list.join(" · ") || (hex === "rainbow" ? "Multicolour" : hex) || "No colour yet") + (fx ? " · " + fx : "") + " · double-click for marble / galaxy")}"></span>`;
+    return `<span class="colour-dot${fill ? "" : " is-empty"}${fx === "marble" || fx === "galaxy" ? " fx-" + fx : ""}" style="--dot:${esc(fill || "transparent")}" title="${esc((list.join(" · ") || (hex === "rainbow" ? "Multicolour" : hex) || "No colour yet") + (fx ? " · " + fx : "") + " · double-click for marble / galaxy")}"></span>`;
   }
   // Every named colour in a colour name, longest first ("Rose Dark Blue Green" → rose, dark-blue, green).
   function coloursIn(value) {
@@ -2202,13 +2202,6 @@
   }
   // A card's colour state: the colours (one per slot), the shade picked for each slot, and a finish.
   // It lives on the .colour-row element so the eyedropper, minus, finish menu and autosave share it.
-  // How the surface looks: flecked (marble, galaxy) or a sheen. The same list the run, the API and the storefront keep.
-  const COLOUR_EFFECTS = ["marble", "galaxy", "silk", "satin", "translucent", "metallic", "glow", "matte"];
-  const FINISH_RES = [["silk", /\b(?:silk|e silk|ipek|ipeksi)\b/], ["satin", /\bsatin\b/], ["translucent", /\b(?:translucent|transparent|transparan|seffaf|crystal|kristal|clear)\b/], ["metallic", /\b(?:metallic|metalik|metal|chrome|krom)\b/], ["glow", /\b(?:glow|luminous|fosfor)\b/], ["matte", /\b(?:matte?|mat)\b/]];
-  function finishOfText(text) {
-    const t = adminFold(text).replace(/[^a-z0-9]+/g, " ");
-    return (FINISH_RES.find(([, re]) => re.test(t)) || [])[0] || "";
-  }
   const MARBLE_RE = /\bmarble\b|\bmermer\b/i;
   const GALAXY_RE = /\bgalaxy\b|\bglitter\b|\bsparkle\b|\bsimli\b|\bgalaksi\b/i;
   function cardColour(c, edit, name) {
@@ -2225,7 +2218,7 @@
     const set = [...found].sort((x, y) => at(x) - at(y));
     const hexes = edit.colorHexes || (edit.colorName == null && (c.colorHexes || (c.colorHex ? [c.colorHex] : []))) || (edit.colorHex ? [edit.colorHex] : []);
     const titles = [c.sourceTitle, ...(c.listingTitles || []), c.name, name].join(" ");
-    const fx = edit.colorEffect != null ? edit.colorEffect : c.colorEffect != null ? c.colorEffect : MARBLE_RE.test(titles) ? "marble" : GALAXY_RE.test(titles) ? "galaxy" : finishOfText(titles + " " + (c.variant || ""));
+    const fx = edit.colorEffect != null ? edit.colorEffect : c.colorEffect != null ? c.colorEffect : MARBLE_RE.test(titles) ? "marble" : GALAXY_RE.test(titles) ? "galaxy" : "";
     const rainbow = !set.length && !!(c.multicolor || /rainbow|gradi|renkli|dual|tri colou?r|multicolou?r/i.test(titles));
     return { set, hexes: edit.colorHex && !edit.colorHexes ? [edit.colorHex] : hexes, fx, rainbow };
   }
@@ -2552,6 +2545,7 @@
     // The snapshot IS the card: write it back as your edits, redraw, then save it.
     state.uncertainEdit.set(url, { ...snap, colorName: snap.colorName != null ? snap.colorName : snap.color });
     painted.delete("#tab-uncertain");
+    painted.delete("#tab-runs"); // the same cards are drawn on Shop runs: a redraw that finds identical HTML would skip them
     render();
     const fresh = $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url);
     if (fresh) { fresh.dataset.historyStep = "1"; scheduleAutosave(fresh); }
@@ -2969,17 +2963,26 @@
   // a baseline model to go to; otherwise "check" with the exact reasons, so you know what to fix (and why it is not ready).
   function trustOf(ev) {
     if (ev.published) return { level: "done", why: ["already published"] };
-    const c = editedCard(ev);
+    const base = withEarlierSave(ev.card || {});
+    const edit = state.uncertainEdit.get(base.url) || {};
+    const c = { ...base, ...edit };
     const why = [];
     if (ev.mismatch || c.mismatch) why.push("another category");
     if (ev.error) why.push("held: " + String(ev.error).replace(/_/g, " "));
     if (!(Number(c.price) > 0)) why.push("no price");
     if (c.kind === "filament") {
-      if (!c.brand) why.push("brand unknown");
-      if (!c.polymer) why.push("polymer unknown");
-      if (c.weightAssumed) why.push("weight not in the listing");
+      // Judge what the card SHOWS, not the raw run: the brand, polymer and spool on screen can come from the baseline model
+      // the title matches, or from the model's linked spool group (the same rules uncertainCard draws with).
+      const guess = !base.handEdited ? titleGuess(base) : null;
+      const pick = (k) => edit[k] != null ? edit[k]
+        : guess && guess[k] && (guess.from || !base[k] || (k === "brand" && guess.brandWrong)) ? guess[k] : (base[k] || "");
+      const group = spoolGroup(spoolGroupKey(pick("brand"), pick("subBrand"), pick("polymer"), pick("variant")));
+      const spool = group.spoolLinked !== false && group.spoolMaterial ? group.spoolMaterial : pick("spoolMaterial");
+      if (!pick("brand")) why.push("brand unknown");
+      if (!pick("polymer")) why.push("polymer unknown");
+      if (edit.weight == null && c.weightAssumed) why.push("weight not in the listing");
       if (!(c.color || c.colorName || c.multicolor)) why.push("colour unknown");
-      if (!c.spoolMaterial) why.push("spool unknown");
+      if (!spool) why.push("spool unknown");
     }
     if (!why.length) {
       const place = uncertainPlace(ev);
@@ -3983,6 +3986,7 @@
           if (!linked) state.reviewPlace.delete(u);
         }
         painted.delete("#tab-uncertain");
+        painted.delete("#tab-runs"); // the same cards are drawn on Shop runs: a redraw that finds identical HTML would skip them
         render();
         for (const u of urls) {
           const fresh = $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === u);
@@ -4010,6 +4014,7 @@
         state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), placeLinked: true });
         painted.delete("#tab-runs");
         painted.delete("#tab-uncertain");
+        painted.delete("#tab-runs"); // the same cards are drawn on Shop runs: a redraw that finds identical HTML would skip them
         render();
         const fresh = $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url);
         if (fresh) scheduleAutosave(fresh);
@@ -5127,7 +5132,7 @@
       document.querySelectorAll(".fx-menu").forEach((m) => m.remove());
       const fx = dot.closest(".colour-row").dataset.fx || "";
       const option = (value, label) => `<button type="button" class="btn-sm ghost" data-colour-fx="${value}" aria-pressed="${fx === value}">${label}</button>`;
-      dot.closest(".colour-field").insertAdjacentHTML("beforeend", `<span class="fx-menu" role="menu">${option("", "Plain")}${option("silk", "Silk")}${option("satin", "Satin")}${option("matte", "Matte")}${option("translucent", "Translucent")}${option("metallic", "Metallic")}${option("glow", "Glow")}${option("marble", "Marble")}${option("galaxy", "Galaxy")}</span>`);
+      dot.closest(".colour-field").insertAdjacentHTML("beforeend", `<span class="fx-menu" role="menu">${option("", "Plain")}${option("marble", "Marble")}${option("galaxy", "Galaxy")}</span>`);
     });
 
     // Opening a card's Goes-to dropdown loads the complete, current list for that card's category.

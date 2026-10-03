@@ -47,6 +47,21 @@ t = trustOf(ev({ price: 0, weightAssumed: true, color: '', colorName: '' }));
 assert.deepEqual(Array.from(t.why), ['no price', 'weight not in the listing', 'colour unknown']);
 t = trustOf(ev({ brand: 'Nobody', polymer: 'pla' }));
 assert.deepEqual(Array.from(t.why), ['no baseline model yet'], 'everything known, but nowhere to go');
+// The verdict judges what the card shows. A spool the run never set, which the card takes from the baseline model its
+// title matches (or from the model's linked spool group), is known; one nothing supplies is not.
+// (a data reload hands the admin new arrays; its profile cache is keyed on them)
+state.data = { ...state.data, baseline: { items: [...baseline, { id: 'b-eco', category: 'filaments', entityType: 'family', name: 'Acme Eco PLA', brand: 'Acme', subBrand: '', polymer: 'pla', variant: '', diameter: '1.75 mm', spoolMaterial: 'cardboard' }] } };
+t = trustOf(ev({ brand: 'Acme', polymer: 'pla', name: 'Acme Eco PLA Filament - Red', sourceTitle: 'Acme Eco PLA Filament - Red', spoolMaterial: '' }));
+assert.equal(t.level, 'ready', 'spool comes from the matching baseline model: ' + JSON.stringify(t));
+state.data.desk = { filamentGroups: { 'creality||tpu|': { spoolMaterial: 'plastic', spoolLinked: true } } };
+t = trustOf(ev({ spoolMaterial: '' }));
+assert.equal(t.level, 'ready', 'spool comes from the linked spool group: ' + JSON.stringify(t));
+state.data.desk = {};
+t = trustOf(ev({ spoolMaterial: '' }));
+assert.deepEqual(Array.from(t.why), ['spool unknown'], 'nothing supplies a spool: still unknown');
+state.uncertainEdit.set('https://shop.example/x', { spoolMaterial: 'cardboard' });
+assert.equal(trustOf(ev({ spoolMaterial: '' })).level, 'ready', 'a spool you set counts at once');
+state.uncertainEdit.delete('https://shop.example/x');
 assert.equal(trustOf(ev({}, { error: 'out_of_stock' })).why[0], 'held: out of stock');
 assert.equal(trustOf(ev({}, { published: true })).level, 'done');
 

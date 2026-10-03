@@ -2,7 +2,7 @@
 //   - a one-colour card takes the true tone of its product photo (not a generic table colour);
 //   - a gradient card gets distinct stops in order; pressing Auto again does not offer the same colours;
 //   - what the photo reader fills in is saved as "photo" (so it never teaches the run as if you had picked it);
-//   - a Silk listing's swatch is drawn with the silk finish.
+//   - a Silk listing's swatch stays a plain flat dot (only marble and galaxy have effects).
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const http = require('node:http');
@@ -54,7 +54,7 @@ const payload = () => ({
   jobs: [{ id: 'job-fm', url: FM + '/filament', site: 'filamentmarketim.com', status: 'done', events: [
     card('/one', 'Acme PLA Filament - Kirmizi', { colorName: 'Kirmizi', color: 'red' }),
     card('/tri', 'Acme Dual PLA Filament - Red Yellow Blue', { colorName: 'Red Yellow Blue', color: 'red+yellow+blue', colorSet: ['red', 'yellow', 'blue'], multicolor: true, image: base + '/img/tri.png' }),
-    card('/silk', 'Acme Silk PLA Filament - Blue', { colorName: 'Blue', color: 'blue', variant: 'silk', colorEffect: 'silk' })
+    card('/silk', 'Acme Silk PLA Filament - Blue', { colorName: 'Blue', color: 'blue', variant: 'silk' })
   ] }]
 });
 
@@ -88,8 +88,8 @@ const deltaE = (a, b) => require('../public/admin/swatch-colours.js').deltaE(a, 
     const cardOf = (u) => page.locator('#tab-uncertain .uncertain-card[data-uncertain-url="' + FM + u + '"]');
     const rowOf = (u) => cardOf(u).locator('.colour-row');
 
-    // A Silk listing draws its swatch with the silk finish.
-    assert.equal(await cardOf('/silk').locator('.colour-dot.fx-silk').count(), 1, 'the silk swatch has the silk finish');
+    // Swatches are flat dots: a Silk listing gets no sheen, only marble and galaxy have an effect.
+    assert.equal(await cardOf('/silk').locator('.colour-dot[class*="fx-"]').count(), 0, 'a silk listing stays a plain swatch');
     assert.equal(await cardOf('/one').locator('.colour-dot[class*="fx-"]').count(), 0, 'a normal filament stays a plain swatch');
 
     // One colour: the true tone of the photo.
@@ -117,7 +117,7 @@ const deltaE = (a, b) => require('../public/admin/swatch-colours.js').deltaE(a, 
     assert.ok(saved, 'autosaved');
     assert.equal(saved.patch.colorHexSource, 'photo', 'marked as picked by the photo reader');
     assert.deepEqual(errors, [], 'no page errors: ' + errors.join(' | '));
-    console.log('PASS: Auto reads the true tone of the photo, picks distinct ordered gradient stops without repeating, saves them as photo picks, and a Silk listing gets the silk swatch.');
+    console.log('PASS: Auto reads the true tone of the photo, picks distinct ordered gradient stops without repeating, saves them as photo picks, and a Silk listing keeps a plain swatch.');
   } finally {
     await browser.close();
     server.close();

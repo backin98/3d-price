@@ -100,7 +100,7 @@ assert.equal(colourNameOf({ name: 'eSUN PLA+ 1KG', listingTitles: ['eSUN PLA+ Si
 assert.equal(colourNameOf({ name: 'Acme PLA', color: 'black' }), 'Black', 'no title colour: the readable name');
 const shown = uncertainCard({ card: { ...old, decision: { action: 'held' } }, jobId: 'j', decision: { action: 'held' } });
 assert.match(shown, /data-uncertain-field="color"[^>]*value="Dark Red"/);
-assert.match(shown, /colour-dot fx-matte" style="--dot:#D32F2F"/, 'the dot keeps the colour, and "PLA Matte" shows the matte finish');
+assert.match(shown, /colour-dot" style="--dot:#D32F2F"/, 'the dot keeps the colour');
 
 assert.equal(listingName(old), 'Bambu Lab PLA Matte Filament', 'a half-cut colour tail is cleaned from the product line');
 assert.equal(listingName({ name: 'Acme PLA' }), 'Acme PLA');

@@ -61,6 +61,13 @@ function multiColourName(value) {
   return name && !/\b(?:pla\+?|petg|abs|asa|tpu|pctg|silk|matte|hyper|speed|filament)\b/i.test(name) ? name : "";
 }
 
+// A page <title> often ends with the shop: "… Rainbow PLA Filament - Robotzade.com". A web address is never a colour or a
+// product, so a trailing "- site.com" / "| site.com.tr" is dropped before anything reads the title.
+const SITE_SUFFIX = /\s+[-–—|]\s+(?:www\.)?[\p{L}\p{N}-]+(?:\.[\p{L}\p{N}-]+)*\.(?:com|net|org|co|shop|store|biz|info|tr)(?:\.[a-z]{2})?\s*$/iu;
+function withoutSiteSuffix(value) {
+  return String(value || "").replace(SITE_SUFFIX, "").trim();
+}
+
 function colourNameFromTitle(value, colour) {
   const title = String(value || "").trim();
   const parts = title.split(/\s+[-–—|]\s+/);
@@ -203,4 +210,4 @@ const POLYMERS = Object.keys(TAXONOMY.polymers).map((id) => ({ id }));
 const VARIANTS = Object.keys(TAXONOMY.variants).map((id) => ({ id }));
 const POLYMER_ORDER = [...Object.keys(TAXONOMY.polymers), "other"];
 
-module.exports = { MULTI_COLOUR, multiColourName, classifyFilament, packOf, canonicalColour, colourAgnosticTitle, colourNameFromTitle, coloursFromName, specsFromName, gramsFromText, productFormFromName, POLYMERS, VARIANTS, POLYMER_ORDER };
+module.exports = { withoutSiteSuffix, MULTI_COLOUR, multiColourName, classifyFilament, packOf, canonicalColour, colourAgnosticTitle, colourNameFromTitle, coloursFromName, specsFromName, gramsFromText, productFormFromName, POLYMERS, VARIANTS, POLYMER_ORDER };

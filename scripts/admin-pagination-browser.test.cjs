@@ -94,6 +94,19 @@ const server = http.createServer((req, res) => {
     await page.locator('#hide-published').uncheck();
     await page.waitForFunction(() => document.querySelectorAll('#review-board .review-card.is-published').length === 2, null, { timeout: 5000 });
 
+    // Undo on a Shop runs card puts the field back (the redraw must not be skipped as "nothing changed").
+    {
+      const card = page.locator('#review-board .review-card:not(.is-published)').first();
+      const brand = card.locator('[data-uncertain-field="brand"]');
+      const original = await brand.inputValue();
+      await brand.click();
+      await page.keyboard.type('XYZ');
+      await page.waitForTimeout(1300); // autosave
+      assert.equal(await brand.inputValue(), original + 'XYZ');
+      await card.locator('[data-card-undo]').click();
+      await page.waitForFunction((o) => { const el = document.querySelector('#review-board .review-card:not(.is-published) [data-uncertain-field="brand"]'); return el && el.value === o; }, original, { timeout: 5000 });
+    }
+
     // Typing in a card does not re-read every card of the run for each key (that made every input lag).
     await page.evaluate(() => { window.__urls = 0; const Real = URL; window.URL = new Proxy(Real, { construct(t, a) { window.__urls++; return Reflect.construct(t, a); } }); });
     const field = page.locator('#review-board .review-card:not(.is-published) [data-uncertain-field="brand"]').first();

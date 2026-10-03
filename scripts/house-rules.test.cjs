@@ -27,18 +27,6 @@ assert.equal(sub('Bambu Lab', 'Bambu Lab PLA Matte Filament - Dark Red'), '', 'o
 const taught = R.learnRules({ cards: [{ brand: 'eSUN', subBrand: 'eTwinkling', sourceTitle: 'eSUN eTwinkling PLA Filament - Blue' }] });
 assert.equal(R.subBrandOf('eSUN', 'eSUN eTwinkling PLA Filament - Red', taught), 'eTwinkling');
 
-// ---- finish -----------------------------------------------------------------------------------------------------
-assert.equal(R.finishOf('Polymaker Panchroma Silk PLA Filament Krom', ''), 'silk');
-assert.equal(R.finishOf('Esun E-Silk PLA+ Filament - Dark Orange', 'plus+silk'), 'silk');
-assert.equal(R.finishOf('Bambu Lab PLA Matte Filament - Dark Red', 'matte'), 'matte');
-assert.equal(R.finishOf('Polymaker Panchroma Satin PLA Filament Gri', ''), 'satin');
-assert.equal(R.finishOf('Porima PETG Transparan Filament - Neon Yeşil', ''), 'translucent');
-assert.equal(R.finishOf('Polymaker Translucent PLA Clear', 'translucent'), 'translucent');
-assert.equal(R.finishOf('Polymaker Panchroma PLA Filament Metalik Bronz', ''), 'metallic');
-assert.equal(R.finishOf('Fibromast Glow PETG Filament', 'glow'), 'glow');
-assert.equal(R.finishOf('eSUN PLA+ Filament - Black', 'plus'), '', 'a normal filament has no finish');
-assert.equal(R.finishOf('Creality Hyper PLA Filament - Black', 'high-speed'), '');
-
 // ---- spool material, learned ---------------------------------------------------------------------------------------
 const card = (brand, polymer, variant, spool, extra) => ({ brand, polymer, variant, spoolMaterial: spool, sourceTitle: brand + ' ' + polymer, ...extra });
 const cards = [
@@ -105,17 +93,17 @@ assert.equal(R.toneFor(toneRules, { brand: 'Acme', colorName: 'Red', multicolor:
 const run = (title, brand) => normalizeFilamentListing({ name: title, sourceTitle: title, brand, kind: 'filament', url: 'https://x.test/' + title.replace(/\W+/g, '-'), price: 500 });
 let l = run('Polymaker Panchroma Silk PLA Filament Krom', 'Polymaker');
 assert.equal(l.subBrand, 'Panchroma');
-assert.equal(l.colorEffect, 'silk', 'the finish is carried to the swatch');
 l = run('Creality Ender PLA+ Filament - Beige', 'Creality');
 assert.equal(l.subBrand, 'Ender');
-assert.equal(l.colorEffect, '');
 l = run('Bambu Lab PLA Matte Filament - Dark Red', 'Bambu Lab');
-assert.equal(l.colorEffect, 'matte');
 assert.equal(l.spoolMaterial, 'plastic', 'learned from your Bambu Lab cards');
 l = run('Porima PETG Transparan Filament - Neon Yeşil', 'Porima');
-assert.equal(l.colorEffect, 'translucent');
+assert.equal(l.colorEffect, '', 'no sheen effects: only marble and galaxy are drawn on a swatch');
+assert.equal(run('Polymaker Panchroma Silk PLA Filament Krom', 'Polymaker').colorEffect, '');
+assert.equal(run('RhinoLab PLA Marble Filament - Marble', 'RhinoLab').colorEffect, 'marble');
+assert.equal(run('Esun PLA Galaxy Filament - Night', 'Esun').colorEffect, 'galaxy');
 
-console.log('PASS: Creality and Polymaker lines are read from the title, finishes are detected, spool material is learned from your labels (specific evidence wins, weak guesses are only hints) and nothing set by a person is overwritten.');
+console.log('PASS: Creality and Polymaker lines are read from the title, spool material is learned from your labels (specific evidence wins, weak guesses are only hints) and nothing set by a person is overwritten.');
 
 // ---- the store guard: a scratch or emptied store must never replace good rules ---------------------------------------
 {

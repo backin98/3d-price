@@ -66,6 +66,6 @@ const sharedHtml = optionGroupsHtml(shared, (e) => uncertainCard(e, false, { isS
 const dots = [...sharedHtml.matchAll(/<button type="button" class="opt-dot[^"]*"[^>]*>([\s\S]*?)<\/button>/g)].map((m) => m[1]);
 assert.equal(dots.length, 3);
 assert.ok(dots.every((d) => !/<img/.test(d) && /opt-dot-fill/.test(d)), 'shared photo: colour dots, not three copies of one photo');
-assert.deepEqual(dots.map((d) => (d.match(/(?:background|--dot):([^";]+)/) || [])[1]), ['#111111', '#F5F5F5', '#E53935'].map((h) => require('../lib/filament-colours.cjs')[{ '#111111': 'black', '#F5F5F5': 'white', '#E53935': 'red' }[h]].hex), 'each dot its own colour');
+assert.deepEqual(dots.map((d) => (d.match(/background:([^"]+)"/) || [])[1]), ['#111111', '#F5F5F5', '#E53935'].map((h) => require('../lib/filament-colours.cjs')[{ '#111111': 'black', '#F5F5F5': 'white', '#E53935': 'red' }[h]].hex), 'each dot its own colour');
 
 console.log('PASS: colours of one product are one card with a dot per option (each with its own picture), for one-page shops and one-listing-per-colour shops alike; printers, modules, packs and other models stay their own cards.');

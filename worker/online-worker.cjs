@@ -13,7 +13,6 @@
 //   WORKER_HOST       - HTTP bind host (default 127.0.0.1)
 
 const fs = require("node:fs");
-const { EFFECTS: COLOUR_EFFECTS } = require('../lib/house-rules.cjs');
 const http = require("node:http");
 const path = require("node:path");
 const { runWebsiteJob } = require("../lib/qwen-website-job.cjs");
@@ -189,7 +188,7 @@ function compactEvent(ev) {
       sourceTitle: String(l.sourceTitle || "").slice(0, 200),
       colorSet: Array.isArray(l.colorSet) ? l.colorSet.slice(0, 6).map(String) : [],
       multicolor: l.multicolor === true,
-      colorEffect: COLOUR_EFFECTS.includes(l.colorEffect) ? l.colorEffect : "",
+      colorEffect: ["marble", "galaxy"].includes(l.colorEffect) ? l.colorEffect : "",
       weightAssumed: l.weightAssumed === true,
       // One option of a product sold in several (its colours): the product page it came from, and the
       // option's own little picture. The review board draws them as one card with a dot per option.
