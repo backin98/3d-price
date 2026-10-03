@@ -31,7 +31,7 @@ const payload = () => ({
   candidate: { products: [], filaments: [] }, heartbeat: null, counts: { products: 0, filaments: 0 },
   baseline: { categories: [{ id: 'filaments', name: 'Filament' }], items: [] },
   catalog: { savedAt: new Date().toISOString(), products: [], filaments: [] },
-  jobs: [{ id: 'job-fm', url: FM + '/filament', site: 'filamentmarketim.com', status: 'done', events: [...singles, ...group] }]
+  jobs: [{ id: 'job-fm', url: FM + '/filament', site: 'filamentmarketim.com', status: 'done', events: [...singles, ...group], published: [FM + '/single-3', FM + '/single-4'] }]
 });
 
 const server = http.createServer((req, res) => {
@@ -82,6 +82,26 @@ const server = http.createServer((req, res) => {
     // Lazy tabs: the tab on screen is drawn, the others when opened.
     assert.equal((await page.locator('#tab-overview').innerHTML()).trim(), '', 'a hidden tab is not drawn up front');
 
+    // Published cards stay on the board, marked and left out of the bulk actions.
+    assert.equal(await page.locator('#review-board .review-card.is-published').count(), 2, 'the 2 published cards are still on the board, marked');
+    assert.match(await page.locator('.review-toolbar').first().innerText(), /53 gathered · 2 published/);
+    await page.locator('#hide-published').check();
+    await page.waitForFunction(() => !document.querySelector('#review-board .review-card.is-published'), null, { timeout: 5000 });
+    assert.match(await page.locator('.review-toolbar').first().innerText(), /51 gathered/, 'Hide published takes them off the board');
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await page.waitForSelector('#review-board .review-card', { timeout: 15000 });
+    assert.equal(await page.locator('#hide-published').isChecked(), true, 'and the choice is remembered');
+    await page.locator('#hide-published').uncheck();
+    await page.waitForFunction(() => document.querySelectorAll('#review-board .review-card.is-published').length === 2, null, { timeout: 5000 });
+
+    // Typing in a card does not re-read every card of the run for each key (that made every input lag).
+    await page.evaluate(() => { window.__urls = 0; const Real = URL; window.URL = new Proxy(Real, { construct(t, a) { window.__urls++; return Reflect.construct(t, a); } }); });
+    const field = page.locator('#review-board .review-card:not(.is-published) [data-uncertain-field="brand"]').first();
+    await field.click();
+    for (let i = 0; i < 20; i++) await page.keyboard.type('x');
+    const urls = await page.evaluate(() => window.__urls);
+    assert.ok(urls < 400, 'typing 20 characters made ' + urls + ' URL parses; one re-read of the run is about 110, one per key was thousands');
+
     // 24 + 24 + 3.
     assert.equal(await cards(), 24, 'the first page has 24 cards');
     assert.match(await info(), /Showing 1–24 of 51 cards/);
@@ -118,8 +138,8 @@ const server = http.createServer((req, res) => {
 
     // Select all takes the whole run, not the page.
     await page.locator('#select-all').click();
-    assert.match(await page.locator('#publish-selected').innerText(), /\(53\)/, 'every card of the run is selected');
-    assert.equal(await page.locator('#review-board .review-card.is-selected').count(), 24, 'and the cards on screen show it');
+    assert.match(await page.locator('#publish-selected').innerText(), /\(51\)/, 'every card of the run is selected except the 2 already published');
+    assert.equal(await page.locator('#review-board .review-card.is-selected').count(), 22, 'and the cards on screen show it (the 2 published ones on this page are left out)');
     await goPage('#review-board', 2);
     assert.equal(await page.locator('#review-board .review-card.is-selected').count(), 24, 'page 2 draws its cards selected too');
     // Save & publish selected sends every selected card, the ones on other pages too.
@@ -127,8 +147,8 @@ const server = http.createServer((req, res) => {
     await page.waitForFunction(() => /\(0\)/.test(document.getElementById('publish-selected').textContent), null, { timeout: 15000 });
     const sent = posts.filter((b) => b.action === 'publishSelected').pop();
     const sentUrls = [...sent.placements, ...sent.deferred].map((x) => x.url);
-    assert.equal(sentUrls.length, 53, 'all 53 selected listings are sent, not only the 24 on screen');
-    assert.equal(new Set(sentUrls).size, 53);
+    assert.equal(sentUrls.length, 51, 'all 51 selected listings are sent, not only the 24 on screen');
+    assert.equal(new Set(sentUrls).size, 51);
     assert.ok(sentUrls.some((u) => /single-49$/.test(u)) && sentUrls.some((u) => /variant=lacivert/.test(u)), 'including cards from the last page');
     assert.ok(sent.deferred.every((x) => x.card && x.card.polymer === 'pla' && x.card.brand), 'cards off screen carry the fields a drawn card works out');
 
@@ -152,7 +172,7 @@ const server = http.createServer((req, res) => {
     await page.waitForTimeout(1500);
     const forced = posts.filter((b) => b.action === 'publishSelected').slice(before).pop();
     assert.ok(forced, 'Force publish all posted');
-    assert.equal(forced.placements.length, 53, 'all 53 waiting cards, not the 24 of one page');
+    assert.equal(forced.placements.length, 51, 'all 51 waiting cards (the 2 published are not waiting), not the 24 of one page');
 
     assert.deepEqual(errors, [], 'no page errors: ' + errors.join(' | '));
     console.log('PASS: Shop runs and Uncertain draw 12 / 24 / 36 / 48 or all cards per page (kept after reload), groups stay whole, Select all spans every page, search finds cards on any page, and only the open tab is drawn.');

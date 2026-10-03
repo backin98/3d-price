@@ -257,8 +257,19 @@ const post = (body) => new Request('https://example.com/api/admin', { method: 'P
     published: ['https://shop.example.com/pla-black-1kg'],
     events: [{ type: 'gather', urls: ['https://shop.example.com/pla-black-1kg', 'https://shop.example.com/pla-white-1kg'] }]
   });
-  assert.doesNotMatch(publishedHtml, /pla black 1kg/);
+  // A published card stays on the board (marked), so a mistake can still be fixed; Hide published takes it off.
+  assert.match(publishedHtml, /pla black 1kg/);
   assert.match(publishedHtml, /pla white 1kg/);
+  assert.match(publishedHtml, /class="[^"]*is-published/, 'the published card is marked');
+  assert.match(publishedHtml, /1 published/);
+  context.test.state.hidePublished = true;
+  const hiddenHtml = context.test.reviewBoardHtml({
+    published: ['https://shop.example.com/pla-black-1kg'],
+    events: [{ type: 'gather', urls: ['https://shop.example.com/pla-black-1kg', 'https://shop.example.com/pla-white-1kg'] }]
+  });
+  assert.doesNotMatch(hiddenHtml, /pla black 1kg/);
+  assert.match(hiddenHtml, /pla white 1kg/);
+  context.test.state.hidePublished = false;
 
   data.candidate = null;
   result = await apiContext.handler(post({

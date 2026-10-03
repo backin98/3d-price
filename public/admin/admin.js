@@ -27,6 +27,8 @@
     reviewQuery: "",
     // Cards per page on the Shop runs board and the Uncertain list (12, 24, 36, 48; 0 = all) and the page each is on.
     pageSize: loadPageSize(),
+    // Cards already published stay on the Shop runs board (marked) so a mistake can be fixed; this hides them.
+    hidePublished: loadHidePublished(),
     pager: { runs: { page: 1 }, uncertain: { page: 1 } },
     reviewPlace: new Map(),
     catalogSelected: new Set(),
@@ -896,11 +898,25 @@
       || (d.candidate ? { id: "candidate", events: [], cards: {}, url: "" } : null);
   }
 
-  function collectCards(job, d) {
+  // collectCards reads every card of a run (its events, saved edits, the candidate catalog). It depends only on the
+  // run's data and the chosen run, never on what is typed, so the result is kept until one of those objects is
+  // replaced (a data reload, or a Save putting new job.cards). Typing in a card used to redo it for every key.
+  const collectCardsMemo = new WeakMap();
+  function collectCardsEntry(job, d) {
+    const key = [d, d && d.candidate, state.data && state.data.catalog, job.url, job.page2Url, job.cards, job.events, job.published, job.dropped, job.variantParents, state.reviewJobId, state.hidePublished];
+    const hit = collectCardsMemo.get(job);
+    if (hit && hit.key.every((v, i) => v === key[i])) return hit;
+    const list = collectCardsRaw(job, d);
+    const entry = { key, list, byUrl: new Map(list.filter((x) => x.card && x.card.url).map((x) => [x.card.url, x])) };
+    collectCardsMemo.set(job, entry);
+    return entry;
+  }
+  function collectCards(job, d) { return collectCardsEntry(job, d).list.slice(); }
+
+  function collectCardsRaw(job, d) {
     const byUrl = new Map();
-    // Published cards come back when a specific run is chosen by hand: after Collect the board
-    // looked empty, which is exactly when you want to go back and regroup.
-    const dropped = new Set([...(job.dropped || []), ...(state.reviewJobId ? [] : (job.published || []))]);
+    // Published cards stay on the board, marked, so a mistake can still be fixed (Hide published takes them off).
+    const dropped = new Set([...(job.dropped || []), ...(state.hidePublished ? (job.published || []) : [])]);
     const rank = (d) => d && (d.action === "merge" || d.action === "updated") ? 2 : d && d.action === "create" ? 1 : 0;
     // The category page the run read is not a listing (older runs saved it as a card).
     const pageKey = (u) => { try { const x = new URL(u); return (x.hostname.replace(/^www\./, "") + x.pathname.replace(/\/+$/, "") + x.search).toLowerCase(); } catch { return ""; } };
@@ -994,7 +1010,8 @@
       const prev = exactTitles.get(key);
       if (!prev || quality(e) > quality(prev)) exactTitles.set(key, e);
     }
-    return [...exactTitles.values()];
+    const publishedUrls = new Set(job.published || []);
+    return [...exactTitles.values()].map((e) => (publishedUrls.has(e.card && e.card.url) ? { ...e, published: true } : e));
   }
 
   function editedCard(ev) {
@@ -1266,15 +1283,30 @@
       })).join("");
   }
 
+  // The same card collectUncertain(d).find(url) gives, without building the whole queue (this runs on every key
+  // typed in a card).
+  function uncertainEventFor(d, url) {
+    for (const job of (d && d.jobs) || []) {
+      const ev = collectCardsEntry(job, d).byUrl.get(url);
+      if (!ev || new Set(job.published || []).has(url)) continue;
+      const laya = layaOf(ev);
+      if (defaultPlace(ev).action === "merge" && !magellanUnsure(ev) && !laya) continue;
+      const shopHost = hostOf(job.url) || job.site || "";
+      const shop = shopForUrl(d, job.url);
+      return { ...ev, laya, jobId: job.id, shopHost, shopName: (shop && (shop.name || shop.id)) || shopHost || job.id };
+    }
+    return null;
+  }
+
   function cardEvent(url) {
-    const fromAll = collectUncertain(state.data || {}).find((x) => x.card && x.card.url === url);
+    const fromAll = uncertainEventFor(state.data || {}, url);
     if (fromAll) return fromAll;
     // A published offer card (Catalog / Baseline) is not in the Uncertain queue: use the event it was drawn from.
     const asOffer = offerEventsByUrl.get(url);
     if (asOffer) return asOffer;
     const job = reviewJob(state.data || { jobs: [] });
     if (!job) return { card: { url }, decision: {}, compared: [] };
-    return collectCards(job, state.data).find((x) => x.card && x.card.url === url) || { card: { url }, decision: {}, compared: [] };
+    return collectCardsEntry(job, state.data).byUrl.get(url) || { card: { url }, decision: {}, compared: [] };
   }
 
   function placeCard(el) {
@@ -1405,8 +1437,9 @@
     // Cards the deterministic pass could not place: no merge, no new row, no update.
     const unmatched = cards.filter((e) => {
       const a = e.decision && e.decision.action;
-      return !e.error && !!(e.card && e.card.url) && a !== "merge" && a !== "updated" && a !== "create";
+      return !e.error && !e.published && !!(e.card && e.card.url) && a !== "merge" && a !== "updated" && a !== "create";
     }).length;
+    const publishedCount = cards.filter((e) => e.published).length;
     return `
       <div class="review-search">
         <input id="review-search" type="search" value="${esc(state.reviewQuery)}" autocomplete="off" spellcheck="false" aria-label="Search this run" placeholder='Search this run…  bambu red   "exact phrase"   -wood   price:<700   weight:1kg   shop:rhino    (press / to focus)'>
@@ -1425,7 +1458,8 @@
         <button class="btn-sm danger" type="button" id="delete-flagged" ${state.reviewFlags.size ? "" : "disabled"}>Delete flagged (${state.reviewFlags.size})</button>
         <button class="btn-sm danger" type="button" id="delete-all-review" title="Remove every gathered listing from every shop in this collect, no selection needed">Delete all</button>
         <button class="btn-sm ok" type="button" id="publish-selected" ${selected ? "" : "disabled"}>Save &amp; publish selected (${selected})</button>
-        <span class="muted">${cards.length} gathered</span>
+        <span class="muted">${cards.length} gathered${publishedCount ? " · " + publishedCount + " published" : ""}</span>
+        <label class="muted" title="Published cards stay here, marked, so you can fix a mistake. Tick to take them off the board."><input type="checkbox" id="hide-published" ${state.hidePublished ? "checked" : ""}> Hide published</label>
       </div>
       <div class="review-toolbar">
         <span class="muted">Baseline-trained Laya help — scores only current catalog candidates and cannot override a hard split:</span>
@@ -1528,6 +1562,9 @@
       if (stored !== null && stored !== "" && (v === 0 || [12, 24, 36, 48].includes(v))) return v;
     } catch (_) { /* storage blocked: the default */ }
     return 24;
+  }
+  function loadHidePublished() {
+    try { return localStorage.getItem("admin.hidePublished") === "1"; } catch (_) { return false; }
   }
   function pagerView(key, total) {
     const size = state.pageSize;
@@ -2917,7 +2954,7 @@
     const place = uncertainPlace(ev, { kind: c.kind, name, brand, subBrand, polymer, variant, diameter, bundle: packState.bundle, packCount: packState.count });
     const held = state.uncertainHeld.has(url);
     const saved = state.uncertainSaved.has(url);
-    const published = state.uncertainPublished.has(url);
+    const published = state.uncertainPublished.has(url) || ev.published === true;
     const og = ev.optionGroup || null;
     const thumbSrc = (og && og.pic) || c.image;
     const reviewClass = review ? " review-card" + (review.isSel ? " is-selected" : "") + (review.isFlag ? " flagged" : "") + (review.mismatch ? " is-mismatch" : "") : "";
@@ -2927,7 +2964,7 @@
         <label><input type="checkbox" data-review-flag="${esc(id)}" ${review.isFlag ? "checked" : ""}> Flag</label>
       </div>` : ""}
       ${held ? '<div class="uncertain-hold" aria-hidden="true">Removed</div>' : ""}
-      ${published ? '<div class="uncertain-check" aria-label="Published">✓</div>' : ""}
+      ${published ? '<div class="uncertain-check" aria-label="Published" title="Published to the catalog. You can still edit it and Save &amp; publish again.">✓</div>' : ""}
       ${keepLast === true ? '<span class="uncertain-kept badge">Kept</span>' : `<button class="uncertain-trash" type="button" data-uncertain-delete="${esc(url)}" aria-label="Delete this card" title="Delete this card">
         <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9 3h6l1 2h4v2H4V5h4l1-2zm1 6h2v9h-2V9zm4 0h2v9h-2V9zM7 9h2v9H7V9z"/></svg>
       </button>`}
@@ -3709,13 +3746,13 @@
           // Every card of the run, not just the page on screen.
           for (const ev of collectCards(reviewJob(state.data || { jobs: [] }), state.data)) {
             const url = ev.card && ev.card.url;
-            if (url && !ev.mismatch && !editedCard(ev).mismatch) state.reviewSelected.add(url);
+            if (url && !ev.published && !ev.mismatch && !editedCard(ev).mismatch) state.reviewSelected.add(url);
           }
           syncReviewMarks();
           updateReviewToolbar();
           return;
         }
-        $$("[data-review-select]").filter((el) => { const card = el.closest(".review-card") || {}; return !card.hidden && !(card.classList && card.classList.contains("is-mismatch")); }).forEach((el) => {
+        $$("[data-review-select]").filter((el) => { const card = el.closest(".review-card") || {}; return !card.hidden && !(card.classList && (card.classList.contains("is-mismatch") || card.classList.contains("is-published"))); }).forEach((el) => {
           el.checked = true;
           state.reviewSelected.add(decodeURIComponent(el.dataset.reviewSelect));
           el.closest(".review-card")?.classList.add("is-selected");
@@ -3727,7 +3764,7 @@
         if (!String(state.reviewQuery || "").trim()) {
           for (const ev of collectCards(reviewJob(state.data || { jobs: [] }), state.data)) {
             const url = ev.card && ev.card.url;
-            if (url) state.reviewFlags.add(url);
+            if (url && !ev.published) state.reviewFlags.add(url);
           }
           syncReviewMarks();
           updateReviewToolbar();
@@ -4034,6 +4071,7 @@
           const url = ev.card && ev.card.url;
           if (!url || ev.error) return false;
           if (onlySelected) return state.reviewSelected.has(url);
+          if (ev.published) return false;
           const a = ev.decision && ev.decision.action;
           return a !== "merge" && a !== "updated" && a !== "create";
         });
@@ -4691,6 +4729,13 @@
     });
 
     document.addEventListener("change", async (e) => {
+      if (e.target.id === "hide-published") {
+        state.hidePublished = e.target.checked;
+        try { localStorage.setItem("admin.hidePublished", state.hidePublished ? "1" : "0"); } catch (_) { /* storage blocked: kept for this visit */ }
+        state.pager.runs = { page: 1 };
+        repaintRuns();
+        return;
+      }
       if (e.target.matches("[data-pager-size]")) {
         const key = e.target.closest("[data-pager]").dataset.pager;
         state.pageSize = Number(e.target.value) || 0;
