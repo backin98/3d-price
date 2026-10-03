@@ -233,6 +233,14 @@
 
   // Merge groups that look alike, keep the ones that matter, order along the photo. Never returns two stops that
   // are closer than minDeltaE, nor one that is close to a colour in `avoid` (the stops already on the card).
+  // Cardboard: the orange-brown of kraft board, not very saturated, mid to light. A cardboard spool or hub in a photo looks like
+  // this; so does a beige or brown filament, which is why it is only a clue.
+  function isKraft(lab) {
+    const C = chroma(lab);
+    const hue = (Math.atan2(lab[2], lab[1]) * 180 / Math.PI + 360) % 360;
+    return lab[0] > 35 && lab[0] < 84 && C >= 10 && C <= 42 && hue >= 38 && hue <= 98;
+  }
+
   function gradientStops(rgba, w, h, opts = {}) {
     const max = opts.max || 6, minDeltaE = opts.minDeltaE || 14;
     const avoid = (opts.avoid || []).filter(Boolean).map(hexToLab);
@@ -241,6 +249,9 @@
     // A grey group at the border of a coloured photo is the spool flange, not a stop.
     const anyColour = groups.some((g) => g.chroma > 16 && g.share >= 0.08);
     let stops = groups.filter((g) => g.share >= 0.025 && !(anyColour && g.chroma < 10 && g.edgeness > 0.55));
+    // With two or more vivid colours in the photo, a cardboard-coloured or greyish group is the hub, the flange or the paper.
+    const vivid = stops.filter((g) => g.chroma > 24 && !isKraft(g.mid));
+    if (vivid.length >= 2) stops = stops.filter((g) => !(isKraft(g.mid) && g.mid[0] > 50) && g.chroma >= 14);
     stops = mergeLike(stops, minDeltaE, max);
     stops = stops.filter((g) => !avoid.some((a) => de2000(a, g.mid) < minDeltaE));
     if (!stops.length) return [];
@@ -272,5 +283,34 @@
     return ordered.map((p) => ({ hex: labToHex(p.g.mid), share: Math.round(p.g.share * 100) / 100, x: Math.round(p.x * 100) / 100, y: Math.round(p.y * 100) / 100 }));
   }
 
-  return { tone, gradientStops, deltaE, rgbToLab, labToRgb, hexToLab, labToHex };
+  // What the spool is made of, from its photo. A cardboard spool shows kraft board on its flange (the outer ring of the object) and
+  // usually on its core; a plastic one shows black, white, grey or a plain colour there. Returns
+  //   { value: "cardboard" | "plastic", confidence, shellKraft, midKraft } or null when the photo cannot tell
+  // (no flange visible, or a beige / brown filament that looks like the board, so the flange cannot be told from the winding).
+  function spoolType(rgba, w, h) {
+    const { px } = samples(rgba, w, h);
+    if (px.length < 80) return null;
+    const shell = px.filter((p) => p.edge >= 0.62);
+    const mid = px.filter((p) => p.edge >= 0.2 && p.edge < 0.62);
+    const hub = px.filter((p) => p.edge < 0.2);
+    if (shell.length < 30) return null;
+    const share = (a, f) => (a.length ? a.filter(f).length / a.length : 0);
+    const shellKraft = share(shell, (p) => isKraft(p.lab));
+    const midKraft = share(mid, (p) => isKraft(p.lab));
+    const hubKraft = share(hub, (p) => isKraft(p.lab));
+    const shellPlain = share(shell, (p) => chroma(p.lab) < 12 || (chroma(p.lab) >= 25 && !isKraft(p.lab)));
+    const round = (v) => Math.round(v * 100) / 100;
+    // The winding looks like board too: a beige or brown filament. The flange cannot be told apart from it.
+    if (midKraft > 0.5 && shellKraft > 0.4) return null;
+    if (shellKraft >= 0.4) {
+      return { value: "cardboard", confidence: round(Math.max(0.5, Math.min(0.95, 0.45 + shellKraft * 0.5 + (hubKraft > 0.4 ? 0.1 : 0) - (midKraft > 0.5 ? 0.2 : 0)))), shellKraft: round(shellKraft), midKraft: round(midKraft) };
+    }
+    if (shellPlain >= 0.7) {
+      // Not board is not proof of plastic (a painted or printed spool, a photo taken from the side): never very sure.
+      return { value: "plastic", confidence: round(Math.max(0.5, Math.min(0.8, 0.6 + 0.2 * (1 - shellKraft * 2.5)))), shellKraft: round(shellKraft), midKraft: round(midKraft) };
+    }
+    return null;
+  }
+
+  return { tone, gradientStops, spoolType, isKraft, deltaE, rgbToLab, labToRgb, hexToLab, labToHex };
 });

@@ -32,6 +32,12 @@ Every card the owner fixes by hand is a label. Use them, and measure before clai
 - `npm run eval-colours` (on the PC; it downloads photos) compares the photo reader with the owner's eyedropper picks.
 - `npm run laya-data` rebuilds Laya's training inputs from the baseline and the owner's decisions; retraining itself
   (`scripts/laya-match.py --train`) needs the Python environment on the PC.
+- The run reads every filament photo (`lib/photo-readings.cjs`, cached per image URL in `work/photo-readings.json`): the true tone
+  of the spool (gradient stops for multicolour) and the spool material (cardboard flange vs a plain one). It fills only what nobody
+  set; a spool type the photo is not sure of (`PHOTO_SPOOL_SURE`, default 0.85) is only a hint. Off with `PHOTO_READINGS=0` or
+  `job.photoReadings = false`. "Read photos (this page)" and the 📷 do the same in the admin for runs that already exist. Values
+  filled from a photo carry `colorHexSource: "photo"` / `spoolSource: "photo"` and never teach the rules.
+  `npm run eval-spool-photo` measures the spool reader against the owner's hand-set spool types (needs the PC and the internet).
 - Swatch effects: only marble and galaxy (`colorEffect`). Sheen finishes (silk, satin, matte, translucent, ...) were tried
   and removed at the owner's request; do not add them back unless asked.
 

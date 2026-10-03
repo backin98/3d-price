@@ -11,7 +11,7 @@ const rgbOf = (hex) => { const n = parseInt(hex.slice(1), 16); return [(n >> 16)
 
 // A spool seen from the front: paper, a flange disc, the wound filament ring, an empty hub. `ringAt(angle)` gives the
 // filament colour at that angle (a gradient changes it around the ring). Shading: darker toward the inner edge, noise.
-function spool({ bg = '#ffffff', flange = '#262626', ring = '#c0392b', ringAt = null, glints = 0, alpha = 255 } = {}) {
+function spool({ bg = '#ffffff', flange = '#262626', ring = '#c0392b', ringAt = null, glints = 0, alpha = 255, hub = null } = {}) {
   const px = new Uint8ClampedArray(W * W * 4);
   const c = W / 2;
   for (let y = 0; y < W; y++) for (let x = 0; x < W; x++) {
@@ -23,7 +23,7 @@ function spool({ bg = '#ffffff', flange = '#262626', ring = '#c0392b', ringAt = 
       const col = rgbOf(ringAt ? ringAt(Math.atan2(y - c, x - c)) : ring);
       const shade = 0.78 + 0.22 * ((d - 14) / 20) + (rnd() - 0.5) * 0.08;
       rgb = col.map((v) => Math.max(0, Math.min(255, Math.round(v * shade)))); a = 255;
-    } else if (d <= 14 && d > 0) a = bg === 'none' ? 0 : 255;
+    } else if (d <= 14 && d > 0) { if (hub) rgb = rgbOf(hub); else a = bg === 'none' ? 0 : 255; }
     const o = (y * W + x) * 4;
     px[o] = rgb[0]; px[o + 1] = rgb[1]; px[o + 2] = rgb[2]; px[o + 3] = a === 0 ? 0 : (alpha === 255 ? 255 : alpha);
   }
@@ -88,8 +88,37 @@ assert.ok(S.gradientStops(spool({ ringAt: (a) => band(a, many) }), W, W, { max: 
 // the flange is not a stop
 assert.ok(!g3.some((s) => S.hexToLab(s.hex)[0] < 22 && Math.hypot(S.hexToLab(s.hex)[1], S.hexToLab(s.hex)[2]) < 8), 'the black flange is not a gradient stop');
 
+// the hub, the flange and the paper are not gradient colours: a red-to-magenta silk spool on a cardboard core and a grey table
+const rainbowish = ['#d6334a', '#c2306e', '#e0556a'];
+const gHub = S.gradientStops(spool({ ringAt: (a) => band(a, rainbowish), flange: '#b28b5c', hub: '#c2a98a', bg: '#d4d4d8' }), W, W, { max: 6 });
+assert.ok(gHub.length >= 1, 'something is found');
+assert.ok(!gHub.some((x) => S.isKraft(S.hexToLab(x.hex)) && S.hexToLab(x.hex)[0] > 50), 'no cardboard-coloured stop: ' + gHub.map((x) => x.hex));
+assert.ok(!gHub.some((x) => Math.hypot(S.hexToLab(x.hex)[1], S.hexToLab(x.hex)[2]) < 14), 'no grey stop: ' + gHub.map((x) => x.hex));
+
 // an empty or all-background picture gives nothing rather than a guess
 assert.equal(S.tone(new Uint8ClampedArray(W * W * 4).fill(255), W, W), null);
 assert.deepEqual(S.gradientStops(new Uint8ClampedArray(W * W * 4).fill(255), W, W), []);
+
+// ---- spool material from the photo -------------------------------------------------------------------------------------------
+const kind = (opts) => { const r = S.spoolType(spool(opts), W, W); return r && r.value; };
+// cardboard flange (with and without a cardboard core), any filament colour
+for (const ring of ['#c0392b', '#2e6fd0', '#2f9e57', '#8a3fb8', '#1c1c1c', '#ececec']) {
+  assert.equal(kind({ ring, flange: '#b28b5c', hub: '#b9976a' }), 'cardboard', 'a kraft flange is cardboard (' + ring + ')');
+  assert.equal(kind({ ring, flange: '#a97c50' }), 'cardboard', 'a darker kraft flange too (' + ring + ')');
+}
+// plastic: black, white, grey, transparent-ish or coloured flanges
+for (const flange of ['#262626', '#f2f2f2', '#8c8f93', '#2e6fd0', '#d83a2e']) assert.equal(kind({ ring: '#2f9e57', flange }), 'plastic', 'a plain flange is plastic (' + flange + ')');
+// a beige or brown filament on a black plastic flange is not cardboard
+assert.equal(kind({ ring: '#c2a98a', flange: '#262626' }), 'plastic', 'a beige filament on a black flange');
+assert.equal(kind({ ring: '#7a5a3a', flange: '#262626' }), 'plastic', 'a brown filament on a black flange');
+// board-coloured winding AND flange: cannot tell, so no guess
+assert.equal(S.spoolType(spool({ ring: '#c2a98a', flange: '#b28b5c' }), W, W), null, 'beige filament on a board flange: unknown');
+// confidence: cardboard is firmer than "not cardboard", and neither is certain
+const cb = S.spoolType(spool({ ring: '#2e6fd0', flange: '#b28b5c', hub: '#b9976a' }), W, W);
+const pl = S.spoolType(spool({ ring: '#2e6fd0', flange: '#262626' }), W, W);
+assert.ok(cb.confidence >= 0.8 && cb.confidence <= 0.95, 'cardboard confidence ' + cb.confidence);
+assert.ok(pl.confidence >= 0.55 && pl.confidence <= 0.8, 'plastic confidence ' + pl.confidence);
+// nothing to read
+assert.equal(S.spoolType(new Uint8ClampedArray(W * W * 4).fill(255), W, W), null);
 
 console.log('PASS: the photo reader finds the true tone of coloured, black, white and grey filament, ignores flange, glints and background, and picks distinct, ordered gradient stops without repeats.');

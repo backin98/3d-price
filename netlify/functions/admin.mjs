@@ -1660,6 +1660,8 @@ export default async (req) => {
         if (body.patch && (body.patch.bundle != null || body.patch.packCount != null)) Object.assign(inner, packOf(body.patch));
         if (body.patch && /^#[0-9a-f]{6}$/i.test(String(body.patch.colorHex || ""))) inner.colorHex = String(body.patch.colorHex).toLowerCase();
         if (body.patch && body.patch.colorTone != null) inner.colorTone = colourToneOf(body.patch.colorTone);
+        // Where the spool material came from: the photo, or you. Only your own choices teach the run.
+        if (body.patch && ["photo", ""].includes(body.patch.spoolSource)) inner.spoolSource = body.patch.spoolSource;
         // Who chose the swatch: you with the eyedropper, or the photo reader. Only your picks teach the run (npm run learn).
         if (body.patch && ["photo", "eyedropper"].includes(body.patch.colorHexSource)) inner.colorHexSource = body.patch.colorHexSource;
         inner.handEdited = true;

@@ -1455,6 +1455,7 @@
       </div>
       <div class="review-toolbar">
         <button class="btn-sm" type="button" id="select-all">Select all</button>
+        <button class="btn-sm" type="button" id="read-photos" title="Read the true colour and the spool material from the product photos of the cards on this page. Never over a shade you eyedropped or a spool you set.">Read photos (this page)</button>
         <button class="btn-sm ok" type="button" id="select-ready" title="Select only the cards that are Ready, on every page: everything known and a baseline model to go to. Review the rest by their reasons.">Select ready</button>
         <button class="btn-sm" type="button" id="flag-all">Flag all</button>
         <button class="btn-sm ghost" type="button" id="clear-review">Clear selection</button>
@@ -2428,9 +2429,9 @@
   }
   // Auto: the true tone of the filament, or for several colours the distinct stops of the gradient in order. Pressing it
   // again on a gradient offers colours the card does not have yet, so it does not repeat itself.
-  async function autoColour(card, src) {
+  async function autoColour(card, src, preloaded) {
     const SC = window.SwatchColours;
-    const px = await photoPixels(src);
+    const px = preloaded || await photoPixels(src);
     const row = card.querySelector(".colour-row");
     const st = rowColour(row);
     const multi = st.set.length > 1 || st.rainbow;
@@ -2474,6 +2475,44 @@
     return colourFromPixels(ctx.getImageData(0, 0, 64, 64).data, state.data && state.data.filamentColours);
   }
 
+  // Spool material from the photo: a cardboard flange says cardboard, a plain one plastic. Fills the field (no group propagation: one
+  // wrong reading must not rewrite every colour of a model) and records that it came from the photo.
+  const BULK_SPOOL_MIN = 0.75;
+  function setSpoolFromPhoto(card, r) {
+    const sel = card.querySelector('[data-uncertain-field="spoolMaterial"]');
+    if (!sel) return false;
+    sel.value = r.value;
+    card.dataset.spoolSource = "photo";
+    const url = card.dataset.uncertainUrl;
+    state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), spoolMaterial: r.value, spoolSource: "photo" });
+    const word = r.value === "cardboard" ? "Cardboard" : "Plastic";
+    const line = `Spool: ${word} — read from the photo (${Math.round(r.confidence * 100)}% sure)`;
+    let notes = card.querySelector(".learned-notes");
+    if (!notes) { const anchor = card.querySelector(".spool-row"); if (anchor) { anchor.insertAdjacentHTML("afterend", '<p class="muted learned-notes"></p>'); notes = card.querySelector(".learned-notes"); } }
+    if (notes) notes.textContent = line;
+    scheduleAutosave(card);
+    return true;
+  }
+  // One card: its tone (or gradient) and its spool type, from its photo. Never over a shade you eyedropped or a spool you set.
+  async function readCardPhoto(card, opts = {}) {
+    const SC = window.SwatchColours;
+    const img = card.querySelector(".catalog-thumb img");
+    if (!SC || !img) return { skipped: "no photo" };
+    const px = await photoPixels(img.currentSrc || img.src);
+    const out = {};
+    if (opts.colour !== false && card.querySelector(".colour-row") && card.dataset.hexSource !== "eyedropper" && !(opts.skipRead && card.dataset.hexSource === "photo")) {
+      const found = await autoColour(card, img.currentSrc || img.src, px);
+      if (found) out.colour = found.kind;
+    }
+    const sel = card.querySelector('[data-uncertain-field="spoolMaterial"]');
+    if (opts.spool !== false && sel && (opts.force || !sel.value)) {
+      const r = SC.spoolType(px.data, px.w, px.h);
+      if (r && r.confidence >= (opts.minSpool != null ? opts.minSpool : BULK_SPOOL_MIN)) { setSpoolFromPhoto(card, r); out.spool = r.value; }
+      else if (r) out.spoolWeak = r;
+    }
+    return out;
+  }
+
   // RFID is a plain on/off button beside the spool material; its value is "yes" or "" like any other field.
   function rfidToggle(attrs, on) {
     return `<button type="button" class="rfid-toggle" data-rfid-toggle ${attrs} value="${on ? "yes" : ""}" aria-pressed="${on ? "true" : "false"}">RFID</button>`;
@@ -2481,7 +2520,8 @@
   // linked: undefined = no chain (baseline cards), true / false = the group chain on Uncertain cards.
   function spoolRow(attr, spoolMaterial, rfid, linked) {
     const chain = linked == null ? "" : `<button type="button" class="btn-sm ghost spool-chain" data-spool-chain aria-pressed="${linked ? "true" : "false"}" title="${linked ? "Linked: one spool type and RFID for this brand, sub-brand, polymer and variant. Click to break." : "Unlinked: each card has its own spool type. Click to link again."}" aria-label="${linked ? "Break spool link" : "Link spool type"}">${linked ? CHAIN : CHAIN_BROKEN}</button>`;
-    return `<div class="spool-row">${spoolMaterialSelect(attr("spoolMaterial"), spoolMaterial)}${chain}${rfidToggle(attr("rfid"), rfid)}</div>`;
+    const camera = linked == null ? "" : `<button type="button" class="btn-sm ghost" data-spool-from-photo title="Read the spool material from the product photo (a cardboard flange means cardboard)" aria-label="Read the spool material from the photo">📷</button>`;
+    return `<div class="spool-row">${spoolMaterialSelect(attr("spoolMaterial"), spoolMaterial)}${camera}${chain}${rfidToggle(attr("rfid"), rfid)}</div>`;
   }
   const CHAIN = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M10.6 13.4a1 1 0 0 0 1.4 0l4-4a3 3 0 1 0-4.2-4.2l-1.2 1.2 1.4 1.4 1.2-1.2a1 1 0 0 1 1.4 1.4l-4 4a1 1 0 0 0 0 1.4zm2.8-2.8a1 1 0 0 0-1.4 0l-4 4a3 3 0 1 0 4.2 4.2l1.2-1.2-1.4-1.4-1.2 1.2a1 1 0 0 1-1.4-1.4l4-4a1 1 0 0 0 0-1.4z"/></svg>';
   const CHAIN_BROKEN = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M15.8 5.2a1 1 0 0 1 1.4 1.4l-2 2 1.4 1.4 2-2a3 3 0 1 0-4.2-4.2l-2 2 1.4 1.4 2-2zM8.2 18.8a1 1 0 0 1-1.4-1.4l2-2-1.4-1.4-2 2a3 3 0 1 0 4.2 4.2l2-2-1.4-1.4-2 2zM4 6.5 5.5 5l3 3L7 9.5zm12.5 9.5L18 14.5l3 3-1.5 1.5z"/></svg>';
@@ -2664,6 +2704,7 @@
       out.place = placeSel.value || "create";
     }
     if (card.dataset && card.dataset.hexSource) out.colorHexSource = card.dataset.hexSource;
+    if (card.dataset && card.dataset.spoolSource !== undefined) out.spoolSource = card.dataset.spoolSource;
     if (card.dataset && card.dataset.groupLinked) out.groupLinked = card.dataset.groupLinked === "true";
     const edit = card.dataset && state.uncertainEdit.get(card.dataset.uncertainUrl);
     if (edit && edit.colorHex) out.colorHex = edit.colorHex;
@@ -2924,7 +2965,7 @@
     const s = String(v || "").replace(",", ".");
     return /2\.?85/.test(s) ? "2.85 mm" : /\b3\.?0{1,2}\b/.test(s) && /mm/.test(s) ? "3.0 mm" : "1.75 mm";
   }
-  const SAVED_KEYS = ["name", "brand", "subBrand", "polymer", "variant", "color", "colorName", "colorHex", "colorHexes", "colorHexSource", "colorSet", "colorEffect", "colorTone", "weight", "diameter", "packaging", "spoolMaterial", "rfid", "packCount", "bundle", "place", "placeLinked", "groupLinked"];
+  const SAVED_KEYS = ["name", "brand", "subBrand", "polymer", "variant", "color", "colorName", "colorHex", "colorHexes", "colorHexSource", "spoolSource", "colorSet", "colorEffect", "colorTone", "weight", "diameter", "packaging", "spoolMaterial", "rfid", "packCount", "bundle", "place", "placeLinked", "groupLinked"];
   // What a card really is. A shop can file spools under another category (the run then marks them
   // category_mismatch), and "Ender" is also a printer name, so a stored kind of "printer" is not enough:
   // a name that says filament or a polymer is a filament.
@@ -3001,12 +3042,15 @@
     if (sp && edit.spoolMaterial == null) {
       const pct = Math.round((sp.share != null ? sp.share : sp.confidence) * 100);
       const word = sp.value === "cardboard" ? "Cardboard" : "Plastic";
-      lines.push(c.spoolMaterial === sp.value
+      if (sp.from === "photo") lines.push(c.spoolMaterial === sp.value
+        ? `Spool: ${word} — read from the photo (${pct}% sure)`
+        : `Spool: the photo suggests ${word.toLowerCase()} (${pct}% sure) <button type="button" class="btn-sm ghost" data-apply-guess="spoolMaterial" data-guess-value="${esc(sp.value)}">Use ${esc(word.toLowerCase())}</button>`);
+      else lines.push(c.spoolMaterial === sp.value
         ? `Spool: ${word} — learned from ${sp.n} of your cards (${pct}%)`
         : `Spool: probably ${word.toLowerCase()} (${pct}% of ${sp.n} similar cards) <button type="button" class="btn-sm ghost" data-apply-guess="spoolMaterial" data-guess-value="${esc(sp.value)}">Use ${esc(word.toLowerCase())}</button>`);
     }
     if (g.subBrand && edit.subBrand == null) lines.push(`Sub-brand ${esc(g.subBrand.value)} — read from the title`);
-    if (g.colorHex && edit.colorHex == null) lines.push(`Swatch — the shade you picked before for this colour (${g.colorHex.n}×)`);
+    if (g.colorHex && edit.colorHex == null) lines.push(g.colorHex.from === "photo" ? "Swatch — read from the photo" : `Swatch — the shade you picked before for this colour (${g.colorHex.n}×)`);
     return lines.length ? `<p class="muted learned-notes">${lines.join(" · ")}</p>` : "";
   }
 
@@ -3064,7 +3108,7 @@
     const og = ev.optionGroup || null;
     const thumbSrc = (og && og.pic) || c.image;
     const reviewClass = review ? " review-card" + (review.isSel ? " is-selected" : "") + (review.isFlag ? " flagged" : "") + (review.mismatch ? " is-mismatch" : "") : "";
-    return `<div class="product-card baseline-card uncertain-card${reviewClass}${held ? " is-held" : ""}${saved ? " is-saved" : ""}${published ? " is-published" : ""}" data-uncertain-url="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}" data-hex-source="${esc(edit.colorHexSource != null ? edit.colorHexSource : c.colorHexSource || "")}" data-kind="${esc(c.kind || "")}"${og ? ` data-group-linked="${og.linked ? "true" : "false"}"` : ""}${ev.catalogProductId ? ` data-catalog-product="${esc(ev.catalogProductId)}"` : ""}>
+    return `<div class="product-card baseline-card uncertain-card${reviewClass}${held ? " is-held" : ""}${saved ? " is-saved" : ""}${published ? " is-published" : ""}" data-uncertain-url="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}" data-hex-source="${esc(edit.colorHexSource != null ? edit.colorHexSource : c.colorHexSource || "")}" data-spool-source="${esc(edit.spoolSource != null ? edit.spoolSource : c.spoolSource || "")}" data-kind="${esc(c.kind || "")}"${og ? ` data-group-linked="${og.linked ? "true" : "false"}"` : ""}${ev.catalogProductId ? ` data-catalog-product="${esc(ev.catalogProductId)}"` : ""}>
       ${review ? `<div class="review-top">
         <label><input type="checkbox" data-review-select="${esc(id)}" ${review.isSel ? "checked" : ""}> Select</label>
         <label><input type="checkbox" data-review-flag="${esc(id)}" ${review.isFlag ? "checked" : ""}> Flag</label>
@@ -5022,6 +5066,12 @@
             if (sel) sel.value = "yes";
           }
         }
+        // Choosing the spool type yourself ends "read from the photo": from now on it is your label.
+        if (e.target.dataset.uncertainField === "spoolMaterial") {
+          cur.spoolSource = "";
+          const own = e.target.closest(".uncertain-card");
+          if (own) own.dataset.spoolSource = "";
+        }
         state.uncertainEdit.set(e.target.dataset.uncertainUrl, cur);
         if (["brand", "subBrand", "polymer", "variant", "name", "diameter", "bundle", "packCount"].includes(e.target.dataset.uncertainField)) refreshAutoPlace(e.target.closest(".uncertain-card"));
         // A linked group shares one spool type: change it once, every card of the group follows.
@@ -5301,6 +5351,38 @@
           else toast("Photo tone " + found.hex + (found.name ? ": looks " + found.name : "") + " (" + Math.round(found.confidence * 100) + "% sure). The listing colour name stays. Not saved yet.");
         }).catch((err) => toast("Could not read the image: " + err.message))
           .finally(() => { btn.disabled = false; });
+        return;
+      }
+      const spoolPhoto = e.target.closest("[data-spool-from-photo]");
+      if (spoolPhoto) {
+        const card = spoolPhoto.closest(".uncertain-card");
+        if (!card || spoolPhoto.disabled) return;
+        spoolPhoto.disabled = true;
+        readCardPhoto(card, { colour: false, force: true, minSpool: 0.5 }).then((r) => {
+          if (r.spool) toast("Spool: " + r.spool + " from the photo. Not saved yet.");
+          else if (r.spoolWeak) toast("The photo is not sure enough (" + Math.round(r.spoolWeak.confidence * 100) + "%).");
+          else toast("The photo does not show the spool clearly enough to tell. Set it by hand.");
+        }).catch((err) => toast("Could not read the image: " + err.message)).finally(() => { spoolPhoto.disabled = false; });
+        return;
+      }
+      if (e.target.closest("#read-photos")) {
+        const btn = e.target.closest("#read-photos");
+        if (btn.disabled) return;
+        const cards = $$("#review-board .review-card").filter((el) => !el.hidden && !el.classList.contains("is-published") && el.querySelector(".colour-row"));
+        if (!cards.length) { toast("No filament cards on this page."); return; }
+        btn.disabled = true;
+        const label = btn.textContent;
+        const sum = { colour: 0, gradient: 0, spool: 0, weak: 0, none: 0, failed: 0 };
+        (async () => {
+          for (let i = 0; i < cards.length; i += 2) {
+            btn.textContent = "Reading photos " + Math.min(cards.length, i + 2) + "/" + cards.length + "…";
+            await Promise.all(cards.slice(i, i + 2).map((card) => readCardPhoto(card, { skipRead: true }).then((r) => {
+              if (r.colour === "tone") sum.colour++; else if (r.colour === "gradient") sum.gradient++;
+              if (r.spool) sum.spool++; else if (r.spoolWeak) sum.weak++; else if (!r.colour && r.skipped) sum.none++;
+            }).catch(() => { sum.failed++; })));
+          }
+        })().then(() => toast("Photos read: " + sum.colour + " tones, " + sum.gradient + " gradients, " + sum.spool + " spool types filled" + (sum.weak ? ", " + sum.weak + " too unsure to fill" : "") + (sum.none ? ", " + sum.none + " without a photo" : "") + (sum.failed ? ", " + sum.failed + " could not be read" : "") + ". Review, then they save themselves."))
+          .finally(() => { btn.disabled = false; btn.textContent = label; });
         return;
       }
       if (e.target.closest("[data-tag-remove]")) {

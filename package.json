@@ -23,6 +23,7 @@
     "learn": "node scripts/learn-house-rules.cjs",
     "trust-report": "node scripts/trust-report.cjs",
     "eval-colours": "node scripts/eval-swatch-colours.cjs",
-    "laya-data": "node scripts/build-laya-training.cjs"
+    "laya-data": "node scripts/build-laya-training.cjs",
+    "eval-spool-photo": "node scripts/eval-spool-photo.cjs"
   }
 }
