@@ -25,6 +25,9 @@
     reviewFlags: new Set(),
     // Shop Runs search box text
     reviewQuery: "",
+    // Cards per page on the Shop runs board and the Uncertain list (12, 24, 36, 48; 0 = all) and the page each is on.
+    pageSize: loadPageSize(),
+    pager: { runs: { page: 1 }, uncertain: { page: 1 } },
     reviewPlace: new Map(),
     catalogSelected: new Set(),
     catalogShop: "",
@@ -299,6 +302,7 @@
           state.data = data;
           await pingWorker();
           renderHeaderOnly();
+          markOtherTabsStale(state.tab);
           if (state.tab === "overview") paint("#tab-overview", overviewHtml(data));
           if (state.tab === "jobs") paint("#tab-jobs", jobsHtml(data));
           if (state.tab === "ai") {
@@ -471,18 +475,32 @@
     }
   }
 
+  // Only the tab on screen is drawn; the others are drawn when you open them. (Building the HTML of every card
+  // of every tab on each refresh is what made the page slow.)
+  const tabPainters = {
+    overview: (d) => paint("#tab-overview", overviewHtml(d)),
+    runs: (d) => paint("#tab-runs", runsHtml(d)),
+    uncertain: (d) => paint("#tab-uncertain", uncertainHtml(d)),
+    catalog: (d) => paint("#tab-catalog", catalogHtml(d)),
+    baseline: (d) => paint("#tab-baseline", baselineHtml(d)),
+    shops: (d) => paint("#tab-shops", shopsHtml(d)),
+    merch: (d) => paint("#tab-merch", merchHtml(d)),
+    ai: (d) => paint("#tab-ai", aiHtml(d)),
+    jobs: (d) => paint("#tab-jobs", jobsHtml(d))
+  };
+  const staleTabs = new Set();
+  function markOtherTabsStale(active) {
+    for (const name of Object.keys(tabPainters)) if (name !== active) staleTabs.add(name);
+  }
+
   function render() {
     const d = state.data;
     if (!d) return;
-    paint("#tab-overview", overviewHtml(d));
-    paint("#tab-runs", runsHtml(d));
-    paint("#tab-uncertain", uncertainHtml(d));
-    paint("#tab-catalog", catalogHtml(d));
-    paint("#tab-baseline", baselineHtml(d));
-    paint("#tab-shops", shopsHtml(d));
-    paint("#tab-merch", merchHtml(d));
-    paint("#tab-ai", aiHtml(d));
-    paint("#tab-jobs", jobsHtml(d));
+    const requested = location.hash.slice(1);
+    const active = Object.hasOwn(pages, requested) ? requested : "overview";
+    markOtherTabsStale(active);
+    staleTabs.delete(active);
+    tabPainters[active](d);
     renderHeaderOnly();
     selectPage();
   }
@@ -509,6 +527,7 @@
       if (active) link.setAttribute("aria-current", "page");
       else link.removeAttribute("aria-current");
     });
+    if (state.data && staleTabs.has(state.tab)) { staleTabs.delete(state.tab); tabPainters[state.tab](state.data); }
     $("#page-title").textContent = pages[state.tab][0];
     $("#page-description").textContent = pages[state.tab][1];
     document.title = pages[state.tab][0] + " — 3D Price Desk";
@@ -1143,7 +1162,8 @@
       };
       for (const k of ["colorName", "colorTone", "colorHex", "colorHexes", "colorSet", "colorEffect", "weight", "spoolMaterial", "rfid", "packCount", "bundle"]) if (edit[k] != null) card[k] = edit[k];
       // What the card on screen says goes (auto match, your pick or Laya); off screen, the same rule.
-      const domSel = typeof document.querySelectorAll === "function" ? $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url)?.querySelector("[data-review-place]") : null;
+      const domSel = (typeof document.querySelectorAll === "function" ? $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url)?.querySelector("[data-review-place]") : null)
+        || (ev.card && ev.card.name ? detachedCard(uncertainCard(ev), "[data-review-place]") : null);
       const place = domSel ? parsePlace(domSel.value) : uncertainPlace(ev);
       return { url, action: place.action === "merge" ? "merge" : "create", candidateId: place.candidateId, card };
     });
@@ -1342,6 +1362,41 @@
       : "New product — no other shops to compare yet.";
   }
 
+  // One card of the Shop runs board as it is drawn. Also used off screen (see reviewCardDom).
+  function reviewCardHtml(job, e) {
+    const c = editedCard(e);
+    const shopHost = hostOf(job.url) || job.site || "";
+    const shop = shopForUrl(state.data, job.url);
+    const url = c.url || "";
+    const dec = e.decision || {};
+    const id = encodeURIComponent(url);
+    const place = defaultPlace(e);
+    const isSel = state.reviewSelected.has(url);
+    const isFlag = state.reviewFlags.has(url);
+    const mismatch = e.mismatch || c.mismatch;
+    const detected = mismatch && (mismatch.detectedType || mismatch.detected);
+    const declared = mismatch && (mismatch.declaredType || mismatch.declared);
+    const where = mismatch
+      ? "⚠ category mismatch — detected: " + (detected || "other") + ", declared: " + (declared || "printer")
+      : e.error ? "Held: " + String(e.error).slice(0, 160)
+      : dec.action === "merge" ? "Worker match: merge → " + (dec.candidateName || dec.candidateId)
+      : dec.action === "updated" ? "Worker match: update → " + (dec.candidateName || "existing")
+      : dec.action === "create" ? "Worker match: new " + (dec.shelf || c.kind || "product")
+      : dec.action === "held" || dec.action === "hold" ? "Worker match: held — " + String(dec.reason || (dec.candidateName && "compared with " + dec.candidateName) || "needs a look").slice(0, 120)
+      : "gathered — waiting for match";
+    const visualNote = typeof dec.visual === "number" ? " · visual " + dec.visual.toFixed(2) : "";
+    const pathNote = dec.matchPath === "laya-baseline" ? " · Laya (baseline-trained)" + (dec.rejected ? " · rejected: " + dec.rejected : "")
+      : dec.nearDupe ? (dec.photoMatch ? " · near duplicate — same thumbnail, confirm" : " · near duplicate — review") + visualNote
+      : dec.matchPath === "magellan+visual" ? " · Magellan + visual" + visualNote
+      : (dec.matchPath === "magellan" || dec.rule === "magellan") ? " · Magellan" : "";
+    const mismatchActions = mismatch ? `<div class="mismatch-actions">
+        <button type="button" class="btn-sm" data-mismatch-create="${esc(id)}" data-detected="${esc(detected || "other")}">Create new category: ${esc((detected || "other").charAt(0).toUpperCase() + (detected || "other").slice(1))}</button>
+        <button type="button" class="btn-sm danger" data-mismatch-discard="${esc(id)}">Discard</button>
+      </div>` : "";
+    // Same card as Uncertain: autofill, colours, weight, spool chain, RFID, undo / redo, Goes to chain.
+    return uncertainCard({ ...e, jobId: job.id, shopHost, shopName: (shop && (shop.name || shop.id)) || shopHost }, false, { isSel, isFlag, mismatch, where: where + pathNote, mismatchActions });
+  }
+
   function reviewBoardHtml(job) {
     if (!job) return '<p class="muted">No product cards yet. Queue a run — cards appear as soon as listing pages are harvested.</p>';
     const cards = collectCards(job, state.data);
@@ -1378,39 +1433,7 @@
         <button class="btn-sm" type="button" id="laya-selected" ${selected ? "" : "disabled"}>Ask Laya: selected (${selected})</button>
       </div>
       <div class="review-board" id="review-board">
-        ${optionGroupsHtml(cards, (e) => {
-          const c = editedCard(e);
-          const shopHost = hostOf(job.url) || job.site || "";
-          const shop = shopForUrl(state.data, job.url);
-          const url = c.url || "";
-          const dec = e.decision || {};
-          const id = encodeURIComponent(url);
-          const place = defaultPlace(e);
-          const isSel = state.reviewSelected.has(url);
-          const isFlag = state.reviewFlags.has(url);
-          const mismatch = e.mismatch || c.mismatch;
-          const detected = mismatch && (mismatch.detectedType || mismatch.detected);
-          const declared = mismatch && (mismatch.declaredType || mismatch.declared);
-          const where = mismatch
-            ? "⚠ category mismatch — detected: " + (detected || "other") + ", declared: " + (declared || "printer")
-            : e.error ? "Held: " + String(e.error).slice(0, 160)
-            : dec.action === "merge" ? "Worker match: merge → " + (dec.candidateName || dec.candidateId)
-            : dec.action === "updated" ? "Worker match: update → " + (dec.candidateName || "existing")
-            : dec.action === "create" ? "Worker match: new " + (dec.shelf || c.kind || "product")
-            : dec.action === "held" || dec.action === "hold" ? "Worker match: held — " + String(dec.reason || (dec.candidateName && "compared with " + dec.candidateName) || "needs a look").slice(0, 120)
-            : "gathered — waiting for match";
-          const visualNote = typeof dec.visual === "number" ? " · visual " + dec.visual.toFixed(2) : "";
-          const pathNote = dec.matchPath === "laya-baseline" ? " · Laya (baseline-trained)" + (dec.rejected ? " · rejected: " + dec.rejected : "")
-            : dec.nearDupe ? (dec.photoMatch ? " · near duplicate — same thumbnail, confirm" : " · near duplicate — review") + visualNote
-            : dec.matchPath === "magellan+visual" ? " · Magellan + visual" + visualNote
-            : (dec.matchPath === "magellan" || dec.rule === "magellan") ? " · Magellan" : "";
-          const mismatchActions = mismatch ? `<div class="mismatch-actions">
-              <button type="button" class="btn-sm" data-mismatch-create="${esc(id)}" data-detected="${esc(detected || "other")}">Create new category: ${esc((detected || "other").charAt(0).toUpperCase() + (detected || "other").slice(1))}</button>
-              <button type="button" class="btn-sm danger" data-mismatch-discard="${esc(id)}">Discard</button>
-            </div>` : "";
-          // Same card as Uncertain: autofill, colours, weight, spool chain, RFID, undo / redo, Goes to chain.
-          return uncertainCard({ ...e, jobId: job.id, shopHost, shopName: (shop && (shop.name || shop.id)) || shopHost }, false, { isSel, isFlag, mismatch, where: where + pathNote, mismatchActions });
-        })}
+        ${optionGroupsHtml(cards, (e) => reviewCardHtml(job, e), String(state.reviewQuery || "").trim() ? "" : "runs")}
       </div>
     `;
   }
@@ -1447,7 +1470,9 @@
 
   // list: card events in board order; render(event) → that option's card HTML. Groups take the place of
   // their first option; a product with one option is drawn as before.
-  function optionGroupsHtml(list, render) {
+  // A "unit" is what the board counts as one card: a group of options or a single listing. Units are cut
+  // into pages whole, so the options of one product never end up on two pages.
+  function optionGroupUnits(list) {
     const groups = new Map();
     const order = [];
     for (const e of list) {
@@ -1456,32 +1481,127 @@
       if (key) groups.set(key, [e]);
       order.push(key ? { key } : { single: e });
     }
-    return order.map((slot) => {
-      if (slot.single) return render(slot.single);
-      const members = groups.get(slot.key);
-      if (members.length < 2) return render(members[0]);
-      const at = Math.max(0, Math.min(members.length - 1, Number(state.optionAt && state.optionAt.get(slot.key)) || 0));
-      const first = editedCard(members[at]);
-      // One photo for every option is the product's photo, not the colours': draw colours instead.
-      const pics = members.map((m) => { const c = editedCard(m); return c.optionThumb || c.image || ""; });
-      const pictures = pics.every(Boolean) && new Set(pics).size === pics.length;
-      const prices = members.map((m) => Number(m.card && m.card.price)).filter((n) => n > 0);
-      const min = prices.length ? Math.min(...prices) : 0;
-      const max = prices.length ? Math.max(...prices) : 0;
-      // Each option's own card shows that option's picture (a colour button's own thumbnail when the shop
-      // gives one), so the photo follows the dots; one photo for all of them is said so on the card.
-      // The card shows the colour's big photo when each colour has one; the dot its swatch picture.
-      const bigs = members.map((m) => editedCard(m).image || "");
-      const bigOwn = bigs.every(Boolean) && new Set(bigs).size === bigs.length;
-      const cards = members.map((m, i) => render({ ...m, optionGroup: { pic: bigOwn ? bigs[i] : pictures ? pics[i] : "", sharedPhoto: !pictures && !bigOwn, size: members.length, linked: groupLinked(m) } }).replace(/^(\s*<div class="[^"]*)"/, `$1 opt-member${i === at ? "" : " opt-hidden"}" data-opt-index="${i}"`));
-      return `<div class="option-group" data-option-group="${esc(slot.key)}">
-        <div class="option-group-head">
-          <div class="option-group-title"><strong>${esc(listingName(first))}</strong> <span class="muted">${members.length} options${min ? " · " + (min === max ? min + " TL" : min + "–" + max + " TL") : ""}</span></div>
-          <div class="option-dots" role="group" aria-label="Options">${members.map((m, i) => optionDot(editedCard(m), i, i === at, pictures)).join("")}</div>
-        </div>
-        ${cards.join("")}
-      </div>`;
-    }).join("");
+    return order.map((slot) => (slot.single ? slot : { key: slot.key, members: groups.get(slot.key) }));
+  }
+
+  function renderOptionUnit(slot, render) {
+    if (slot.single) return render(slot.single);
+    const members = slot.members;
+    if (members.length < 2) return render(members[0]);
+    const at = Math.max(0, Math.min(members.length - 1, Number(state.optionAt && state.optionAt.get(slot.key)) || 0));
+    const first = editedCard(members[at]);
+    // One photo for every option is the product's photo, not the colours': draw colours instead.
+    const pics = members.map((m) => { const c = editedCard(m); return c.optionThumb || c.image || ""; });
+    const pictures = pics.every(Boolean) && new Set(pics).size === pics.length;
+    const prices = members.map((m) => Number(m.card && m.card.price)).filter((n) => n > 0);
+    const min = prices.length ? Math.min(...prices) : 0;
+    const max = prices.length ? Math.max(...prices) : 0;
+    // Each option's own card shows that option's picture (a colour button's own thumbnail when the shop
+    // gives one), so the photo follows the dots; one photo for all of them is said so on the card.
+    // The card shows the colour's big photo when each colour has one; the dot its swatch picture.
+    const bigs = members.map((m) => editedCard(m).image || "");
+    const bigOwn = bigs.every(Boolean) && new Set(bigs).size === bigs.length;
+    const cards = members.map((m, i) => render({ ...m, optionGroup: { pic: bigOwn ? bigs[i] : pictures ? pics[i] : "", sharedPhoto: !pictures && !bigOwn, size: members.length, linked: groupLinked(m) } }).replace(/^(\s*<div class="[^"]*)"/, `$1 opt-member${i === at ? "" : " opt-hidden"}" data-opt-index="${i}"`));
+    return `<div class="option-group" data-option-group="${esc(slot.key)}">
+      <div class="option-group-head">
+        <div class="option-group-title"><strong>${esc(listingName(first))}</strong> <span class="muted">${members.length} options${min ? " · " + (min === max ? min + " TL" : min + "–" + max + " TL") : ""}</span></div>
+        <div class="option-dots" role="group" aria-label="Options">${members.map((m, i) => optionDot(editedCard(m), i, i === at, pictures)).join("")}</div>
+      </div>
+      ${cards.join("")}
+    </div>`;
+  }
+
+  // pagerKey: "runs" or "uncertain" shows one page of units with a pager above and below; without it every unit is drawn.
+  function optionGroupsHtml(list, render, pagerKey) {
+    const units = optionGroupUnits(list);
+    if (!pagerKey || !units.length) return units.map((slot) => renderOptionUnit(slot, render)).join("");
+    const view = pagerView(pagerKey, units.length);
+    const cards = units.slice(view.from, view.to).map((slot) => renderOptionUnit(slot, render)).join("");
+    return pagerBarHtml(pagerKey, view) + cards + (view.pages > 1 ? pagerBarHtml(pagerKey, view) : "");
+  }
+
+  const PAGE_SIZES = [12, 24, 36, 48];
+  function loadPageSize() {
+    try {
+      const stored = localStorage.getItem("admin.pageSize");
+      const v = Number(stored);
+      if (stored !== null && stored !== "" && (v === 0 || [12, 24, 36, 48].includes(v))) return v;
+    } catch (_) { /* storage blocked: the default */ }
+    return 24;
+  }
+  function pagerView(key, total) {
+    const size = state.pageSize;
+    const pages = size ? Math.max(1, Math.ceil(total / size)) : 1;
+    const slot = state.pager[key] || (state.pager[key] = { page: 1 });
+    slot.page = Math.min(Math.max(1, Number(slot.page) || 1), pages);
+    const from = size ? (slot.page - 1) * size : 0;
+    return { total, size, pages, page: slot.page, from, to: size ? Math.min(total, from + size) : total };
+  }
+  function pagerBarHtml(key, v) {
+    if (v.total <= PAGE_SIZES[0]) return "";
+    const wanted = new Set([1, v.pages, v.page - 1, v.page, v.page + 1]);
+    const nums = [...wanted].filter((n) => n >= 1 && n <= v.pages).sort((a, b) => a - b);
+    const buttons = [];
+    nums.forEach((n, i) => {
+      if (i && n - nums[i - 1] > 1) buttons.push('<span class="muted">…</span>');
+      buttons.push(`<button type="button" class="btn-sm${n === v.page ? "" : " ghost"}" data-pager-page="${n}" ${n === v.page ? 'aria-current="page"' : ""}>${n}</button>`);
+    });
+    return `<div class="pager" data-pager="${esc(key)}">
+      <span class="muted">${v.size ? `Showing ${v.from + 1}–${v.to} of ${v.total}` : `Showing all ${v.total}`} cards</span>
+      <label class="muted">Per page <select data-pager-size aria-label="Cards per page">${PAGE_SIZES.map((n) => `<option value="${n}"${v.size === n ? " selected" : ""}>${n}</option>`).join("")}<option value="0"${v.size === 0 ? " selected" : ""}>All</option></select></label>
+      ${v.pages > 1 ? `<span class="pager-pages"><button type="button" class="btn-sm ghost" data-pager-page="${v.page - 1}" ${v.page <= 1 ? "disabled" : ""}>‹ Prev</button>${buttons.join("")}<button type="button" class="btn-sm ghost" data-pager-page="${v.page + 1}" ${v.page >= v.pages ? "disabled" : ""}>Next ›</button></span>` : ""}
+    </div>`;
+  }
+  // Redraw the list a pager belongs to and bring its top into view.
+  function repaintPager(key) {
+    if (key === "runs") repaintRuns();
+    else { painted.delete("#tab-uncertain"); paint("#tab-uncertain", uncertainHtml(state.data)); }
+    const bar = document.querySelector(`[data-pager="${key}"]`);
+    if (bar && typeof bar.scrollIntoView === "function") bar.scrollIntoView({ block: "start" });
+  }
+  // Redraw the Shop runs tab, keeping what is typed in its start-a-run form.
+  function repaintRuns() {
+    if (!state.data) return;
+    rememberRunRows();
+    const max = $("#shop-max") && $("#shop-max").value, llm = $("#run-llm") && $("#run-llm").checked;
+    painted.delete("#tab-runs");
+    paint("#tab-runs", runsHtml(state.data));
+    if ($("#shop-max") && max !== null) $("#shop-max").value = max;
+    if ($("#run-llm") && llm !== null) $("#run-llm").checked = llm;
+  }
+  // A card as it is drawn, whether or not its page is on screen. Fields a card works out when it is drawn (the
+  // polymer or variant read from its title, the pack, where it "Goes to") are read from it; a card on another page
+  // is drawn off screen for that, once, when you act on it, so it is treated exactly like one on screen.
+  function detachedCard(html, selector) {
+    if (typeof document.createElement !== "function") return null;
+    const box = document.createElement("div");
+    box.innerHTML = html;
+    return box.querySelector(selector);
+  }
+  function reviewCardDom(job, ev, url) {
+    const live = typeof document.querySelectorAll === "function" ? $$(".review-card").find((el) => el.dataset.uncertainUrl === url) : null;
+    return live || (ev && ev.card ? detachedCard(reviewCardHtml(job, ev), ".review-card") : null);
+  }
+
+  // A search (when words are typed) draws every card so it can find any of them; no words, one page.
+  function setReviewQuery(value) {
+    const was = !!String(state.reviewQuery || "").trim();
+    state.reviewQuery = value;
+    if (was !== !!String(value || "").trim()) { state.pager.runs.page = 1; repaintRuns(); }
+    else applyReviewSearch();
+  }
+  // Tick or untick the cards on screen to match what is selected / flagged (the sets span every page).
+  function syncReviewMarks() {
+    $$("[data-review-select]").forEach((el) => {
+      const on = state.reviewSelected.has(decodeURIComponent(el.dataset.reviewSelect));
+      el.checked = on;
+      el.closest(".review-card")?.classList.toggle("is-selected", on);
+    });
+    $$("[data-review-flag]").forEach((el) => {
+      const on = state.reviewFlags.has(decodeURIComponent(el.dataset.reviewFlag));
+      el.checked = on;
+      el.closest(".review-card")?.classList.toggle("flagged", on);
+    });
   }
 
   function showOption(group, i) {
@@ -2701,7 +2821,7 @@
       </div>
       ${uncertainDupesHtml(all)}
       <p class="muted">${rows.length} shown · ${all.length} uncertain</p>
-      <div class="catalog-results">${optionGroupsHtml(rows, (ev) => uncertainCard(ev)) || '<div class="empty">No unmatched cards. Run a shop, then Ask Laya on the review board.</div>'}</div>
+      <div class="catalog-results">${optionGroupsHtml(rows, (ev) => uncertainCard(ev), "uncertain") || '<div class="empty">No unmatched cards. Run a shop, then Ask Laya on the review board.</div>'}</div>
     </div>`;
   }
 
@@ -3182,6 +3302,13 @@
 
   function bindAppEvents() {
     document.addEventListener("click", async (e) => {
+      const pageBtn = e.target.closest("[data-pager-page]");
+      if (pageBtn) {
+        const key = pageBtn.closest("[data-pager]").dataset.pager;
+        state.pager[key] = { page: Number(pageBtn.dataset.pagerPage) || 1 };
+        repaintPager(key);
+        return;
+      }
       if (e.target.closest("#add-shop-row")) {
         const rows = rememberRunRows();
         state.runRows = [...rows, { shop: "", cat: runCategoryFromRows(rows), url: "" }];
@@ -3578,6 +3705,16 @@
       }
       if (e.target.closest("#select-all")) {
         // Held-out listings (another category) are not selected in bulk: Discard them or add the category.
+        if (!String(state.reviewQuery || "").trim()) {
+          // Every card of the run, not just the page on screen.
+          for (const ev of collectCards(reviewJob(state.data || { jobs: [] }), state.data)) {
+            const url = ev.card && ev.card.url;
+            if (url && !ev.mismatch && !editedCard(ev).mismatch) state.reviewSelected.add(url);
+          }
+          syncReviewMarks();
+          updateReviewToolbar();
+          return;
+        }
         $$("[data-review-select]").filter((el) => { const card = el.closest(".review-card") || {}; return !card.hidden && !(card.classList && card.classList.contains("is-mismatch")); }).forEach((el) => {
           el.checked = true;
           state.reviewSelected.add(decodeURIComponent(el.dataset.reviewSelect));
@@ -3587,6 +3724,15 @@
         return;
       }
       if (e.target.closest("#flag-all")) {
+        if (!String(state.reviewQuery || "").trim()) {
+          for (const ev of collectCards(reviewJob(state.data || { jobs: [] }), state.data)) {
+            const url = ev.card && ev.card.url;
+            if (url) state.reviewFlags.add(url);
+          }
+          syncReviewMarks();
+          updateReviewToolbar();
+          return;
+        }
         $$("[data-review-flag]").filter((el) => !(el.closest(".review-card") || {}).hidden).forEach((el) => {
           el.checked = true;
           state.reviewFlags.add(decodeURIComponent(el.dataset.reviewFlag));
@@ -4115,11 +4261,15 @@
         if (!urls.length || btn.disabled) return;
         if (!singleUrl && !confirm("Force-publish " + urls.length + " listings to the live catalog?")) return;
         const pending = new Map();
+        const uncertainByUrl = new Map(collectUncertain(state.data).map((x) => [x.card?.url, x]));
+        const drawn = singleUrl ? new Map() : new Map($$(".uncertain-card").map((el) => [el.dataset.uncertainUrl, el]));
         for (const url of urls) {
-          const card = singleUrl ? members.find((el) => el.dataset.uncertainUrl === url) : $$(".uncertain-card").find((el) => el.dataset.uncertainUrl === url);
+          const known = uncertainByUrl.get(url) || state.uncertainPublished.get(url)?.ev;
+          // A card on another page is drawn off screen, so it is read exactly like one on screen.
+          const card = singleUrl ? members.find((el) => el.dataset.uncertainUrl === url) : (drawn.get(url) || (known ? detachedCard(uncertainCard(known), ".uncertain-card") : null));
           if (!card || state.uncertainHeld.has(url)) continue;
           state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), ...uncertainFields(card) });
-          const ev = collectUncertain(state.data).find((x) => x.card?.url === url) || state.uncertainPublished.get(url)?.ev;
+          const ev = known;
           pending.set(url, { index: card.parentElement ? Array.prototype.indexOf.call(card.parentElement.children, card) : 0, ev });
         }
         if (!pending.size) return;
@@ -4151,7 +4301,7 @@
         collectCards(job, state.data).forEach((ev) => { if (ev.card?.url) byUrl.set(ev.card.url, ev); });
         const chosen = ids.map((url) => {
           const ev = byUrl.get(url) || cardEvent(url);
-          const dom = typeof document.querySelectorAll === "function" ? $$(".review-card").find((el) => el.dataset.uncertainUrl === url) : null;
+          const dom = reviewCardDom(job, ev, url);
           const sel = dom && dom.querySelector("[data-review-place]");
           const place = sel ? parsePlace(sel.value) : uncertainPlace(ev);
           const card = { ...editedCard(ev), ...(dom ? uncertainFields(dom) : {}), url, kind: cardKind(ev.card) };
@@ -4541,6 +4691,14 @@
     });
 
     document.addEventListener("change", async (e) => {
+      if (e.target.matches("[data-pager-size]")) {
+        const key = e.target.closest("[data-pager]").dataset.pager;
+        state.pageSize = Number(e.target.value) || 0;
+        try { localStorage.setItem("admin.pageSize", String(state.pageSize)); } catch (_) { /* storage blocked: kept for this visit */ }
+        for (const k of Object.keys(state.pager)) state.pager[k] = { page: 1 };
+        repaintPager(key);
+        return;
+      }
       if (e.target.matches("[data-product-image], [data-baseline-image]")) {
         const id = e.target.dataset.productImage || e.target.dataset.baselineImage;
         try {
@@ -4712,12 +4870,14 @@
         state.reviewJobId = e.target.value;
         state.reviewSelected.clear();
         state.reviewPlace.clear();
+        state.pager.runs = { page: 1 };
         render();
         toast(state.reviewJobId ? "Showing run " + state.reviewJobId + " — collected cards are visible again." : "Showing the newest run with cards.");
         return;
       }
       if (e.target.id === "uncertain-shop") {
         state.uncertainShop = e.target.value;
+        state.pager.uncertain = { page: 1 };
         painted.delete("#tab-uncertain");
         paint("#tab-uncertain", uncertainHtml(state.data));
         return;
@@ -4822,10 +4982,10 @@
     document.addEventListener("input", (e) => {
       if (e.target.id !== "review-search") return;
       clearTimeout(reviewSearchTimer);
-      reviewSearchTimer = setTimeout(() => { state.reviewQuery = e.target.value; applyReviewSearch(); }, 120);
+      reviewSearchTimer = setTimeout(() => setReviewQuery(e.target.value), 120);
     });
     document.addEventListener("keydown", (e) => {
-      if (e.target.id === "review-search" && e.key === "Escape") { e.target.value = ""; state.reviewQuery = ""; applyReviewSearch(); return; }
+      if (e.target.id === "review-search" && e.key === "Escape") { e.target.value = ""; setReviewQuery(""); return; }
       if (e.key === "/" && state.tab === "runs" && !/^(INPUT|TEXTAREA|SELECT)$/.test((e.target.tagName || "")) && document.getElementById("review-search")) { e.preventDefault(); document.getElementById("review-search").focus(); }
     });
     document.addEventListener("click", (e) => {
@@ -4841,9 +5001,8 @@
         const parts = next.split(/\s+(?=(?:[^"]*"[^"]*")*[^"]*$)/).filter(Boolean);
         next = (parts.includes(token) ? parts.filter((p) => p !== token) : [...parts, token]).join(" ");
       }
-      state.reviewQuery = next;
       if (box) box.value = next;
-      applyReviewSearch();
+      setReviewQuery(next);
     });
 
     document.addEventListener("keydown", (e) => {

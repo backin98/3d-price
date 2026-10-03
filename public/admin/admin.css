@@ -361,3 +361,8 @@ button, .ghost { min-height: 38px; }
 .thumb-colour small { color: #6b7280; }
 .group-link { display: flex; align-items: center; gap: 6px; }
 .group-link small { line-height: 1.25; }
+
+/* Pages of cards on Shop runs and Uncertain */
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 10px 0; }
+.pager-pages { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
+.pager select { margin-left: 4px; }
