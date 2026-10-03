@@ -1208,7 +1208,10 @@
         if (adminFold(it.polymer) !== adminFold(f.polymer) || vset(it.variant) !== vset(f.variant)) continue;
         // A sub-brand is part of the identity: "Creality TPU" is not "Creality CR TPU", in either direction.
         const itSub = adminFold(splitTags(it.subBrand)[0] || ""), cardSub = adminFold(splitTags(f.subBrand)[0] || "");
-        if (itSub !== cardSub) continue;
+        // The run reads a line from the title ("Polymaker PolyLite ASA"): a model that carries the line in its name
+        // but never had it typed into the sub-brand box is still that model.
+        const namedSub = !itSub && cardSub && (" " + adminFold(it.name).replace(/[^a-z0-9]+/g, " ") + " ").includes(" " + cardSub.replace(/[^a-z0-9]+/g, " ") + " ");
+        if (itSub !== cardSub && !namedSub) continue;
         if (diameterValue(it.diameter) !== diameterValue(f.diameter)) continue;
         const s = 1 + (itSub ? 2 : 0);
         if (s > score) { best = it; score = s; }
@@ -1446,12 +1449,13 @@
         <span class="muted" id="review-search-info"></span>
         <details class="review-search-help"><summary>How to search</summary>
           <p class="muted">Every word must match, in any order, and typos are forgiven. Partial words work (<code>bam</code> finds Bambu) and Turkish colours too (<code>siyah</code>, <code>kırmızı</code>). Use <code>"quotes"</code> for an exact phrase and <code>-word</code> to leave something out.</p>
-          <p class="muted">Filters: <code>brand:</code> <code>sub:</code> <code>polymer:</code> <code>variant:</code> <code>color:</code> <code>weight:1kg</code> <code>price:&lt;700</code> <code>price:500-800</code> <code>diameter:2.85</code> <code>shop:</code> <code>status:</code> (<code>held</code> <code>unmatched</code> <code>mismatch</code> <code>flagged</code> <code>selected</code> <code>edited</code> <code>rfid</code> <code>no price</code>) <code>place:</code> (the baseline it goes to) <code>name:</code> <code>url:</code>. Best matches come first.</p>
+          <p class="muted">Filters: <code>brand:</code> <code>sub:</code> <code>polymer:</code> <code>variant:</code> <code>color:</code> <code>weight:1kg</code> <code>price:&lt;700</code> <code>price:500-800</code> <code>diameter:2.85</code> <code>shop:</code> <code>status:</code> (<code>ready</code> <code>check</code> <code>held</code> <code>unmatched</code> <code>mismatch</code> <code>flagged</code> <code>selected</code> <code>edited</code> <code>rfid</code> <code>no price</code>) <code>place:</code> (the baseline it goes to) <code>name:</code> <code>url:</code>. Best matches come first.</p>
         </details>
         <div class="rs-chips" id="review-search-chips"></div>
       </div>
       <div class="review-toolbar">
         <button class="btn-sm" type="button" id="select-all">Select all</button>
+        <button class="btn-sm ok" type="button" id="select-ready" title="Select only the cards that are Ready, on every page: everything known and a baseline model to go to. Review the rest by their reasons.">Select ready</button>
         <button class="btn-sm" type="button" id="flag-all">Flag all</button>
         <button class="btn-sm ghost" type="button" id="clear-review">Clear selection</button>
         <button class="btn-sm ghost" type="button" id="clear-flags">Clear flags</button>
@@ -1499,7 +1503,7 @@
     const fill = colourFill(st);
     const ring = Array.isArray(fill) ? fill[0] : fill === "rainbow" ? "#888" : fill || "#cbd5e1";
     const name = colourNameOf(c) || listingName(c);
-    return `<button type="button" class="opt-dot${on ? " is-on" : ""}" data-opt-dot="${i}" style="--ring:${esc(ring || "#cbd5e1")}" title="${esc(name + (Number(c.price) > 0 ? " · " + c.price + " TL" : ""))}" aria-label="${esc(name)}" aria-pressed="${on ? "true" : "false"}">${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="opt-dot-fill" style="background:${esc(Array.isArray(fill) ? "conic-gradient(" + fill.join(",") + ")" : fill === "rainbow" ? RAINBOW : fill || "#e5e7eb")}"></span>`}</button>`;
+    return `<button type="button" class="opt-dot${on ? " is-on" : ""}" data-opt-dot="${i}" style="--ring:${esc(ring || "#cbd5e1")}" title="${esc(name + (Number(c.price) > 0 ? " · " + c.price + " TL" : ""))}" aria-label="${esc(name)}" aria-pressed="${on ? "true" : "false"}">${img ? `<img src="${esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : `<span class="opt-dot-fill${COLOUR_EFFECTS.includes(st.fx) ? " fx-" + st.fx : ""}" style="--dot:${esc(Array.isArray(fill) ? "conic-gradient(" + fill.join(",") + ")" : fill === "rainbow" ? RAINBOW : fill || "#e5e7eb")}"></span>`}</button>`;
   }
 
   // list: card events in board order; render(event) → that option's card HTML. Groups take the place of
@@ -1769,7 +1773,7 @@
       weight: grams ? [grams + "g", grams + " g", grams + "gr", grams >= 1000 ? (grams / 1000) + "kg " + (grams / 1000) + " kg" : ""].join(" ") : "",
       shop: host + " " + (ev.shopName || ""),
       url: String(c.url || "").replace(/^https?:\/\//, "").replace(/[-_/.]+/g, " "),
-      status: [dec.action, magellanUnsure(ev) ? "unmatched" : "", ev.mismatch || c.mismatch ? "mismatch category" : "", ev.error ? "error blocked " + ev.error : "", Number(c.price) > 0 ? "" : "no price missing", state.reviewSelected.has(c.url) ? "selected" : "", state.reviewFlags.has(c.url) ? "flagged" : "", c.rfid ? "rfid" : "", c.handEdited ? "edited saved" : ""].filter(Boolean).join(" "),
+      status: [dec.action, trustOf(ev).level, magellanUnsure(ev) ? "unmatched" : "", ev.mismatch || c.mismatch ? "mismatch category" : "", ev.error ? "error blocked " + ev.error : "", Number(c.price) > 0 ? "" : "no price missing", state.reviewSelected.has(c.url) ? "selected" : "", state.reviewFlags.has(c.url) ? "flagged" : "", c.rfid ? "rfid" : "", c.handEdited ? "edited saved" : ""].filter(Boolean).join(" "),
       place: (model.name || "") + " " + (place.candidateId ? "" : "new product"),
       diameter: filament ? diameterValue(c.diameter) + " " + diameterValue(c.diameter).replace(" mm", "mm") : ""
     };
@@ -2182,7 +2186,7 @@
     const list = Array.isArray(hex) ? hex.filter(Boolean) : [];
     const fill = list.length > 1 ? "conic-gradient(" + list.map((h, i) => `${h} ${Math.round(i * 100 / list.length)}% ${Math.round((i + 1) * 100 / list.length)}%`).join(", ") + ")"
       : list.length === 1 ? list[0] : hex === "rainbow" ? RAINBOW : Array.isArray(hex) ? "" : hex;
-    return `<span class="colour-dot${fill ? "" : " is-empty"}${fx === "marble" || fx === "galaxy" ? " fx-" + fx : ""}" style="--dot:${esc(fill || "transparent")}" title="${esc((list.join(" · ") || (hex === "rainbow" ? "Multicolour" : hex) || "No colour yet") + (fx ? " · " + fx : "") + " · double-click for marble / galaxy")}"></span>`;
+    return `<span class="colour-dot${fill ? "" : " is-empty"}${COLOUR_EFFECTS.includes(fx) ? " fx-" + fx : ""}" style="--dot:${esc(fill || "transparent")}" title="${esc((list.join(" · ") || (hex === "rainbow" ? "Multicolour" : hex) || "No colour yet") + (fx ? " · " + fx : "") + " · double-click for marble / galaxy")}"></span>`;
   }
   // Every named colour in a colour name, longest first ("Rose Dark Blue Green" → rose, dark-blue, green).
   function coloursIn(value) {
@@ -2198,6 +2202,13 @@
   }
   // A card's colour state: the colours (one per slot), the shade picked for each slot, and a finish.
   // It lives on the .colour-row element so the eyedropper, minus, finish menu and autosave share it.
+  // How the surface looks: flecked (marble, galaxy) or a sheen. The same list the run, the API and the storefront keep.
+  const COLOUR_EFFECTS = ["marble", "galaxy", "silk", "satin", "translucent", "metallic", "glow", "matte"];
+  const FINISH_RES = [["silk", /\b(?:silk|e silk|ipek|ipeksi)\b/], ["satin", /\bsatin\b/], ["translucent", /\b(?:translucent|transparent|transparan|seffaf|crystal|kristal|clear)\b/], ["metallic", /\b(?:metallic|metalik|metal|chrome|krom)\b/], ["glow", /\b(?:glow|luminous|fosfor)\b/], ["matte", /\b(?:matte?|mat)\b/]];
+  function finishOfText(text) {
+    const t = adminFold(text).replace(/[^a-z0-9]+/g, " ");
+    return (FINISH_RES.find(([, re]) => re.test(t)) || [])[0] || "";
+  }
   const MARBLE_RE = /\bmarble\b|\bmermer\b/i;
   const GALAXY_RE = /\bgalaxy\b|\bglitter\b|\bsparkle\b|\bsimli\b|\bgalaksi\b/i;
   function cardColour(c, edit, name) {
@@ -2214,7 +2225,7 @@
     const set = [...found].sort((x, y) => at(x) - at(y));
     const hexes = edit.colorHexes || (edit.colorName == null && (c.colorHexes || (c.colorHex ? [c.colorHex] : []))) || (edit.colorHex ? [edit.colorHex] : []);
     const titles = [c.sourceTitle, ...(c.listingTitles || []), c.name, name].join(" ");
-    const fx = edit.colorEffect != null ? edit.colorEffect : c.colorEffect != null ? c.colorEffect : MARBLE_RE.test(titles) ? "marble" : GALAXY_RE.test(titles) ? "galaxy" : "";
+    const fx = edit.colorEffect != null ? edit.colorEffect : c.colorEffect != null ? c.colorEffect : MARBLE_RE.test(titles) ? "marble" : GALAXY_RE.test(titles) ? "galaxy" : finishOfText(titles + " " + (c.variant || ""));
     const rainbow = !set.length && !!(c.multicolor || /rainbow|gradi|renkli|dual|tri colou?r|multicolou?r/i.test(titles));
     return { set, hexes: edit.colorHex && !edit.colorHexes ? [edit.colorHex] : hexes, fx, rainbow };
   }
@@ -2381,7 +2392,7 @@
     }).join("");
   }
 
-  function setColourTone(card, id, hex, slotIndex) {
+  function setColourTone(card, id, hex, slotIndex, source) {
     const url = card.dataset.uncertainUrl;
     const input = card.querySelector('[data-uncertain-field="color"]');
     // No colour name in the listing at all: then the tone is the best name we have.
@@ -2395,7 +2406,8 @@
     st.hexes[slot] = hex;
     // Multi-colour: each click fills the next colour (1 → 2 → 3 → back to 1). The tone follows colour 1.
     st.slot = slot;
-    state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), colorHex: st.hexes[0] || "", colorHexes: st.hexes, colorTone: autoTone(st) });
+    card.dataset.hexSource = source || "eyedropper";
+    state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), colorHex: st.hexes[0] || "", colorHexes: st.hexes, colorTone: autoTone(st), colorHexSource: card.dataset.hexSource });
     paintColourRow(row, st);
 
     scheduleAutosave(card);
@@ -2406,6 +2418,54 @@
     if (!rgb.every(Number.isFinite)) return null;
     return nearestNamed(rgb, namedLabs((state.data && state.data.filamentColours) || {}));
   }
+  // The product photo as pixels (96×96), read through the server when the shop's image is on another site.
+  async function photoPixels(src) {
+    let url = src;
+    if (new URL(src, location.href).origin !== location.origin) {
+      url = (await api("/api/admin", { method: "POST", body: JSON.stringify({ action: "imageData", url: new URL(src, location.href).href }) })).dataUrl;
+    }
+    const img = new Image();
+    img.src = url;
+    await img.decode();
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 96;
+    const ctx = canvas.getContext("2d", { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0, 96, 96);
+    return { data: ctx.getImageData(0, 0, 96, 96).data, w: 96, h: 96 };
+  }
+  // Auto: the true tone of the filament, or for several colours the distinct stops of the gradient in order. Pressing it
+  // again on a gradient offers colours the card does not have yet, so it does not repeat itself.
+  async function autoColour(card, src) {
+    const SC = window.SwatchColours;
+    const px = await photoPixels(src);
+    const row = card.querySelector(".colour-row");
+    const st = rowColour(row);
+    const multi = st.set.length > 1 || st.rainbow;
+    if (!multi) {
+      const t = SC && SC.tone(px.data, px.w, px.h);
+      if (!t) return null;
+      const near = nearestColour(t.hex);
+      setColourTone(card, near && near.id, t.hex, 0, "photo");
+      return { kind: "tone", hex: t.hex, name: near && near.name, confidence: t.confidence };
+    }
+    const have = st.hexes.filter(Boolean);
+    const slots = st.set.length > 1 ? st.set.length : 4;
+    let stops = SC ? SC.gradientStops(px.data, px.w, px.h, { max: slots, avoid: card.dataset.autoTried === src ? have : [] }) : [];
+    if (!stops.length && card.dataset.autoTried === src) return { kind: "none" };
+    if (!stops.length) return null;
+    const ids = stops.map((s) => (nearestColour(s.hex) || {}).id).filter(Boolean);
+    const url = card.dataset.uncertainUrl;
+    st.set = ids.length === stops.length ? ids : st.set;
+    st.hexes = stops.map((s) => s.hex);
+    st.rainbow = false;
+    card.dataset.autoTried = src;
+    card.dataset.hexSource = "photo";
+    state.uncertainEdit.set(url, { ...state.uncertainEdit.get(url), colorSet: st.set, colorHexes: st.hexes, colorHex: st.hexes[0] || "", colorTone: autoTone(st), colorHexSource: "photo" });
+    paintColourRow(row, st);
+    scheduleAutosave(card);
+    return { kind: "gradient", hexes: st.hexes };
+  }
+
   async function colourFromImage(src) {
     let url = src;
     if (new URL(src, location.href).origin !== location.origin) {
@@ -2609,6 +2669,7 @@
       out.placeLinked = chain.getAttribute("aria-pressed") === "true";
       out.place = placeSel.value || "create";
     }
+    if (card.dataset && card.dataset.hexSource) out.colorHexSource = card.dataset.hexSource;
     if (card.dataset && card.dataset.groupLinked) out.groupLinked = card.dataset.groupLinked === "true";
     const edit = card.dataset && state.uncertainEdit.get(card.dataset.uncertainUrl);
     if (edit && edit.colorHex) out.colorHex = edit.colorHex;
@@ -2869,7 +2930,7 @@
     const s = String(v || "").replace(",", ".");
     return /2\.?85/.test(s) ? "2.85 mm" : /\b3\.?0{1,2}\b/.test(s) && /mm/.test(s) ? "3.0 mm" : "1.75 mm";
   }
-  const SAVED_KEYS = ["name", "brand", "subBrand", "polymer", "variant", "color", "colorName", "colorHex", "colorHexes", "colorSet", "colorEffect", "colorTone", "weight", "diameter", "packaging", "spoolMaterial", "rfid", "packCount", "bundle", "place", "placeLinked", "groupLinked"];
+  const SAVED_KEYS = ["name", "brand", "subBrand", "polymer", "variant", "color", "colorName", "colorHex", "colorHexes", "colorHexSource", "colorSet", "colorEffect", "colorTone", "weight", "diameter", "packaging", "spoolMaterial", "rfid", "packCount", "bundle", "place", "placeLinked", "groupLinked"];
   // What a card really is. A shop can file spools under another category (the run then marks them
   // category_mismatch), and "Ender" is also a printer name, so a stored kind of "printer" is not enough:
   // a name that says filament or a polymer is a filament.
@@ -2902,6 +2963,48 @@
     if (err === "out_of_stock") return "sold out at the shop (its product page says out of stock), so it is left out";
     if (/Not in the replay archive/.test(err)) return "the page was not saved (replayed run)";
     return err.slice(0, 160);
+  }
+
+  // Can this card be published without a second look? "ready" when everything the catalog needs is known and it already has
+  // a baseline model to go to; otherwise "check" with the exact reasons, so you know what to fix (and why it is not ready).
+  function trustOf(ev) {
+    if (ev.published) return { level: "done", why: ["already published"] };
+    const c = editedCard(ev);
+    const why = [];
+    if (ev.mismatch || c.mismatch) why.push("another category");
+    if (ev.error) why.push("held: " + String(ev.error).replace(/_/g, " "));
+    if (!(Number(c.price) > 0)) why.push("no price");
+    if (c.kind === "filament") {
+      if (!c.brand) why.push("brand unknown");
+      if (!c.polymer) why.push("polymer unknown");
+      if (c.weightAssumed) why.push("weight not in the listing");
+      if (!(c.color || c.colorName || c.multicolor)) why.push("colour unknown");
+      if (!c.spoolMaterial) why.push("spool unknown");
+    }
+    if (!why.length) {
+      const place = uncertainPlace(ev);
+      if (place.action !== "merge") why.push("no baseline model yet");
+    }
+    return why.length ? { level: "check", why } : { level: "ready", why: [] };
+  }
+
+  // Why a field is filled: what the run learned from your own edits, so you can decide how far to trust it.
+  // A high-confidence spool type is filled in; a weaker one is only offered, one click to use it.
+  function learnedNotes(c, edit) {
+    const g = c.guess;
+    if (!g || c.handEdited) return "";
+    const lines = [];
+    const sp = g.spoolMaterial;
+    if (sp && edit.spoolMaterial == null) {
+      const pct = Math.round((sp.share != null ? sp.share : sp.confidence) * 100);
+      const word = sp.value === "cardboard" ? "Cardboard" : "Plastic";
+      lines.push(c.spoolMaterial === sp.value
+        ? `Spool: ${word} — learned from ${sp.n} of your cards (${pct}%)`
+        : `Spool: probably ${word.toLowerCase()} (${pct}% of ${sp.n} similar cards) <button type="button" class="btn-sm ghost" data-apply-guess="spoolMaterial" data-guess-value="${esc(sp.value)}">Use ${esc(word.toLowerCase())}</button>`);
+    }
+    if (g.subBrand && edit.subBrand == null) lines.push(`Sub-brand ${esc(g.subBrand.value)} — read from the title`);
+    if (g.colorHex && edit.colorHex == null) lines.push(`Swatch — the shade you picked before for this colour (${g.colorHex.n}×)`);
+    return lines.length ? `<p class="muted learned-notes">${lines.join(" · ")}</p>` : "";
   }
 
   function uncertainCard(ev, keepLast, review) {
@@ -2958,10 +3061,11 @@
     const og = ev.optionGroup || null;
     const thumbSrc = (og && og.pic) || c.image;
     const reviewClass = review ? " review-card" + (review.isSel ? " is-selected" : "") + (review.isFlag ? " flagged" : "") + (review.mismatch ? " is-mismatch" : "") : "";
-    return `<div class="product-card baseline-card uncertain-card${reviewClass}${held ? " is-held" : ""}${saved ? " is-saved" : ""}${published ? " is-published" : ""}" data-uncertain-url="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}" data-kind="${esc(c.kind || "")}"${og ? ` data-group-linked="${og.linked ? "true" : "false"}"` : ""}${ev.catalogProductId ? ` data-catalog-product="${esc(ev.catalogProductId)}"` : ""}>
+    return `<div class="product-card baseline-card uncertain-card${reviewClass}${held ? " is-held" : ""}${saved ? " is-saved" : ""}${published ? " is-published" : ""}" data-uncertain-url="${esc(url)}" data-uncertain-job="${esc(ev.jobId || "")}" data-hex-source="${esc(edit.colorHexSource != null ? edit.colorHexSource : c.colorHexSource || "")}" data-kind="${esc(c.kind || "")}"${og ? ` data-group-linked="${og.linked ? "true" : "false"}"` : ""}${ev.catalogProductId ? ` data-catalog-product="${esc(ev.catalogProductId)}"` : ""}>
       ${review ? `<div class="review-top">
         <label><input type="checkbox" data-review-select="${esc(id)}" ${review.isSel ? "checked" : ""}> Select</label>
         <label><input type="checkbox" data-review-flag="${esc(id)}" ${review.isFlag ? "checked" : ""}> Flag</label>
+        ${(() => { const t = trustOf(ev); return t.level === "ready" ? '<span class="trust-pill is-ready" title="Everything the catalog needs is known and it has a baseline model to go to.">✓ Ready</span>' : t.level === "check" ? `<span class="trust-pill is-check" title="${esc(t.why.join(" · "))}">Check · ${esc(t.why.slice(0, 2).join(", "))}${t.why.length > 2 ? " +" + (t.why.length - 2) : ""}</span>` : ""; })()}
       </div>` : ""}
       ${held ? '<div class="uncertain-hold" aria-hidden="true">Removed</div>' : ""}
       ${published ? '<div class="uncertain-check" aria-label="Published" title="Published to the catalog. You can still edit it and Save &amp; publish again.">✓</div>' : ""}
@@ -2982,7 +3086,7 @@
         <label>Brand<input list="dl-brand" data-uncertain-field="brand" data-uncertain-url="${esc(url)}" value="${esc(brand)}" placeholder="Brand"></label>
         <label>Polymer<input list="dl-polymer" data-uncertain-field="polymer" data-uncertain-url="${esc(url)}" value="${esc(polymer)}" placeholder="PLA, PETG, ABS…"></label>
         ${tagField(`<label>Material variant<input list="dl-variant" data-uncertain-field="variant" data-uncertain-url="${esc(url)}" value="${esc(variant1)}" placeholder="Plus, Silk, High-Speed…"></label>`, variantMore, "dl-variant")}
-        <label class="colour-field">Colour<span class="colour-row" ${colourRowAttrs(colourState)}>${colourDot(colourFill(colourState), colourState.fx)}<input data-uncertain-field="color" data-uncertain-url="${esc(url)}" value="${esc(color)}" placeholder="Detected colour"><button type="button" class="btn-sm ghost" data-colour-from-image title="Read the colour from the product image"${c.image ? "" : " disabled"}>Image</button><button type="button" class="btn-sm ghost colour-minus" data-colour-minus title="One colour fewer: the name only sounds like two or three colours" aria-label="Remove a colour"${colourState.set.length > 1 ? "" : " hidden"}>−</button><button type="button" class="btn-sm ghost colour-plus" data-colour-plus title="One colour more (dual, tri colour…)" aria-label="Add a colour"${colourState.set.length >= 6 ? " hidden" : ""}>+</button><span class="droppers">${dropperButtons(colourState)}</span></span>${toneNote(autoTone(colourState))}</label>
+        <label class="colour-field">Colour<span class="colour-row" ${colourRowAttrs(colourState)}>${colourDot(colourFill(colourState), colourState.fx)}<input data-uncertain-field="color" data-uncertain-url="${esc(url)}" value="${esc(color)}" placeholder="Detected colour"><button type="button" class="btn-sm ghost" data-colour-from-image title="Read the true tone from the product photo. For several colours it picks the gradient stops; press again for other colours."${c.image ? "" : " disabled"}>Auto</button><button type="button" class="btn-sm ghost colour-minus" data-colour-minus title="One colour fewer: the name only sounds like two or three colours" aria-label="Remove a colour"${colourState.set.length > 1 ? "" : " hidden"}>−</button><button type="button" class="btn-sm ghost colour-plus" data-colour-plus title="One colour more (dual, tri colour…)" aria-label="Add a colour"${colourState.set.length >= 6 ? " hidden" : ""}>+</button><span class="droppers">${dropperButtons(colourState)}</span></span>${toneNote(autoTone(colourState))}</label>
         <label>Weight<input data-uncertain-field="weight" data-uncertain-url="${esc(url)}" value="${esc(weightLabel(weight))}" placeholder="1 kg, 250 g…">${weightAssumed ? '<small class="muted weight-assumed">Assumed: the listing gives no weight</small>' : ""}</label>
         <label>Diameter<select data-uncertain-field="diameter" data-uncertain-url="${esc(url)}">${["1.75 mm", "2.85 mm"].map((d) => `<option value="${d}" ${diameter === d ? "selected" : ""}>${d}</option>`).join("")}${diameter === "3.0 mm" ? '<option value="3.0 mm" selected>3.0 mm</option>' : ""}</select></label>
         <label>Pack<select data-uncertain-field="bundle" data-uncertain-url="${esc(url)}" title="A bundle or multi-pack (4'lü set, 10 adet, 4 colours in one box) is its own product, never merged with a single spool"><option value="" ${packState.bundle ? "" : "selected"}>Single spool</option><option value="yes" ${packState.bundle ? "selected" : ""}>Bundle / multi-pack</option></select></label>
@@ -2990,7 +3094,7 @@
         <label>Packaging<select data-uncertain-field="packaging" data-uncertain-url="${esc(url)}"><option value="spool" ${packaging === "spool" ? "selected" : ""}>With spool</option><option value="refill" ${packaging === "refill" ? "selected" : ""}>Refill / Makarasız</option></select></label>
         ${spoolRow((k) => `data-uncertain-field="${k}" data-uncertain-url="${esc(url)}"`, spoolMaterial, rfid, spoolLinked)}
       </div>
-      ${guess && guess.from ? `<p class="muted uncertain-guess">Matches ${esc(guess.from)}. Check, then Save.</p>` : ""}` : `<label class="muted">Brand<input data-uncertain-field="brand" data-uncertain-url="${esc(url)}" value="${esc(brand)}" placeholder="Brand"></label>`}
+      ${guess && guess.from ? `<p class="muted uncertain-guess">Matches ${esc(guess.from)}. Check, then Save.</p>` : ""}${learnedNotes(c, edit)}` : `<label class="muted">Brand<input data-uncertain-field="brand" data-uncertain-url="${esc(url)}" value="${esc(brand)}" placeholder="Brand"></label>`}
       <p class="muted">${esc(review ? review.where : magellan)}</p>
       ${Number(c.price) > 0 ? `<p class="muted">Shop price: ${esc(c.price)} TL</p>` : `<p class="error">No shop price was harvested. <button type="button" class="btn-sm" data-refetch-price="${esc(url)}" data-refetch-job="${esc(ev.jobId || "")}">Get price</button></p>`}
       <p class="muted">${esc(layaLabel(laya))}${laya && laya.confidence != null ? " · " + Number(laya.confidence).toFixed(2) : ""}</p>
@@ -3344,6 +3448,18 @@
         const key = pageBtn.closest("[data-pager]").dataset.pager;
         state.pager[key] = { page: Number(pageBtn.dataset.pagerPage) || 1 };
         repaintPager(key);
+        return;
+      }
+      const useGuess = e.target.closest("[data-apply-guess]");
+      if (useGuess) {
+        const card = useGuess.closest(".uncertain-card");
+        const field = card && card.querySelector(`[data-uncertain-field="${useGuess.dataset.applyGuess}"]`);
+        if (field) {
+          field.value = useGuess.dataset.guessValue;
+          field.dispatchEvent(new Event("input", { bubbles: true }));
+          field.dispatchEvent(new Event("change", { bubbles: true }));
+          useGuess.closest(".learned-notes")?.remove();
+        }
         return;
       }
       if (e.target.closest("#add-shop-row")) {
@@ -3758,6 +3874,17 @@
           el.closest(".review-card")?.classList.add("is-selected");
         });
         updateReviewToolbar();
+        return;
+      }
+      if (e.target.closest("#select-ready")) {
+        let ready = 0;
+        for (const ev of collectCards(reviewJob(state.data || { jobs: [] }), state.data)) {
+          const url = ev.card && ev.card.url;
+          if (url && trustOf(ev).level === "ready") { state.reviewSelected.add(url); ready++; }
+        }
+        syncReviewMarks();
+        updateReviewToolbar();
+        toast(ready ? ready + " ready card" + (ready === 1 ? "" : "s") + " selected. The rest say why they are not ready." : "No card is ready yet: each one says what is missing.");
         return;
       }
       if (e.target.closest("#flag-all")) {
@@ -5000,7 +5127,7 @@
       document.querySelectorAll(".fx-menu").forEach((m) => m.remove());
       const fx = dot.closest(".colour-row").dataset.fx || "";
       const option = (value, label) => `<button type="button" class="btn-sm ghost" data-colour-fx="${value}" aria-pressed="${fx === value}">${label}</button>`;
-      dot.closest(".colour-field").insertAdjacentHTML("beforeend", `<span class="fx-menu" role="menu">${option("", "Plain")}${option("marble", "Marble")}${option("galaxy", "Galaxy")}</span>`);
+      dot.closest(".colour-field").insertAdjacentHTML("beforeend", `<span class="fx-menu" role="menu">${option("", "Plain")}${option("silk", "Silk")}${option("satin", "Satin")}${option("matte", "Matte")}${option("translucent", "Translucent")}${option("metallic", "Metallic")}${option("glow", "Glow")}${option("marble", "Marble")}${option("galaxy", "Galaxy")}</span>`);
     });
 
     // Opening a card's Goes-to dropdown loads the complete, current list for that card's category.
@@ -5162,10 +5289,11 @@
         const img = card && card.querySelector(".catalog-thumb img");
         if (!img || btn.disabled) return;
         btn.disabled = true;
-        colourFromImage(img.currentSrc || img.src).then((found) => {
+        autoColour(card, img.currentSrc || img.src).then((found) => {
           if (!found) { toast("No clear colour in this image. Type it instead."); return; }
-          setColourTone(card, found.color, found.hex, 0);
-          toast("Image looks " + toneName(found.color) + " (" + Math.round(found.confidence * 100) + "% of pixels). The listing colour name stays. Not saved yet.");
+          if (found.kind === "none") { toast("No other distinct colour in this photo."); return; }
+          if (found.kind === "gradient") toast("Gradient: " + found.hexes.length + " distinct colours, in order along the spool. Press Auto again for other colours. Not saved yet.");
+          else toast("Photo tone " + found.hex + (found.name ? ": looks " + found.name : "") + " (" + Math.round(found.confidence * 100) + "% sure). The listing colour name stays. Not saved yet.");
         }).catch((err) => toast("Could not read the image: " + err.message))
           .finally(() => { btn.disabled = false; });
         return;

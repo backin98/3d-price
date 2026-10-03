@@ -19,6 +19,10 @@
     "pull-blobs": "node scripts/pull-netlify-blobs.mjs",
     "backup": "node scripts/backup-data.mjs",
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "learn": "node scripts/learn-house-rules.cjs",
+    "trust-report": "node scripts/trust-report.cjs",
+    "eval-colours": "node scripts/eval-swatch-colours.cjs",
+    "laya-data": "node scripts/build-laya-training.cjs"
   }
 }

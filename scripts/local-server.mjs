@@ -25,6 +25,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 import store from "../lib/netlify-store.cjs";
+import houseStore from "../lib/house-rules-store.cjs";
 
 import admin from "../netlify/functions/admin.mjs";
 import auth from "../netlify/functions/auth.mjs";
@@ -206,6 +207,14 @@ const server = http.createServer(async (req, res) => {
     res.end(JSON.stringify({ error: "Local server error", detail: String(err && err.message || err) }));
   }
 });
+
+// Learn from what you fixed by hand since last time (spool material, sub-brand lines, the shades you picked).
+try {
+  const learned = houseStore.learnIfStale(STORE_DIR);
+  if (learned.learned) console.log("Learned from " + learned.cards + " hand-edited cards: data/house-rules.json updated.");
+} catch (err) {
+  console.log("Could not learn from the store (" + err.message + "); the run keeps the rules it had.");
+}
 
 server.listen(PORT, HOST, () => {
   console.log("");

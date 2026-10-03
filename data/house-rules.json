@@ -1,0 +1,1292 @@
+{
+ "version": 1,
+ "trainedOn": {
+  "cards": 193,
+  "spoolLabels": 193,
+  "toneLabels": 145,
+  "baselineItems": 1404
+ },
+ "spool": {
+  "brand+sub+polymer+variant": {
+   "bambu lab||pla|matte": {
+    "plastic": 7
+   },
+   "bambu lab||pla|basic": {
+    "plastic": 9
+   },
+   "filamix||pla|plus": {
+    "plastic": 24,
+    "cardboard": 5
+   },
+   "rhinolab||pla|matte": {
+    "plastic": 6
+   },
+   "rhinolab||pla|plus high speed": {
+    "plastic": 11
+   },
+   "rhinolab||asa|cf": {
+    "cardboard": 1
+   },
+   "rhinolab||pla|silk": {
+    "plastic": 9
+   },
+   "rhinolab||tpu|high speed": {
+    "plastic": 3
+   },
+   "rhinolab||pla|wood": {
+    "cardboard": 2
+   },
+   "rhinolab||abs|high speed": {
+    "plastic": 2
+   },
+   "filamix||pla|matte": {
+    "cardboard": 3
+   },
+   "esun||pla|basic": {
+    "cardboard": 13
+   },
+   "esun||pla|high speed": {
+    "cardboard": 5
+   },
+   "filamix||pla|plus high speed": {
+    "cardboard": 25
+   },
+   "rhinolab||plabs|high speed": {
+    "plastic": 6
+   },
+   "rhinolab||petg|high speed": {
+    "plastic": 7
+   },
+   "rhinolab||pla|marble": {
+    "plastic": 3
+   },
+   "rhinolab||petg|semiflex": {
+    "plastic": 5
+   },
+   "rhinolab||petg|cf": {
+    "cardboard": 1
+   },
+   "rhinolab||abs|cf": {
+    "cardboard": 1
+   },
+   "creality||pla|high speed": {
+    "cardboard": 5,
+    "plastic": 2
+   },
+   "fibromast||petg|": {
+    "plastic": 1
+   },
+   "creality|cr|pla|": {
+    "plastic": 2
+   },
+   "polymaker|polyterra|pla|matte": {
+    "cardboard": 1
+   },
+   "filamix||tpu|": {
+    "cardboard": 1
+   },
+   "filamix||pla|silk": {
+    "cardboard": 3
+   },
+   "polymaker||asa|": {
+    "cardboard": 1
+   },
+   "filamix||petg|high speed": {
+    "cardboard": 1
+   },
+   "creality|ender|pla|plus": {
+    "plastic": 2
+   },
+   "filamix||abs|plus": {
+    "cardboard": 1
+   },
+   "filamix||pla|wood": {
+    "plastic": 2
+   },
+   "creality|cr|tpu|": {
+    "plastic": 1
+   },
+   "apex3d||pla|rainbow": {
+    "plastic": 1
+   },
+   "creality|cr|petg|": {
+    "plastic": 1
+   },
+   "esun||pla|plus+silk": {
+    "plastic": 2
+   },
+   "esun||pla|silk": {
+    "cardboard": 2
+   },
+   "rhinolab||pla|high speed": {
+    "plastic": 1
+   },
+   "rhinolab||tpu|95a+high speed": {
+    "plastic": 2
+   },
+   "creality|ender||": {
+    "plastic": 2
+   },
+   "rhinolab||asa|high speed": {
+    "plastic": 2
+   },
+   "rhinolab||pa|": {
+    "plastic": 2
+   },
+   "esun||pla|plus": {
+    "cardboard": 1
+   },
+   "rhinolab||pla|gf": {
+    "plastic": 1
+   },
+   "esun|||sparkle": {
+    "plastic": 2
+   },
+   "esun|||wood": {
+    "cardboard": 1
+   },
+   "rhinolab||pc|cf": {
+    "cardboard": 1
+   },
+   "creality||pla|": {
+    "cardboard": 1
+   }
+  },
+  "brand+polymer+variant": {
+   "bambu lab|pla|matte": {
+    "plastic": 7
+   },
+   "bambu lab|pla|basic": {
+    "plastic": 9
+   },
+   "filamix|pla|plus": {
+    "plastic": 24,
+    "cardboard": 5
+   },
+   "rhinolab|pla|matte": {
+    "plastic": 6
+   },
+   "rhinolab|pla|plus high speed": {
+    "plastic": 11
+   },
+   "rhinolab|asa|cf": {
+    "cardboard": 1
+   },
+   "rhinolab|pla|silk": {
+    "plastic": 9
+   },
+   "rhinolab|tpu|high speed": {
+    "plastic": 3
+   },
+   "rhinolab|pla|wood": {
+    "cardboard": 2
+   },
+   "rhinolab|abs|high speed": {
+    "plastic": 2
+   },
+   "filamix|pla|matte": {
+    "cardboard": 3
+   },
+   "esun|pla|basic": {
+    "cardboard": 13
+   },
+   "esun|pla|high speed": {
+    "cardboard": 5
+   },
+   "filamix|pla|plus high speed": {
+    "cardboard": 25
+   },
+   "rhinolab|plabs|high speed": {
+    "plastic": 6
+   },
+   "rhinolab|petg|high speed": {
+    "plastic": 7
+   },
+   "rhinolab|pla|marble": {
+    "plastic": 3
+   },
+   "rhinolab|petg|semiflex": {
+    "plastic": 5
+   },
+   "rhinolab|petg|cf": {
+    "cardboard": 1
+   },
+   "rhinolab|abs|cf": {
+    "cardboard": 1
+   },
+   "creality|pla|high speed": {
+    "cardboard": 5,
+    "plastic": 2
+   },
+   "fibromast|petg|": {
+    "plastic": 1
+   },
+   "creality|pla|": {
+    "plastic": 2,
+    "cardboard": 1
+   },
+   "polymaker|pla|matte": {
+    "cardboard": 1
+   },
+   "filamix|tpu|": {
+    "cardboard": 1
+   },
+   "filamix|pla|silk": {
+    "cardboard": 3
+   },
+   "polymaker|asa|": {
+    "cardboard": 1
+   },
+   "filamix|petg|high speed": {
+    "cardboard": 1
+   },
+   "creality|pla|plus": {
+    "plastic": 2
+   },
+   "filamix|abs|plus": {
+    "cardboard": 1
+   },
+   "filamix|pla|wood": {
+    "plastic": 2
+   },
+   "creality|tpu|": {
+    "plastic": 1
+   },
+   "apex3d|pla|rainbow": {
+    "plastic": 1
+   },
+   "creality|petg|": {
+    "plastic": 1
+   },
+   "esun|pla|plus+silk": {
+    "plastic": 2
+   },
+   "esun|pla|silk": {
+    "cardboard": 2
+   },
+   "rhinolab|pla|high speed": {
+    "plastic": 1
+   },
+   "rhinolab|tpu|95a+high speed": {
+    "plastic": 2
+   },
+   "creality||": {
+    "plastic": 2
+   },
+   "rhinolab|asa|high speed": {
+    "plastic": 2
+   },
+   "rhinolab|pa|": {
+    "plastic": 2
+   },
+   "esun|pla|plus": {
+    "cardboard": 1
+   },
+   "rhinolab|pla|gf": {
+    "plastic": 1
+   },
+   "esun||sparkle": {
+    "plastic": 2
+   },
+   "esun||wood": {
+    "cardboard": 1
+   },
+   "rhinolab|pc|cf": {
+    "cardboard": 1
+   }
+  },
+  "brand+variant": {
+   "bambu lab|*|matte": {
+    "plastic": 7
+   },
+   "bambu lab|*|basic": {
+    "plastic": 9
+   },
+   "filamix|*|plus": {
+    "plastic": 24,
+    "cardboard": 6
+   },
+   "rhinolab|*|matte": {
+    "plastic": 6
+   },
+   "rhinolab|*|plus high speed": {
+    "plastic": 11
+   },
+   "rhinolab|*|cf": {
+    "cardboard": 4
+   },
+   "rhinolab|*|silk": {
+    "plastic": 9
+   },
+   "rhinolab|*|high speed": {
+    "plastic": 21
+   },
+   "rhinolab|*|wood": {
+    "cardboard": 2
+   },
+   "filamix|*|matte": {
+    "cardboard": 3
+   },
+   "esun|*|basic": {
+    "cardboard": 13
+   },
+   "esun|*|high speed": {
+    "cardboard": 5
+   },
+   "filamix|*|plus high speed": {
+    "cardboard": 25
+   },
+   "rhinolab|*|marble": {
+    "plastic": 3
+   },
+   "rhinolab|*|semiflex": {
+    "plastic": 5
+   },
+   "creality|*|high speed": {
+    "cardboard": 5,
+    "plastic": 2
+   },
+   "polymaker|*|matte": {
+    "cardboard": 1
+   },
+   "filamix|*|silk": {
+    "cardboard": 3
+   },
+   "filamix|*|high speed": {
+    "cardboard": 1
+   },
+   "creality|*|plus": {
+    "plastic": 2
+   },
+   "filamix|*|wood": {
+    "plastic": 2
+   },
+   "apex3d|*|rainbow": {
+    "plastic": 1
+   },
+   "esun|*|plus+silk": {
+    "plastic": 2
+   },
+   "esun|*|silk": {
+    "cardboard": 2
+   },
+   "rhinolab|*|95a+high speed": {
+    "plastic": 2
+   },
+   "esun|*|plus": {
+    "cardboard": 1
+   },
+   "rhinolab|*|gf": {
+    "plastic": 1
+   },
+   "esun|*|sparkle": {
+    "plastic": 2
+   },
+   "esun|*|wood": {
+    "cardboard": 1
+   }
+  },
+  "brand+polymer": {
+   "bambu lab|pla": {
+    "plastic": 16
+   },
+   "filamix|pla": {
+    "plastic": 26,
+    "cardboard": 36
+   },
+   "rhinolab|pla": {
+    "plastic": 31,
+    "cardboard": 2
+   },
+   "rhinolab|asa": {
+    "cardboard": 1,
+    "plastic": 2
+   },
+   "rhinolab|tpu": {
+    "plastic": 5
+   },
+   "rhinolab|abs": {
+    "plastic": 2,
+    "cardboard": 1
+   },
+   "esun|pla": {
+    "cardboard": 21,
+    "plastic": 2
+   },
+   "rhinolab|plabs": {
+    "plastic": 6
+   },
+   "rhinolab|petg": {
+    "plastic": 12,
+    "cardboard": 1
+   },
+   "creality|pla": {
+    "cardboard": 6,
+    "plastic": 6
+   },
+   "fibromast|petg": {
+    "plastic": 1
+   },
+   "polymaker|pla": {
+    "cardboard": 1
+   },
+   "filamix|tpu": {
+    "cardboard": 1
+   },
+   "polymaker|asa": {
+    "cardboard": 1
+   },
+   "filamix|petg": {
+    "cardboard": 1
+   },
+   "filamix|abs": {
+    "cardboard": 1
+   },
+   "creality|tpu": {
+    "plastic": 1
+   },
+   "apex3d|pla": {
+    "plastic": 1
+   },
+   "creality|petg": {
+    "plastic": 1
+   },
+   "creality|": {
+    "plastic": 2
+   },
+   "rhinolab|pa": {
+    "plastic": 2
+   },
+   "esun|": {
+    "plastic": 2,
+    "cardboard": 1
+   },
+   "rhinolab|pc": {
+    "cardboard": 1
+   }
+  },
+  "brand": {
+   "bambu lab": {
+    "plastic": 16
+   },
+   "filamix": {
+    "plastic": 26,
+    "cardboard": 39
+   },
+   "rhinolab": {
+    "plastic": 60,
+    "cardboard": 6
+   },
+   "esun": {
+    "cardboard": 22,
+    "plastic": 4
+   },
+   "creality": {
+    "cardboard": 6,
+    "plastic": 10
+   },
+   "fibromast": {
+    "plastic": 1
+   },
+   "polymaker": {
+    "cardboard": 2
+   },
+   "apex3d": {
+    "plastic": 1
+   }
+  }
+ },
+ "subBrands": {
+  "creality": [
+   {
+    "name": "Ender",
+    "n": 6
+   },
+   {
+    "name": "CR",
+    "n": 4
+   }
+  ],
+  "polymaker": [
+   {
+    "name": "PolyTerra",
+    "n": 1
+   }
+  ]
+ },
+ "tones": {
+  "byBrandName": {
+   "bambu lab|desert tan": {
+    "hex": "#c3b688",
+    "n": 1
+   },
+   "bambu lab|dark green": {
+    "hex": "#4f5b39",
+    "n": 1
+   },
+   "bambu lab|dark red": {
+    "hex": "#a64143",
+    "n": 1
+   },
+   "bambu lab|scarlet red": {
+    "hex": "#c84a48",
+    "n": 1
+   },
+   "bambu lab|lilac purple": {
+    "hex": "#7366a3",
+    "n": 1
+   },
+   "bambu lab|lemon yellow": {
+    "hex": "#f0d36d",
+    "n": 1
+   },
+   "bambu lab|gray": {
+    "hex": "#64625c",
+    "n": 1
+   },
+   "bambu lab|bronze": {
+    "hex": "#51402f",
+    "n": 1
+   },
+   "bambu lab|brown": {
+    "hex": "#833c26",
+    "n": 1
+   },
+   "bambu lab|blue": {
+    "hex": "#1d49a8",
+    "n": 1
+   },
+   "bambu lab|indigo purple": {
+    "hex": "#48395b",
+    "n": 1
+   },
+   "bambu lab|pink": {
+    "hex": "#f88094",
+    "n": 1
+   },
+   "bambu lab|bambu green": {
+    "hex": "#28c26d",
+    "n": 1
+   },
+   "bambu lab|gold": {
+    "hex": "#dba351",
+    "n": 1
+   },
+   "bambu lab|orange": {
+    "hex": "#f3712c",
+    "n": 1
+   },
+   "bambu lab|yellow": {
+    "hex": "#f2dd38",
+    "n": 1
+   },
+   "bambu lab|beige": {
+    "hex": "#eadfd8",
+    "n": 1
+   },
+   "filamix|violet": {
+    "hex": "#c854a8",
+    "n": 2
+   },
+   "rhinolab|brown": {
+    "hex": "#403d29",
+    "n": 1
+   },
+   "rhinolab|pink": {
+    "hex": "#fab2cc",
+    "n": 2
+   },
+   "rhinolab|bronze": {
+    "hex": "#60683b",
+    "n": 1
+   },
+   "rhinolab|beige": {
+    "hex": "#ddd288",
+    "n": 4
+   },
+   "rhinolab|yellow": {
+    "hex": "#f3cc2e",
+    "n": 4
+   },
+   "rhinolab|light brown": {
+    "hex": "#af9151",
+    "n": 2
+   },
+   "rhinolab|grey": {
+    "hex": "#b8babe",
+    "n": 4
+   },
+   "rhinolab|ice blue": {
+    "hex": "#0fcffa",
+    "n": 1
+   },
+   "rhinolab|light blue": {
+    "hex": "#a6e0ef",
+    "n": 1
+   },
+   "rhinolab|dark grey": {
+    "hex": "#acadab",
+    "n": 4
+   },
+   "rhinolab|natural": {
+    "hex": "#e4e3df",
+    "n": 2
+   },
+   "rhinolab|green": {
+    "hex": "#00df60",
+    "n": 2
+   },
+   "rhinolab|sky blue": {
+    "hex": "#1bcdf7",
+    "n": 2
+   },
+   "rhinolab|slate gray": {
+    "hex": "#99bac0",
+    "n": 1
+   },
+   "rhinolab|dark gray": {
+    "hex": "#719098",
+    "n": 1
+   },
+   "filamix|light mint green": {
+    "hex": "#d0ecd9",
+    "n": 2
+   },
+   "esun|barbie pink": {
+    "hex": "#fab0bb",
+    "n": 1
+   },
+   "esun|peek green": {
+    "hex": "#96d77a",
+    "n": 1
+   },
+   "filamix|copper": {
+    "hex": "#a3754b",
+    "n": 2
+   },
+   "filamix|light brown": {
+    "hex": "#cbc3bc",
+    "n": 2
+   },
+   "filamix|burgundy": {
+    "hex": "#85141c",
+    "n": 1
+   },
+   "filamix|sunshine": {
+    "hex": "#f7e665",
+    "n": 1
+   },
+   "rhinolab|teak": {
+    "hex": "#ad8047",
+    "n": 1
+   },
+   "rhinolab|fluerosan green": {
+    "hex": "#87f888",
+    "n": 1
+   },
+   "rhinolab|transparent": {
+    "hex": "#d7d3dd",
+    "n": 1
+   },
+   "rhinolab|fluorescent yellow": {
+    "hex": "#ecf077",
+    "n": 1
+   },
+   "rhinolab|fluorescent green": {
+    "hex": "#0eeb78",
+    "n": 1
+   },
+   "rhinolab|blue": {
+    "hex": "#01359f",
+    "n": 2
+   },
+   "rhinolab|gold": {
+    "hex": "#e4ad50",
+    "n": 2
+   },
+   "filamix|khaki green": {
+    "hex": "#2b432e",
+    "n": 1
+   },
+   "filamix|navy blue": {
+    "hex": "#32395b",
+    "n": 2
+   },
+   "filamix|blackish green": {
+    "hex": "#22423e",
+    "n": 2
+   },
+   "rhinolab|purple": {
+    "hex": "#8760ec",
+    "n": 1
+   },
+   "rhinolab|brick red": {
+    "hex": "#ac5c3f",
+    "n": 1
+   },
+   "rhinolab|silver": {
+    "hex": "#c6c6cd",
+    "n": 1
+   },
+   "rhinolab|transparent red": {
+    "hex": "#da3d38",
+    "n": 1
+   },
+   "rhinolab|transparent orange": {
+    "hex": "#e69639",
+    "n": 1
+   },
+   "rhinolab|oak": {
+    "hex": "#c09663",
+    "n": 1
+   },
+   "creality|brown": {
+    "hex": "#bf613d",
+    "n": 1
+   },
+   "creality|beige": {
+    "hex": "#cab3a1",
+    "n": 1
+   },
+   "filamix|pink": {
+    "hex": "#ec94a8",
+    "n": 1
+   },
+   "filamix|green": {
+    "hex": "#57fcbb",
+    "n": 3
+   },
+   "filamix|sky blue": {
+    "hex": "#459ec4",
+    "n": 1
+   },
+   "filamix|coral pink": {
+    "hex": "#c92f31",
+    "n": 1
+   },
+   "creality|white": {
+    "hex": "#edeff1",
+    "n": 1
+   },
+   "creality|black": {
+    "hex": "#293039",
+    "n": 1
+   },
+   "filamix|ivory": {
+    "hex": "#cec2ab",
+    "n": 1
+   },
+   "filamix|champagne": {
+    "hex": "#f0b587",
+    "n": 1
+   },
+   "filamix|reddish brown": {
+    "hex": "#c97337",
+    "n": 1
+   },
+   "filamix|green apple": {
+    "hex": "#72bf6c",
+    "n": 1
+   },
+   "filamix|cherry blossom pink": {
+    "hex": "#e2abbb",
+    "n": 1
+   },
+   "filamix|sea green": {
+    "hex": "#10adb1",
+    "n": 1
+   },
+   "filamix|marble": {
+    "hex": "#c1cbd8",
+    "n": 2
+   },
+   "filamix|bone white": {
+    "hex": "#ccb6b0",
+    "n": 2
+   },
+   "filamix|grass green": {
+    "hex": "#0dd6a5",
+    "n": 1
+   },
+   "filamix|grey": {
+    "hex": "#b4c9e4",
+    "n": 1
+   },
+   "filamix|orange": {
+    "hex": "#f68e47",
+    "n": 1
+   },
+   "filamix|skin": {
+    "hex": "#e9d4ac",
+    "n": 1
+   },
+   "filamix|brown": {
+    "hex": "#924b18",
+    "n": 1
+   },
+   "filamix|beige": {
+    "hex": "#f2e8d3",
+    "n": 1
+   },
+   "filamix|dark mint green": {
+    "hex": "#63dcda",
+    "n": 1
+   },
+   "filamix|rose": {
+    "hex": "#fa6386",
+    "n": 2
+   },
+   "filamix|wood": {
+    "hex": "#907a6d",
+    "n": 1
+   },
+   "creality|green": {
+    "hex": "#37a83c",
+    "n": 1
+   },
+   "esun|cold white": {
+    "hex": "#c7c1a6",
+    "n": 1
+   },
+   "esun|magenta": {
+    "hex": "#d3184b",
+    "n": 1
+   },
+   "esun|beige": {
+    "hex": "#f5c8a9",
+    "n": 2
+   },
+   "creality|very peri": {
+    "hex": "#4c50c3",
+    "n": 1
+   },
+   "creality|skin": {
+    "hex": "#e1ceb7",
+    "n": 1
+   },
+   "esun|dark orange": {
+    "hex": "#e45033",
+    "n": 1
+   },
+   "rhinolab|red": {
+    "hex": "#ee222d",
+    "n": 2
+   },
+   "creality|blue": {
+    "hex": "#3939cf",
+    "n": 1
+   },
+   "rhinolab|army green": {
+    "hex": "#758529",
+    "n": 1
+   },
+   "filamix|ash gray": {
+    "hex": "#cbbfa9",
+    "n": 1
+   },
+   "filamix|transparent red": {
+    "hex": "#e5ab79",
+    "n": 1
+   },
+   "filamix|light blue": {
+    "hex": "#3488d4",
+    "n": 1
+   },
+   "filamix|transparent": {
+    "hex": "#d3cec0",
+    "n": 1
+   },
+   "filamix|flourescent green": {
+    "hex": "#3b8e53",
+    "n": 1
+   },
+   "filamix|yellow": {
+    "hex": "#e0c335",
+    "n": 1
+   },
+   "filamix|mint green": {
+    "hex": "#65c2bc",
+    "n": 1
+   },
+   "esun|green": {
+    "hex": "#18393f",
+    "n": 2
+   },
+   "esun|holly green": {
+    "hex": "#1a5a4e",
+    "n": 1
+   },
+   "esun|sky blue": {
+    "hex": "#60cff3",
+    "n": 1
+   },
+   "esun|fire engine red": {
+    "hex": "#aa2124",
+    "n": 1
+   },
+   "esun|light grey": {
+    "hex": "#809ebd",
+    "n": 1
+   },
+   "esun|light blue": {
+    "hex": "#7cdaf4",
+    "n": 1
+   },
+   "esun|olive green": {
+    "hex": "#606350",
+    "n": 1
+   },
+   "esun|concrete grey": {
+    "hex": "#b4b2b3",
+    "n": 1
+   },
+   "esun|rgb red": {
+    "hex": "#e62912",
+    "n": 1
+   },
+   "esun|pink": {
+    "hex": "#f79584",
+    "n": 1
+   },
+   "esun|grey": {
+    "hex": "#6784a1",
+    "n": 1
+   },
+   "rhinolab|black": {
+    "hex": "#2e3031",
+    "n": 1
+   },
+   "esun|purble": {
+    "hex": "#553667",
+    "n": 1
+   },
+   "esun|wood": {
+    "hex": "#e3c685",
+    "n": 1
+   }
+  },
+  "byName": {
+   "desert tan": {
+    "hex": "#c3b688",
+    "n": 1
+   },
+   "dark green": {
+    "hex": "#4f5b39",
+    "n": 1
+   },
+   "dark red": {
+    "hex": "#a64143",
+    "n": 1
+   },
+   "scarlet red": {
+    "hex": "#c84a48",
+    "n": 1
+   },
+   "lilac purple": {
+    "hex": "#7366a3",
+    "n": 1
+   },
+   "lemon yellow": {
+    "hex": "#f0d36d",
+    "n": 1
+   },
+   "gray": {
+    "hex": "#64625c",
+    "n": 1
+   },
+   "bronze": {
+    "hex": "#51402f",
+    "n": 2
+   },
+   "brown": {
+    "hex": "#833c26",
+    "n": 4
+   },
+   "blue": {
+    "hex": "#1d49a8",
+    "n": 4
+   },
+   "indigo purple": {
+    "hex": "#48395b",
+    "n": 1
+   },
+   "pink": {
+    "hex": "#ec94a8",
+    "n": 5
+   },
+   "bambu green": {
+    "hex": "#28c26d",
+    "n": 1
+   },
+   "gold": {
+    "hex": "#e4ad50",
+    "n": 3
+   },
+   "orange": {
+    "hex": "#f3712c",
+    "n": 2
+   },
+   "yellow": {
+    "hex": "#f3cc2e",
+    "n": 6
+   },
+   "beige": {
+    "hex": "#f5cbae",
+    "n": 9
+   },
+   "violet": {
+    "hex": "#c854a8",
+    "n": 2
+   },
+   "light brown": {
+    "hex": "#b7aba7",
+    "n": 4
+   },
+   "grey": {
+    "hex": "#a2a3aa",
+    "n": 6
+   },
+   "ice blue": {
+    "hex": "#0fcffa",
+    "n": 1
+   },
+   "light blue": {
+    "hex": "#7cdaf4",
+    "n": 3
+   },
+   "dark grey": {
+    "hex": "#acadab",
+    "n": 4
+   },
+   "natural": {
+    "hex": "#e4e3df",
+    "n": 2
+   },
+   "green": {
+    "hex": "#45e58f",
+    "n": 8
+   },
+   "sky blue": {
+    "hex": "#60cff3",
+    "n": 4
+   },
+   "slate gray": {
+    "hex": "#99bac0",
+    "n": 1
+   },
+   "dark gray": {
+    "hex": "#719098",
+    "n": 1
+   },
+   "light mint green": {
+    "hex": "#d0ecd9",
+    "n": 2
+   },
+   "barbie pink": {
+    "hex": "#fab0bb",
+    "n": 1
+   },
+   "peek green": {
+    "hex": "#96d77a",
+    "n": 1
+   },
+   "copper": {
+    "hex": "#a3754b",
+    "n": 2
+   },
+   "burgundy": {
+    "hex": "#85141c",
+    "n": 1
+   },
+   "sunshine": {
+    "hex": "#f7e665",
+    "n": 1
+   },
+   "teak": {
+    "hex": "#ad8047",
+    "n": 1
+   },
+   "fluerosan green": {
+    "hex": "#87f888",
+    "n": 1
+   },
+   "transparent": {
+    "hex": "#d7d3dd",
+    "n": 2
+   },
+   "fluorescent yellow": {
+    "hex": "#ecf077",
+    "n": 1
+   },
+   "fluorescent green": {
+    "hex": "#0eeb78",
+    "n": 1
+   },
+   "khaki green": {
+    "hex": "#2b432e",
+    "n": 1
+   },
+   "navy blue": {
+    "hex": "#32395b",
+    "n": 2
+   },
+   "blackish green": {
+    "hex": "#22423e",
+    "n": 2
+   },
+   "purple": {
+    "hex": "#8760ec",
+    "n": 1
+   },
+   "brick red": {
+    "hex": "#ac5c3f",
+    "n": 1
+   },
+   "silver": {
+    "hex": "#c6c6cd",
+    "n": 1
+   },
+   "transparent red": {
+    "hex": "#da3d38",
+    "n": 2
+   },
+   "transparent orange": {
+    "hex": "#e69639",
+    "n": 1
+   },
+   "oak": {
+    "hex": "#c09663",
+    "n": 1
+   },
+   "coral pink": {
+    "hex": "#c92f31",
+    "n": 1
+   },
+   "white": {
+    "hex": "#edeff1",
+    "n": 1
+   },
+   "black": {
+    "hex": "#293039",
+    "n": 2
+   },
+   "ivory": {
+    "hex": "#cec2ab",
+    "n": 1
+   },
+   "champagne": {
+    "hex": "#f0b587",
+    "n": 1
+   },
+   "reddish brown": {
+    "hex": "#c97337",
+    "n": 1
+   },
+   "green apple": {
+    "hex": "#72bf6c",
+    "n": 1
+   },
+   "cherry blossom pink": {
+    "hex": "#e2abbb",
+    "n": 1
+   },
+   "sea green": {
+    "hex": "#10adb1",
+    "n": 1
+   },
+   "marble": {
+    "hex": "#c1cbd8",
+    "n": 2
+   },
+   "bone white": {
+    "hex": "#ccb6b0",
+    "n": 2
+   },
+   "grass green": {
+    "hex": "#0dd6a5",
+    "n": 1
+   },
+   "skin": {
+    "hex": "#e9d4ac",
+    "n": 2
+   },
+   "dark mint green": {
+    "hex": "#63dcda",
+    "n": 1
+   },
+   "rose": {
+    "hex": "#fa6386",
+    "n": 2
+   },
+   "wood": {
+    "hex": "#907a6d",
+    "n": 2
+   },
+   "cold white": {
+    "hex": "#c7c1a6",
+    "n": 1
+   },
+   "magenta": {
+    "hex": "#d3184b",
+    "n": 1
+   },
+   "very peri": {
+    "hex": "#4c50c3",
+    "n": 1
+   },
+   "dark orange": {
+    "hex": "#e45033",
+    "n": 1
+   },
+   "red": {
+    "hex": "#ee222d",
+    "n": 2
+   },
+   "army green": {
+    "hex": "#758529",
+    "n": 1
+   },
+   "ash gray": {
+    "hex": "#cbbfa9",
+    "n": 1
+   },
+   "flourescent green": {
+    "hex": "#3b8e53",
+    "n": 1
+   },
+   "mint green": {
+    "hex": "#65c2bc",
+    "n": 1
+   },
+   "holly green": {
+    "hex": "#1a5a4e",
+    "n": 1
+   },
+   "fire engine red": {
+    "hex": "#aa2124",
+    "n": 1
+   },
+   "light grey": {
+    "hex": "#809ebd",
+    "n": 1
+   },
+   "olive green": {
+    "hex": "#606350",
+    "n": 1
+   },
+   "concrete grey": {
+    "hex": "#b4b2b3",
+    "n": 1
+   },
+   "rgb red": {
+    "hex": "#e62912",
+    "n": 1
+   },
+   "purble": {
+    "hex": "#553667",
+    "n": 1
+   }
+  }
+ },
+ "learnedAt": "2026-10-03T17:55:18.916Z"
+}

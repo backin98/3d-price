@@ -366,3 +366,9 @@ button, .ghost { min-height: 38px; }
 .pager { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin: 10px 0; }
 .pager-pages { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
 .pager select { margin-left: 4px; }
+
+/* Ready / Check verdict on a Shop runs card */
+.trust-pill { margin-left: auto; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 999px; white-space: nowrap; }
+.trust-pill.is-ready { color: #14532d; background: #dcfce7; border: 1px solid #86efac; }
+.trust-pill.is-check { color: #7c4a03; background: #fef3c7; border: 1px solid #fcd34d; max-width: 60%; overflow: hidden; text-overflow: ellipsis; }
+.learned-notes { margin: 4px 0 0; font-size: 11px; }

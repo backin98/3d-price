@@ -43,7 +43,11 @@ const SKIP_DIRS = new Set(["node_modules", ".git", ".netlify", "graphify-out", "
 const SKIP_FILES = new Set([
   path.join("data", "filament-baseline.json"),
   path.join("data", "online-baseline.json"),
-  path.join("work", "local-store", "baseline.json")
+  path.join("work", "local-store", "baseline.json"),
+  // Made FROM the baseline and the owner's decisions (npm run laya-data / npm run learn): reading them back would be a loop.
+  path.join("data", "laya-baseline.json"),
+  path.join("data", "laya-learned-pairs.json"),
+  path.join("data", "house-rules.json")
 ]);
 
 const fold = (value) => String(value || "").toLocaleLowerCase("tr")

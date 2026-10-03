@@ -11,10 +11,10 @@
   },
   "generatedAt": "2026-10-02T23:43:18.143Z",
   "source": {
-    "nameNodesSeen": 4014,
-    "distinctListings": 3942,
+    "nameNodesSeen": 3925,
+    "distinctListings": 3870,
     "listingsWithPolymer": 1381,
-    "filesScanned": 11,
+    "filesScanned": 10,
     "shops": [
       "3D Teknomarket",
       "Metatech",

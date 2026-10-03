@@ -7,6 +7,10 @@ import boardLib from "../../lib/baseline-board.cjs";
 import filamentColours from "../../lib/filament-colours.cjs";
 import merchLib from "../../lib/storefront-merch.cjs";
 
+// How a spool's surface looks in its colour dot. The same list as EFFECTS in lib/house-rules.cjs (a test keeps them equal);
+// it is written out here because this file is bundled for the API, where the tests supply each import by name.
+const COLOUR_EFFECTS = ["marble", "galaxy", "silk", "satin", "translucent", "metallic", "glow", "matte"];
+
 // A tone is one of the named filament colours (beige, bone-white…); anything else is dropped.
 // One or more plain colour names joined by "+" ("white+cyan+blue"); unknown names are dropped.
 // Filament diameter: 1.75 mm unless it clearly says 2.85 mm (still sold in Turkey) or 3 mm.
@@ -443,7 +447,7 @@ function applySelectedListings(live, candidate, items, jobs) {
     if (card.colorName) offer.colorName = String(card.colorName).trim().slice(0, 80);
     if (/^#[0-9a-f]{6}$/i.test(String(card.colorHex || ""))) offer.colorHex = String(card.colorHex).toLowerCase();
     if (colourToneOf(card.colorTone)) offer.colorTone = colourToneOf(card.colorTone);
-    if (["marble", "galaxy"].includes(card.colorEffect)) offer.colorEffect = card.colorEffect;
+    if (COLOUR_EFFECTS.includes(card.colorEffect)) offer.colorEffect = card.colorEffect;
     if (/^\d+ g$/.test(String(card.weight || ""))) offer.weight = card.weight;
     if (Array.isArray(card.colorHexes) && card.colorHexes.some(Boolean)) offer.colorHexes = card.colorHexes.slice(0, 6).map((h) => (/^#[0-9a-f]{6}$/i.test(String(h)) ? String(h).toLowerCase() : ""));
     if (card.subBrand != null) offer.subBrand = String(card.subBrand).trim().slice(0, 80);
@@ -1621,7 +1625,7 @@ export default async (req) => {
           if (/^#[0-9a-f]{6}$/i.test(String(p.colorHex || ""))) offer.colorHex = String(p.colorHex).toLowerCase();
           if (Array.isArray(p.colorHexes)) offer.colorHexes = p.colorHexes.slice(0, 6).map((h) => (/^#[0-9a-f]{6}$/i.test(String(h)) ? String(h).toLowerCase() : ""));
           if (p.colorTone != null) offer.colorTone = colourToneOf(p.colorTone);
-          if (p.colorEffect != null) offer.colorEffect = ["marble", "galaxy"].includes(p.colorEffect) ? p.colorEffect : "";
+          if (p.colorEffect != null) offer.colorEffect = COLOUR_EFFECTS.includes(p.colorEffect) ? p.colorEffect : "";
           if (/^\d+ g$/.test(String(p.weight || ""))) offer.weight = p.weight;
           if (p.spoolMaterial != null) offer.spoolMaterial = ["cardboard", "plastic"].includes(p.spoolMaterial) ? p.spoolMaterial : "";
           if (p.rfid != null) offer.rfid = p.rfid === true || p.rfid === "yes";
@@ -1651,7 +1655,7 @@ export default async (req) => {
         if (body.patch && (body.patch.kind === "filament" || body.patch.kind === "printer")) inner.kind = body.patch.kind;
         if (body.patch && (body.patch.placeLinked === true || body.patch.placeLinked === false)) inner.placeLinked = body.patch.placeLinked;
         if (body.patch && (body.patch.groupLinked === true || body.patch.groupLinked === false)) inner.groupLinked = body.patch.groupLinked;
-        if (body.patch && body.patch.colorEffect != null) inner.colorEffect = ["marble", "galaxy"].includes(body.patch.colorEffect) ? body.patch.colorEffect : "";
+        if (body.patch && body.patch.colorEffect != null) inner.colorEffect = COLOUR_EFFECTS.includes(body.patch.colorEffect) ? body.patch.colorEffect : "";
         if (body.patch && body.patch.packaging != null) inner.packaging = String(body.patch.packaging);
         if (body.patch && body.patch.diameter != null) inner.diameter = diameterOf(body.patch.diameter);
         if (body.patch && body.patch.spoolMaterial != null) inner.spoolMaterial = String(body.patch.spoolMaterial);
@@ -1659,6 +1663,8 @@ export default async (req) => {
         if (body.patch && (body.patch.bundle != null || body.patch.packCount != null)) Object.assign(inner, packOf(body.patch));
         if (body.patch && /^#[0-9a-f]{6}$/i.test(String(body.patch.colorHex || ""))) inner.colorHex = String(body.patch.colorHex).toLowerCase();
         if (body.patch && body.patch.colorTone != null) inner.colorTone = colourToneOf(body.patch.colorTone);
+        // Who chose the swatch: you with the eyedropper, or the photo reader. Only your picks teach the run (npm run learn).
+        if (body.patch && ["photo", "eyedropper"].includes(body.patch.colorHexSource)) inner.colorHexSource = body.patch.colorHexSource;
         inner.handEdited = true;
         inner.savedAt = new Date().toISOString();
         cards[url] = inner;

@@ -21,6 +21,20 @@ not a list of steps. That prompt must: change no code; push only to `variant-deb
 files pushed) as `notes/<topic>.md` on `variant-debug`, so the next session reads the note instead of
 re-asking. At the start of work, read the newest notes on `variant-debug` first.
 
+## What the run learns from the owner's edits
+Every card the owner fixes by hand is a label. Use them, and measure before claiming anything is better:
+- `npm run trust-report` how often the run's output agrees with the owner's hand edits, per field (spool and sub-brand
+  numbers are in-sample there; `npm run learn -- --check` prints the honest leave-one-out scores).
+- `npm run learn` learns `data/house-rules.json` (spool material by brand / line / variant, sub-brand lines, the shades
+  the owner eyedropped) from `work/local-store`. The local server also relearns at start when the labels are newer; the
+  worker re-reads the file when it changes. Guesses carry their evidence (`listing.guess`) and never overwrite a value a
+  person set. Swatches the photo reader filled in are marked `colorHexSource: "photo"` and never teach the rules.
+- `npm run eval-colours` (on the PC; it downloads photos) compares the photo reader with the owner's eyedropper picks.
+- `npm run laya-data` rebuilds Laya's training inputs from the baseline and the owner's decisions; retraining itself
+  (`scripts/laya-match.py --train`) needs the Python environment on the PC.
+- Finishes (silk, satin, matte, translucent, metallic, glow, marble, galaxy) live in `colorEffect`; the list is
+  `EFFECTS` in `lib/house-rules.cjs` and the look is `public/css/swatch-finishes.css`.
+
 ## Rules of the repo
 - Work and push on `deploy-ready` only. No pull requests unless asked. Never commit `.env` or `.dev.vars`.
 - Kill local processes by PID only, never `pkill` by name.

@@ -1,0 +1,3455 @@
+{
+ "description": "Pairs learned from your decisions in the admin (scripts/build-laya-training.cjs). Same = the listing was put on that baseline model; different = a close model of the same brand.",
+ "pairs": [
+  {
+   "a": "Bambu Lab PLA Matte Filament - Desert Tan",
+   "b": "Bambu Lab Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Desert Tan",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Desert Tan",
+   "b": "Bambu Lab Basic PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab Pla Matte Filament - Ice Blue",
+   "b": "Bambu Lab Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab Pla Matte Filament - Ice Blue",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab Pla Matte Filament - Ice Blue",
+   "b": "Bambu Lab Basic PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Dark Green",
+   "b": "Bambu Lab Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Dark Green",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Dark Green",
+   "b": "Bambu Lab Basic PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Dark Red",
+   "b": "Bambu Lab Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Dark Red",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Dark Red",
+   "b": "Bambu Lab Basic PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Scarlet Red",
+   "b": "Bambu Lab Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Scarlet Red",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Scarlet Red",
+   "b": "Bambu Lab Basic PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Lilac Purple",
+   "b": "Bambu Lab Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Lilac Purple",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Lilac Purple",
+   "b": "Bambu Lab Basic PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Lemon Yellow",
+   "b": "Bambu Lab Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Lemon Yellow",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Matte Filament - Lemon Yellow",
+   "b": "Bambu Lab Basic PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Gray",
+   "b": "Bambu Lab Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Gray",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Gray",
+   "b": "Bambu Lab CF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Bronze",
+   "b": "Bambu Lab Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Bronze",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Bronze",
+   "b": "Bambu Lab CF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Brown",
+   "b": "Bambu Lab Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Brown",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Brown",
+   "b": "Bambu Lab CF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Blue",
+   "b": "Bambu Lab Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Blue",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Blue",
+   "b": "Bambu Lab CF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Indigo Purple",
+   "b": "Bambu Lab Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Indigo Purple",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Indigo Purple",
+   "b": "Bambu Lab CF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Pink",
+   "b": "Bambu Lab Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Pink",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Pink",
+   "b": "Bambu Lab CF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Bambu Green",
+   "b": "Bambu Lab Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Bambu Green",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Bambu Green",
+   "b": "Bambu Lab CF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Gold",
+   "b": "Bambu Lab Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Gold",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Gold",
+   "b": "Bambu Lab CF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Orange",
+   "b": "Bambu Lab Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Orange",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Orange",
+   "b": "Bambu Lab CF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Yellow",
+   "b": "Bambu Lab Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Yellow",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Yellow",
+   "b": "Bambu Lab CF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Beige",
+   "b": "Bambu Lab Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Beige",
+   "b": "Bambu Lab PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Bambu Lab PLA Basic Filament - Beige",
+   "b": "Bambu Lab CF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Teal Green",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Teal Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Teal Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Violet Filament 1.75mm 1 Kg",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Violet Filament 1.75mm 1 Kg",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Violet Filament 1.75mm 1 Kg",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament -Sunflower Yellow",
+   "b": "RhinoLab Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament -Sunflower Yellow",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament -Sunflower Yellow",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Brown",
+   "b": "RhinoLab Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Brown",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Brown",
+   "b": "RhinoLab High Speed PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Pink",
+   "b": "RhinoLab Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Pink",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Pink",
+   "b": "RhinoLab High Speed PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Bronze",
+   "b": "RhinoLab Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Bronze",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Bronze",
+   "b": "RhinoLab High Speed PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Beige",
+   "b": "RhinoLab Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Beige",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Beige",
+   "b": "RhinoLab High Speed PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab ASA-CF Filament - Black 1Kg",
+   "b": "RhinoLab CF ASA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab ASA-CF Filament - Black 1Kg",
+   "b": "RhinoLab PC-CF Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab ASA-CF Filament - Black 1Kg",
+   "b": "RhinoLab ASA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Filament - Pearl White",
+   "b": "RhinoLab Silk PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Filament - Pearl White",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Filament - Pearl White",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab TPU 95A Hyper Speed Filament - Red",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab TPU 95A Hyper Speed Filament - Red",
+   "b": "RhinoLab High Speed TPU",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab TPU 95A Hyper Speed Filament - Red",
+   "b": "RhinoLab TPU",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab TPU 95A Hyper Speed Filament - Yellow",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab TPU 95A Hyper Speed Filament - Yellow",
+   "b": "RhinoLab High Speed TPU",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab TPU 95A Hyper Speed Filament - Yellow",
+   "b": "RhinoLab TPU",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Light Brown",
+   "b": "RhinoLab Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Light Brown",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Light Brown",
+   "b": "RhinoLab High Speed PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab TPU 95A Hyper Speed Filament - Grey",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab TPU 95A Hyper Speed Filament - Grey",
+   "b": "RhinoLab High Speed TPU",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab TPU 95A Hyper Speed Filament - Grey",
+   "b": "RhinoLab TPU",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Yellow",
+   "b": "RhinoLab Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Yellow",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Yellow",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Ice Blue",
+   "b": "RhinoLab Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Ice Blue",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Ice Blue",
+   "b": "RhinoLab High Speed PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Wood",
+   "b": "RhinoLab Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Wood",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Wood",
+   "b": "RhinoLab Wood PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Beige",
+   "b": "RhinoLab Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Beige",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Beige",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Light Blue",
+   "b": "RhinoLab Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Light Blue",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Light Blue",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Dark Grey",
+   "b": "RhinoLab Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Dark Grey",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Dark Grey",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Grey",
+   "b": "RhinoLab Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Grey",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Matte Filament - Grey",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab ABS Hyper Speed Filament - Natural",
+   "b": "RhinoLab High Speed ABS",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab ABS Hyper Speed Filament - Natural",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab ABS Hyper Speed Filament - Natural",
+   "b": "RhinoLab ABS",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Green",
+   "b": "RhinoLab Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Green",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Green",
+   "b": "RhinoLab High Speed PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Sky Blue",
+   "b": "RhinoLab Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Sky Blue",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Sky Blue",
+   "b": "RhinoLab High Speed PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Aluminum",
+   "b": "RhinoLab Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Aluminum",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Aluminum",
+   "b": "RhinoLab High Speed PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Dark Gray",
+   "b": "RhinoLab Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Dark Gray",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Dark Gray",
+   "b": "RhinoLab High Speed PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Light  Mint Green",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Light  Mint Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Light  Mint Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA Matte - Grey",
+   "b": "Filamix Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA Matte - Grey",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA Matte - Grey",
+   "b": "Filamix Plus PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Barbie Pink",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Barbie Pink",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Barbie Pink",
+   "b": "eSUN Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Peek Green",
+   "b": "eSUN High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Peek Green",
+   "b": "eSUN High Speed PEEK",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Peek Green",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Copper",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Copper",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Copper",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Light Brown",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Light Brown",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Light Brown",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Burgundy Red",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Burgundy Red",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Burgundy Red",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Sunshine Yellow",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Sunshine Yellow",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Sunshine Yellow",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Beige",
+   "b": "RhinoLab High Speed PLABS",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Beige",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Beige",
+   "b": "RhinoLab High Speed ABS",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Teak",
+   "b": "RhinoLab High Speed PLABS",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Teak",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Teak",
+   "b": "RhinoLab High Speed ABS",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Fluerosan Green",
+   "b": "RhinoLab High Speed PLABS",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Fluerosan Green",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Fluerosan Green",
+   "b": "RhinoLab High Speed ABS",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Pink",
+   "b": "RhinoLab High Speed PLABS",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Pink",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Pink",
+   "b": "RhinoLab High Speed ABS",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Transparent",
+   "b": "RhinoLab High Speed PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Transparent",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Transparent",
+   "b": "RhinoLab PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Dark Grey",
+   "b": "RhinoLab High Speed PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Dark Grey",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Dark Grey",
+   "b": "RhinoLab PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Fluorescent Yellow",
+   "b": "RhinoLab High Speed PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Fluorescent Yellow",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Fluorescent Yellow",
+   "b": "RhinoLab PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Fluorescent Green",
+   "b": "RhinoLab High Speed PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Fluorescent Green",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Fluorescent Green",
+   "b": "RhinoLab PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Blue",
+   "b": "RhinoLab High Speed PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Blue",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Blue",
+   "b": "RhinoLab PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Yellow",
+   "b": "RhinoLab High Speed PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Yellow",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Yellow",
+   "b": "RhinoLab PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Gold",
+   "b": "RhinoLab High Speed PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Gold",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG Hyper Speed (HS) Filament - Gold",
+   "b": "RhinoLab PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Khaki Green",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Khaki Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Khaki Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Slate Grey",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Slate Grey",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Slate Grey",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Navy Blue",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Navy Blue",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Navy Blue",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Blackish Green",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Blackish Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Blackish Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Tangerine Orange",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Tangerine Orange",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Tangerine Orange",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Purple",
+   "b": "RhinoLab Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Purple",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA+ Premium Hyper Speed Filament - Purple",
+   "b": "RhinoLab High Speed PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Marble Filament - Brick Red",
+   "b": "RhinoLab Marble PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Marble Filament - Brick Red",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Marble Filament - Brick Red",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Marble Filament - Marble",
+   "b": "RhinoLab Marble PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Marble Filament - Marble",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Marble Filament - Marble",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Marble Filament - Ivory",
+   "b": "RhinoLab Marble PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Marble Filament - Ivory",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Marble Filament - Ivory",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Transparent Red",
+   "b": "RhinoLab Semiflex PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Transparent Red",
+   "b": "RhinoLab PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Transparent Red",
+   "b": "RhinoLab CF PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Transparent Orange",
+   "b": "RhinoLab Semiflex PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Transparent Orange",
+   "b": "RhinoLab PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Transparent Orange",
+   "b": "RhinoLab CF PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab ABS Hyper Speed Filament - Dark Grey",
+   "b": "RhinoLab High Speed ABS",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab ABS Hyper Speed Filament - Dark Grey",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab ABS Hyper Speed Filament - Dark Grey",
+   "b": "RhinoLab ABS",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Dark Grey",
+   "b": "RhinoLab High Speed PLABS",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Dark Grey",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Dark Grey",
+   "b": "RhinoLab High Speed ABS",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG-CF Filament - Black 1Kg",
+   "b": "RhinoLab CF PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PETG-CF Filament - Black 1Kg",
+   "b": "RhinoLab PC-CF Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG-CF Filament - Black 1Kg",
+   "b": "RhinoLab PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab ABS-CF Filament - Black 1Kg",
+   "b": "RhinoLab CF ABS",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab ABS-CF Filament - Black 1Kg",
+   "b": "RhinoLab PC-CF Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab ABS-CF Filament - Black 1Kg",
+   "b": "RhinoLab ABS",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab Silk PLA Mystic 3 Renkli Filament - Rose Dark Blue Green",
+   "b": "RhinoLab Silk PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab Silk PLA Mystic 3 Renkli Filament - Rose Dark Blue Green",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab Silk PLA Mystic 3 Renkli Filament - Rose Dark Blue Green",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab Silk PLA Mystic 3 Renkli Filament - Sky Blue Purple Yellow",
+   "b": "RhinoLab Silk PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab Silk PLA Mystic 3 Renkli Filament - Sky Blue Purple Yellow",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab Silk PLA Mystic 3 Renkli Filament - Sky Blue Purple Yellow",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab Silk PLA Mystic 3 Renkli Filament - Rose Sky Blue Green",
+   "b": "RhinoLab Silk PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab Silk PLA Mystic 3 Renkli Filament - Rose Sky Blue Green",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab Silk PLA Mystic 3 Renkli Filament - Rose Sky Blue Green",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab Wood PLA Filament - Oak 250gr",
+   "b": "RhinoLab Wood PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab Wood PLA Filament - Oak 250gr",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab Wood PLA Filament - Oak 250gr",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Dual Renk Filament - Rose Dark Blue",
+   "b": "RhinoLab Silk PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Dual Renk Filament - Rose Dark Blue",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Dual Renk Filament - Rose Dark Blue",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Dual Renk Filament - Rose Sky Blue",
+   "b": "RhinoLab Silk PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Dual Renk Filament - Rose Sky Blue",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Dual Renk Filament - Rose Sky Blue",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Hyper PLA Filament - Brown",
+   "b": "Creality High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality Hyper PLA Filament - Brown",
+   "b": "Creality Hyper PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Hyper PLA Filament - Brown",
+   "b": "Creality Ender PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament - Beige",
+   "b": "Creality Ender PLA+ Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament - Beige",
+   "b": "Creality Ender Fast PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament - Beige",
+   "b": "Creality CR-PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Light Brown",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Light Brown",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Light Brown",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Blackish Green",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Blackish Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Blackish Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA Matte - Pink",
+   "b": "Filamix Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA Matte - Pink",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA Matte - Pink",
+   "b": "Filamix Plus PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA Matte - Green",
+   "b": "Filamix Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA Matte - Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA Matte - Green",
+   "b": "Filamix Plus PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Sky Blue",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Sky Blue",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Sky Blue",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Fibromast PETG Filament - Blue",
+   "b": "Fibromast PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Fibromast PETG Filament - Blue",
+   "b": "Fibromast ABS",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Fibromast PETG Filament - Blue",
+   "b": "Fibromast PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality CR-PLA Filament - Red",
+   "b": "Creality CR-PLA Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality CR-PLA Filament - Red",
+   "b": "Creality CR-TPU Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality CR-PLA Filament - Red",
+   "b": "Creality Ender PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Polymaker PolyTerra Matte PLA Filament - Arctic Teal",
+   "b": "Polymaker PolyTerra Matte PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Polymaker PolyTerra Matte PLA Filament - Arctic Teal",
+   "b": "Polymaker PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Polymaker PolyTerra Matte PLA Filament - Arctic Teal",
+   "b": "Polymaker GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix TPU Filament - White",
+   "b": "Filamix TPU",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix TPU Filament - White",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix TPU Filament - White",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Silk PLA Filament - Black Red",
+   "b": "Filamix Silk PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Silk PLA Filament - Black Red",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Silk PLA Filament - Black Red",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Silk PLA Filament - Coral Pink",
+   "b": "Filamix Silk PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Silk PLA Filament - Coral Pink",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Silk PLA Filament - Coral Pink",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Silk PLA Filament - Blue Green",
+   "b": "Filamix Silk PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Silk PLA Filament - Blue Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Silk PLA Filament - Blue Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Polymaker PolyLite Asa Filament - Black",
+   "b": "Polymaker PolyLite ASA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Polymaker PolyLite Asa Filament - Black",
+   "b": "Polymaker ABS",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Polymaker PolyLite Asa Filament - Black",
+   "b": "Polymaker PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PETG Filament - Blue",
+   "b": "Filamix High Speed PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PETG Filament - Blue",
+   "b": "Filamix Sparkle PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PETG Filament - Blue",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament - Red",
+   "b": "Creality Ender PLA+ Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament - Red",
+   "b": "Creality Ender Fast PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament - Red",
+   "b": "Creality CR-PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament - White",
+   "b": "Creality Ender PLA+ Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament - White",
+   "b": "Creality Ender Fast PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament - White",
+   "b": "Creality CR-PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament - Black",
+   "b": "Creality Ender PLA+ Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament - Black",
+   "b": "Creality Ender Fast PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament - Black",
+   "b": "Creality CR-PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix ABS+ Filament - White",
+   "b": "Filamix Plus ABS",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix ABS+ Filament - White",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix ABS+ Filament - White",
+   "b": "Filamix TPU",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Hyper PLA RFID Filament - White",
+   "b": "Creality High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality Hyper PLA RFID Filament - White",
+   "b": "Creality Hyper PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Hyper PLA RFID Filament - White",
+   "b": "Creality Ender PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Ivory",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Ivory",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Ivory",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Light Mint Green",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Light Mint Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Light Mint Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Champagne",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Champagne",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Champagne",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Reddish Brown",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Reddish Brown",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Reddish Brown",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Green Apple",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Green Apple",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Green Apple",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Cherry Blossom Pink",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Cherry Blossom Pink",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Cherry Blossom Pink",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Violet",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Violet",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Violet",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Orange Red",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Orange Red",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Orange Red",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Sea Green",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Sea Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Sea Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Marble",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Marble",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Marble",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Bone White",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Bone White",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Bone White",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Navy Blue",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Navy Blue",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Navy Blue",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Grass Green",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Grass Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Grass Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Grey",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Grey",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Grey",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Orange",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Orange",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Orange",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Skin",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Skin",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Skin",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Brown",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Brown",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Brown",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Green",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Beige",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Beige",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Beige",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Dark Mint Green",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Dark Mint Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Dark Mint Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Rose",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Rose",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Rose",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Wood",
+   "b": "Filamix Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Wood",
+   "b": "Filamix Wood PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix Rapid PLA+ Filament - Wood",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality CR-TPU Filament - Green",
+   "b": "Creality CR-TPU Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality CR-TPU Filament - Green",
+   "b": "Creality CR-PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality CR-TPU Filament - Green",
+   "b": "Creality CR-PETG Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Apex3D Rainbow PLA Filament - Volcanic Eruption",
+   "b": "Apex3D Rainbow PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Apex3D Rainbow PLA Filament - Volcanic Eruption",
+   "b": "Apex3D Wood PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality CR-PLA Filament - Grey",
+   "b": "Creality CR-PLA Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality CR-PLA Filament - Grey",
+   "b": "Creality CR-TPU Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality CR-PLA Filament - Grey",
+   "b": "Creality Ender PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality CR-PETG Filament - Red",
+   "b": "Creality CR-PETG Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality CR-PETG Filament - Red",
+   "b": "Creality CR PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality CR-PETG Filament - Red",
+   "b": "Creality CR-TPU Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Light Khaki",
+   "b": "eSUN High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Light Khaki",
+   "b": "eSUN High Speed PEEK",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Light Khaki",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Magenta",
+   "b": "eSUN High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Magenta",
+   "b": "eSUN High Speed PEEK",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Magenta",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Beige",
+   "b": "eSUN High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Beige",
+   "b": "eSUN High Speed PEEK",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Beige",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Black",
+   "b": "eSUN High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Black",
+   "b": "eSUN High Speed PEEK",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA-High Speed Filament - Black",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Hyper PLA Filament - Very Peri",
+   "b": "Creality High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality Hyper PLA Filament - Very Peri",
+   "b": "Creality Hyper PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Hyper PLA Filament - Very Peri",
+   "b": "Creality Ender PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Hyper PLA Filament - Green",
+   "b": "Creality High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality Hyper PLA Filament - Green",
+   "b": "Creality Hyper PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Hyper PLA Filament - Green",
+   "b": "Creality Ender PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Hyper PLA Filament - Skin",
+   "b": "Creality High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality Hyper PLA Filament - Skin",
+   "b": "Creality Hyper PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Hyper PLA Filament - Skin",
+   "b": "Creality Ender PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun E-Silk PLA+ Filament - Dark Orange",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun E-Silk PLA+ Filament - Dark Orange",
+   "b": "eSUN Silk PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun E-Silk PLA+ Filament - Dark Orange",
+   "b": "eSUN Basic PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun E-Silk PLA+ Filament - Green",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun E-Silk PLA+ Filament - Green",
+   "b": "eSUN Silk PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun E-Silk PLA+ Filament - Green",
+   "b": "eSUN Basic PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun E-Silk PLA+ Filament - Violet",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun E-Silk PLA+ Filament - Violet",
+   "b": "eSUN Silk PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun E-Silk PLA+ Filament - Violet",
+   "b": "eSUN Basic PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Premium Hyper Speed Filament - White",
+   "b": "RhinoLab Plus High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Premium Hyper Speed Filament - White",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Premium Hyper Speed Filament - White",
+   "b": "RhinoLab High Speed PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab TPU 95A Hyper Speed Filament - Black",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab TPU 95A Hyper Speed Filament - Black",
+   "b": "RhinoLab High Speed TPU",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab TPU 95A Hyper Speed Filament - Black",
+   "b": "RhinoLab TPU",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Filament - Gold",
+   "b": "RhinoLab Silk PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Filament - Gold",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Filament - Gold",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Filament - Red",
+   "b": "RhinoLab Silk PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Filament - Red",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Filament - Red",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Filament - Blue",
+   "b": "RhinoLab Silk PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Filament - Blue",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA Silk Filament - Blue",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament",
+   "b": "Creality Ender PLA+ Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament",
+   "b": "Creality Ender Fast PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Ender PLA+ Filament",
+   "b": "Creality CR-PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab ASA Hyper Speed Filament - Sky Blue",
+   "b": "RhinoLab High Speed ASA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab ASA Hyper Speed Filament - Sky Blue",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab ASA Hyper Speed Filament - Sky Blue",
+   "b": "RhinoLab ASA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab ASA Hyper Speed Filament - Black",
+   "b": "RhinoLab High Speed ASA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab ASA Hyper Speed Filament - Black",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab ASA Hyper Speed Filament - Black",
+   "b": "RhinoLab ASA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PA6 Easy Naylon Filament - Grey",
+   "b": "RhinoLab PA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PA6 Easy Naylon Filament - Grey",
+   "b": "RhinoLab PC-CF Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PA6 Easy Naylon Filament - Grey",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PA6 Easy Naylon Filament - Black",
+   "b": "RhinoLab PA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PA6 Easy Naylon Filament - Black",
+   "b": "RhinoLab PC-CF Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PA6 Easy Naylon Filament - Black",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Yellow",
+   "b": "RhinoLab Semiflex PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Yellow",
+   "b": "RhinoLab PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Yellow",
+   "b": "RhinoLab CF PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Red",
+   "b": "RhinoLab Semiflex PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Red",
+   "b": "RhinoLab PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Red",
+   "b": "RhinoLab CF PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Grey",
+   "b": "RhinoLab Semiflex PETG",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Grey",
+   "b": "RhinoLab PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PETG SemiFlex Filament - Grey",
+   "b": "RhinoLab CF PETG",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Army Green",
+   "b": "RhinoLab High Speed PLABS",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Army Green",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Army Green",
+   "b": "RhinoLab High Speed ABS",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Wood",
+   "b": "RhinoLab High Speed PLABS",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Wood",
+   "b": "RhinoLab TPU 95A Hyper Speed Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLABS Hyper Speed Filament - Wood",
+   "b": "RhinoLab Wood PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Ivory",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Ivory",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Ivory",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Ice Blue",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Ice Blue",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Ice Blue",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Green Apple",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Green Apple",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Green Apple",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Lavender Purple",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Lavender Purple",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Lavender Purple",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Champagne",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Champagne",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Champagne",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Pearl White",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Pearl White",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Pearl White",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Cyan",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Cyan",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Cyan",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Grass Green",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Grass Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Grass Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Light Blue",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Light Blue",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Light Blue",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Bone White",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Bone White",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Bone White",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Marble",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Marble",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Marble",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Transparent",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Transparent",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Transparent",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Golden",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Golden",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Golden",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Flourescent Green",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Flourescent Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Flourescent Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Wood",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Wood",
+   "b": "Filamix Wood PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament - Wood",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Yellow",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Yellow",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Yellow",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Rose",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Rose",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Rose",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Dark Mint Green",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Dark Mint Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Dark Mint Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Green",
+   "b": "Filamix Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Green",
+   "b": "Filamix PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Filamix PLA+ Filament Green",
+   "b": "Filamix Matte PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA+ Filament - Green",
+   "b": "eSUN Plus PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA+ Filament - Green",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA+ Filament - Green",
+   "b": "eSUN Basic PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Holly Green",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Holly Green",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Holly Green",
+   "b": "eSUN Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Sky Blue",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Sky Blue",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Sky Blue",
+   "b": "eSUN Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Fire Engine Red",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Fire Engine Red",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Fire Engine Red",
+   "b": "eSUN Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Light Grey",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Light Grey",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Light Grey",
+   "b": "eSUN Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Green",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Green",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Green",
+   "b": "eSUN Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Light Blue",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Light Blue",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Light Blue",
+   "b": "eSUN Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Olive Green",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Olive Green",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Olive Green",
+   "b": "eSUN Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Concrete Grey",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Concrete Grey",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Concrete Grey",
+   "b": "eSUN Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - RGB Red",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - RGB Red",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - RGB Red",
+   "b": "eSUN Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Pink",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Pink",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Pink",
+   "b": "eSUN Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Beige",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Beige",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Beige",
+   "b": "eSUN Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Grey",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Grey",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun PLA Basic Filament - Grey",
+   "b": "eSUN Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab Glow PLA Filament - Green 1 KG",
+   "b": "RhinoLab Glow PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab Glow PLA Filament - Green 1 KG",
+   "b": "RhinoLab GF PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab Glow PLA Filament - Green 1 KG",
+   "b": "RhinoLab Marble PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA-GF Filament 1Kg",
+   "b": "RhinoLab GF PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "RhinoLab PLA-GF Filament 1Kg",
+   "b": "RhinoLab Glow PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "RhinoLab PLA-GF Filament 1Kg",
+   "b": "RhinoLab Marble PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun E-Twinkling Filament",
+   "b": "Esun E-Twinkling Filament",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun E-Twinkling Filament",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun E-Twinkling Filament",
+   "b": "eSUN Basic PLA",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun Wood Filament 1Kg",
+   "b": "eSUN Basic PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Esun Wood Filament 1Kg",
+   "b": "Esun E-Twinkling Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Esun Wood Filament 1Kg",
+   "b": "Esun E-Silk PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Hyper PLA Rainbow Spring Lake Filament 1.75mm 1Kg",
+   "b": "Creality High Speed PLA",
+   "label": "same",
+   "why": "you put this listing on this model"
+  },
+  {
+   "a": "Creality Hyper PLA Rainbow Spring Lake Filament 1.75mm 1Kg",
+   "b": "Creality Hyper PLA Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  },
+  {
+   "a": "Creality Hyper PLA Rainbow Spring Lake Filament 1.75mm 1Kg",
+   "b": "Creality Ender PLA+ Filament",
+   "label": "different",
+   "why": "same brand, another model"
+  }
+ ]
+}

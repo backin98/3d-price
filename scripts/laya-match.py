@@ -67,6 +67,13 @@ def train():
         others = list(dict.fromkeys(others))
         for other in others: pairs.append((anchor, variants(other)[0], 0.0))
     pairs.extend((r["a"], r["b"], 1.0 if r["label"] == "same" else 0.0) for r in eval_rows)
+    # What you decided in the admin (npm run laya-data): listing title -> the baseline model you put it on.
+    learned_file = ROOT / "data" / "laya-learned-pairs.json"
+    learned = json.loads(learned_file.read_text(encoding="utf-8"))["pairs"] if learned_file.exists() else []
+    learned_texts = [t for r in learned for t in (str(r["a"]), str(r["b"])) if t not in vectors]
+    if learned_texts:
+        vectors.update(zip(learned_texts, encode(agent, learned_texts)))
+    pairs.extend((str(r["a"]), str(r["b"]), 1.0 if r["label"] == "same" else 0.0) for r in learned)
     random.shuffle(pairs)
     x = torch.stack([feature(vectors[a], vectors[b]) for a, b, _ in pairs])
     y = torch.tensor([label for _, _, label in pairs]).unsqueeze(1)

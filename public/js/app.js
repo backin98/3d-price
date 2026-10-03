@@ -1013,7 +1013,7 @@
     return POLY_COLOR[p && p.polymer] || "#8a96a3";
   }
   function colourDotHtml(p, extra, attrs) {
-    const fx = p && (p.colorEffect === "marble" || p.colorEffect === "galaxy") ? " fx-" + p.colorEffect : "";
+    const fx = p && ["marble", "galaxy", "silk", "satin", "translucent", "metallic", "glow", "matte"].indexOf(p.colorEffect) >= 0 ? " fx-" + p.colorEffect : "";
     const label = translateProduct((p && p.color) || displayName(p));
     return `<span class="cdot${fx}${extra ? " " + extra : ""}" style="--dot:${escapeHtml(dotFill(p))}" role="img" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}"${attrs || ""}></span>`;
   }
