@@ -84,6 +84,23 @@ assert.ok(['#aa2233', '#ab2334'].includes(R.toneFor(toneRules, { brand: 'Acme', 
 assert.equal(R.toneFor(toneRules, { brand: 'Other', colorName: 'Red' }).hex.toLowerCase().startsWith('#a'), true, 'a photo-picked shade does not teach the run');
 assert.equal(R.toneFor(toneRules, { brand: 'Acme', colorName: 'Red', multicolor: true }), null, 'gradients have no single tone');
 
+// ---- a guess you left alone is not a label ---------------------------------------------------------------------------------
+{
+  const guess = (field, value) => ({ [field]: { value, from: 'your labels', confidence: 0.9 } });
+  const taught = R.learnRules({ cards: [
+    // saved by autosave with the run's own guess still in place: says nothing about what you think
+    { brand: 'Zed', polymer: 'pla', variant: 'plus', spoolMaterial: 'cardboard', handEdited: true, guess: guess('spoolMaterial', 'cardboard'), sourceTitle: 'Zed PLA+' },
+    // you changed the guess: that is a label
+    { brand: 'Zed', polymer: 'pla', variant: 'plus', spoolMaterial: 'plastic', handEdited: true, guess: guess('spoolMaterial', 'cardboard'), sourceTitle: 'Zed PLA+' },
+    // no guess was ever made (an older card): a label
+    { brand: 'Zed', polymer: 'pla', variant: 'plus', spoolMaterial: 'plastic', handEdited: true, sourceTitle: 'Zed PLA+' }
+  ] });
+  assert.equal(taught.trainedOn.spoolLabels, 2, 'only the corrected and the unguessed card count');
+  assert.deepEqual(taught.spool.brand.zed, { plastic: 2 });
+  const subs = R.learnRules({ cards: [{ brand: 'Zed', subBrand: 'Lite', handEdited: true, guess: guess('subBrand', 'Lite'), sourceTitle: 'Zed Lite PLA' }] });
+  assert.deepEqual(subs.subBrands, {}, 'a sub-brand the run guessed itself is not learned back');
+}
+
 // ---- the run uses it ---------------------------------------------------------------------------------------------------
 const run = (title, brand) => normalizeFilamentListing({ name: title, sourceTitle: title, brand, kind: 'filament', url: 'https://x.test/' + title.replace(/\W+/g, '-'), price: 500 });
 let l = run('Polymaker Panchroma Silk PLA Filament Krom', 'Polymaker');
